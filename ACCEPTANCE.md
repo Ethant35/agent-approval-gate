@@ -2,6 +2,24 @@
 
 Author: Ethan
 
+## 1.0.1 path-authorization patch
+
+**PASS: clean independent checkout, 45/45 real E2E scenarios, zero failures/skips/retries, 36.65 seconds.** Verified 2026-10-22 on the environment below. Tested implementation: `023ff465d2548376c7e7cd27fa38f06d6d005233`. This section supersedes the current-release claim below; the original v1.0.0 report is retained as historical evidence.
+
+The deeper audit reproduced six failures in seven new scenarios against the released implementation. The repair normalizes policy paths, revalidates older saved policies, rejects case-aliased private-state paths before credentials are created, and binds process approval to workspace directory identity. A native launcher rechecks that identity and uses the checked descriptor for cwd. See the [bounded audit, primary sources, compatibility changes, and limitations](docs/path-authorization-audit.md).
+
+An independent `git clone --no-local --branch codex/authorization-invariants` of the tested implementation passed `npm ci`, `npm run check`, `npm run build`, `npm run format:check`, `npm run test:e2e`, and `npm audit --audit-level=high`. The audit reported zero vulnerabilities. Native C warnings are errors. No mocks, skipped native integration, or unit-test substitutes were used.
+
+Thirteen added scenarios cover equivalent deny and allow spellings; both case-alias and exact-spelling private-state overlap without token creation; directory and symlink replacement for both shell and subagent requests; legacy saved policy normalization and stale approval rejection; a permitted working-directory write paired with an OS-denied protected read/write; and rejection/resubmission of old process approvals lacking workspace identity. All original 32 scenarios passed too, including actual native Codex MCP proposal, browser approval, file execution, and returned result.
+
+Evidence: [before repair](evidence/path-authorization/before.json), [full 45-scenario result](evidence/path-authorization/after.json), [sanitized native Codex transcript](evidence/path-authorization/native-codex.jsonl), and [installed-package check](evidence/path-authorization/package-install.json). GitHub Actions remains disabled, with zero workflows/runs. The exact patch archive and checksum are attached to release v1.0.1 after installed-package validation.
+
+The installed package's actual `.bin/aag` passed startup and dashboard delivery, an allowed read, normalized deny rejection, no process side effect before approval, and a real approved native process write/read. The protected file stayed unchanged. To reproduce: build and `npm pack`, install the archive with `npm install --prefix .acceptance/package-install ./agent-approval-gate-1.0.1.tgz`, then run `node scripts/verify-package.mjs`. The temporary smoke harness initially requested CLI port zero, which is intentionally rejected; it was corrected to allocate a free valid port before the accepted run. No product change was needed.
+
+No UI change was made; the existing dashboard screenshot remains representative, and live browser scenarios passed. Personal author metadata in package manifests, Git commits, documents and generated evidence uses Ethan. Native transcripts preserve truthful source records and have no personal-author metadata field. Finder/Explorer display is not independently verified.
+
+## Historical 1.0.0 acceptance
+
 **PASS: all applicable local v1 release gates.** Verified 2026-10-22.
 
 Repository: https://github.com/Ethant35/agent-approval-gate

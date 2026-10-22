@@ -66,4 +66,4 @@ The native launcher closes the pathname-to-cwd replacement gap by opening and ch
 
 ## Acceptance
 
-Targeted repair run: all 12 expanded scenarios passed. A thirteenth upgrade scenario was then added. Complete clean-checkout acceptance and installed-package verification are required before publishing 1.0.1; final results are recorded in ACCEPTANCE.md and evidence/path-authorization/.
+Targeted repair run: all 12 expanded scenarios passed. A thirteenth legacy-process upgrade scenario then passed. The clean independent checkout at `023ff465d2548376c7e7cd27fa38f06d6d005233` passed all 45 real E2E scenarios in 36.65 seconds, without failures, skips or retries. This includes actual native Codex MCP and browser approval. Installation, strict checks, native/production builds, formatting, and dependency audit passed; zero vulnerabilities. Final package verification is recorded in ACCEPTANCE.md and evidence/path-authorization/.

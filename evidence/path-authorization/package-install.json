@@ -1,0 +1,14 @@
+{
+  "author": "Ethan",
+  "verifiedAt": "2026-10-22T19:49:08.683Z",
+  "version": "1.0.1",
+  "packageAuthor": "Ethan",
+  "cli": "installed node_modules/.bin/aag",
+  "startup": "PASS",
+  "dashboard": "PASS",
+  "normalizedDeny": "PASS",
+  "allowedRead": "PASS",
+  "pendingBeforeApproval": "PASS",
+  "approvedNativeProcess": "PASS",
+  "protectedFileUnchanged": "PASS"
+}

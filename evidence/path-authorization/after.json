@@ -1,0 +1,298 @@
+{
+  "author": "Ethan",
+  "implementation": "023ff465d2548376c7e7cd27fa38f06d6d005233",
+  "environment": {
+    "os": "macOS 27.2",
+    "arch": "arm64",
+    "node": "v22.13.1",
+    "nativeCodex": "0.163.0"
+  },
+  "cleanCheckout": true,
+  "stats": {
+    "startTime": "2026-10-22T19:46:28.642Z",
+    "duration": 36647.179000000004,
+    "expected": 45,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "checks": {
+    "npmCi": "PASS",
+    "typeCheck": "PASS",
+    "build": "PASS",
+    "format": "PASS",
+    "auditVulnerabilities": 0
+  },
+  "tests": [
+    {
+      "title": "AG-01 installation and real CLI startup",
+      "status": "expected",
+      "durationMs": 506,
+      "attempts": 1
+    },
+    {
+      "title": "AG-02 dashboard policies, history, keyboard and theme",
+      "status": "expected",
+      "durationMs": 875,
+      "attempts": 1
+    },
+    {
+      "title": "AG-03 automatic allowed read and CLI submission",
+      "status": "expected",
+      "durationMs": 479,
+      "attempts": 1
+    },
+    {
+      "title": "AG-04 forbidden write does not execute",
+      "status": "expected",
+      "durationMs": 364,
+      "attempts": 1
+    },
+    {
+      "title": "AG-05 pending approval blocks execution",
+      "status": "expected",
+      "durationMs": 371,
+      "attempts": 1
+    },
+    {
+      "title": "AG-06 real browser approval executes exactly once",
+      "status": "expected",
+      "durationMs": 872,
+      "attempts": 1
+    },
+    {
+      "title": "AG-07 browser rejection",
+      "status": "expected",
+      "durationMs": 681,
+      "attempts": 1
+    },
+    {
+      "title": "AG-08 expired approval rejected",
+      "status": "expected",
+      "durationMs": 729,
+      "attempts": 1
+    },
+    {
+      "title": "AG-09 approval token replay rejected",
+      "status": "expected",
+      "durationMs": 476,
+      "attempts": 1
+    },
+    {
+      "title": "AG-10 immutable parameters and exact file identity",
+      "status": "expected",
+      "durationMs": 478,
+      "attempts": 1
+    },
+    {
+      "title": "AG-11 traversal, symlink and parent replacement",
+      "status": "expected",
+      "durationMs": 483,
+      "attempts": 1
+    },
+    {
+      "title": "AG-12 blocked command has no side effect",
+      "status": "expected",
+      "durationMs": 364,
+      "attempts": 1
+    },
+    {
+      "title": "AG-13 unauthorized network and alternate IP never arrive",
+      "status": "expected",
+      "durationMs": 480,
+      "attempts": 1
+    },
+    {
+      "title": "AG-14 budgets retain unknown costs and settle recorded actuals",
+      "status": "expected",
+      "durationMs": 379,
+      "attempts": 1
+    },
+    {
+      "title": "AG-15 concurrent approvals cannot oversubscribe",
+      "status": "expected",
+      "durationMs": 472,
+      "attempts": 1
+    },
+    {
+      "title": "AG-16 restart preserves policy pending requests audit budgets",
+      "status": "expected",
+      "durationMs": 840,
+      "attempts": 1
+    },
+    {
+      "title": "AG-17 authentication CSRF origins and self approval",
+      "status": "expected",
+      "durationMs": 415,
+      "attempts": 1
+    },
+    {
+      "title": "AG-18 dashboard disconnect keeps pending blocked",
+      "status": "expected",
+      "durationMs": 642,
+      "attempts": 1
+    },
+    {
+      "title": "AG-19 native Codex MCP proposal approval execution result",
+      "status": "expected",
+      "durationMs": 9526,
+      "attempts": 1
+    },
+    {
+      "title": "AG-20 CLI audit export matches actual transitions",
+      "status": "expected",
+      "durationMs": 446,
+      "attempts": 1
+    },
+    {
+      "title": "AG-21 real executor failure records FAILED",
+      "status": "expected",
+      "durationMs": 476,
+      "attempts": 1
+    },
+    {
+      "title": "AG-22 cancellation kills subprocess and child",
+      "status": "expected",
+      "durationMs": 486,
+      "attempts": 1
+    },
+    {
+      "title": "security: sandbox denies outside write, network and secret read",
+      "status": "expected",
+      "durationMs": 488,
+      "attempts": 1
+    },
+    {
+      "title": "security: invalid policy fails closed and policy revision revokes approval",
+      "status": "expected",
+      "durationMs": 394,
+      "attempts": 1
+    },
+    {
+      "title": "subagent real adapter and concurrency enforcement",
+      "status": "expected",
+      "durationMs": 2256,
+      "attempts": 1
+    },
+    {
+      "title": "security: scoped credentials enforce agent/session identity and ownership",
+      "status": "expected",
+      "durationMs": 739,
+      "attempts": 1
+    },
+    {
+      "title": "security: redirect never reaches a second destination",
+      "status": "expected",
+      "durationMs": 471,
+      "attempts": 1
+    },
+    {
+      "title": "security: OS sandbox blocks actual HTTP connection",
+      "status": "expected",
+      "durationMs": 660,
+      "attempts": 1
+    },
+    {
+      "title": "security: timeout terminates running command",
+      "status": "expected",
+      "durationMs": 729,
+      "attempts": 1
+    },
+    {
+      "title": "security: hardlink and case-alias denied paths",
+      "status": "expected",
+      "durationMs": 373,
+      "attempts": 1
+    },
+    {
+      "title": "security: canonical routing cannot bypass API authentication",
+      "status": "expected",
+      "durationMs": 369,
+      "attempts": 1
+    },
+    {
+      "title": "filesystem create and text result format",
+      "status": "expected",
+      "durationMs": 589,
+      "attempts": 1
+    },
+    {
+      "title": "depth: equivalent deny path suffix /",
+      "status": "expected",
+      "durationMs": 370,
+      "attempts": 1
+    },
+    {
+      "title": "depth: equivalent deny path suffix /.",
+      "status": "expected",
+      "durationMs": 369,
+      "attempts": 1
+    },
+    {
+      "title": "depth: equivalent deny path suffix //",
+      "status": "expected",
+      "durationMs": 378,
+      "attempts": 1
+    },
+    {
+      "title": "depth: equivalent allowed paths still permit an ordinary read",
+      "status": "expected",
+      "durationMs": 483,
+      "attempts": 1
+    },
+    {
+      "title": "depth: WORKSPACE cannot hide private state inside workspace",
+      "status": "expected",
+      "durationMs": 720,
+      "attempts": 1
+    },
+    {
+      "title": "depth: workspace cannot hide private state inside workspace",
+      "status": "expected",
+      "durationMs": 716,
+      "attempts": 1
+    },
+    {
+      "title": "depth: replaced directory workspace invalidates shell approval",
+      "status": "expected",
+      "durationMs": 489,
+      "attempts": 1
+    },
+    {
+      "title": "depth: replaced symlink workspace invalidates shell approval",
+      "status": "expected",
+      "durationMs": 493,
+      "attempts": 1
+    },
+    {
+      "title": "depth: replaced directory workspace invalidates subagent approval",
+      "status": "expected",
+      "durationMs": 486,
+      "attempts": 1
+    },
+    {
+      "title": "depth: replaced symlink workspace invalidates subagent approval",
+      "status": "expected",
+      "durationMs": 482,
+      "attempts": 1
+    },
+    {
+      "title": "depth: persisted legacy policy is normalized and old approval revoked on restart",
+      "status": "expected",
+      "durationMs": 856,
+      "attempts": 1
+    },
+    {
+      "title": "depth: normalized deny reaches OS sandbox while approved working directory still executes",
+      "status": "expected",
+      "durationMs": 602,
+      "attempts": 1
+    },
+    {
+      "title": "depth: legacy process approval without workspace identity fails closed after upgrade",
+      "status": "expected",
+      "durationMs": 966,
+      "attempts": 1
+    }
+  ]
+}

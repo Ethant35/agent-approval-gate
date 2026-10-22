@@ -1,0 +1,10 @@
+{
+  "author": "Ethan",
+  "implementation": "023ff465d2548376c7e7cd27fa38f06d6d005233",
+  "version": "1.0.1",
+  "asset": "agent-approval-gate-1.0.1.tgz",
+  "sha256": "9324f13f9973a8f1d82259a834c34ac404e6682376bc849b314d43a98b04a4ab",
+  "runtimeFilesByteIdenticalToCleanAndInstalled": 11,
+  "cliBinExecutable": true,
+  "packageAuthor": "Ethan"
+}
