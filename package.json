@@ -22,7 +22,8 @@
     "examples",
     "docs",
     "ACCEPTANCE.md",
-    "CONTRIBUTING.md"
+    "CONTRIBUTING.md",
+    "evidence"
   ],
   "scripts": {
     "build": "node scripts/build-native.mjs && tsc && vite build",

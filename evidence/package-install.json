@@ -1,6 +1,6 @@
 {
   "author": "Ethan",
-  "at": "2026-10-22T19:18:03.713Z",
+  "at": "2026-10-22T19:22:29.195Z",
   "version": "1.0.0",
   "installation": "npm install from generated tarball into empty prefix",
   "cli": "installed node_modules/.bin/aag",

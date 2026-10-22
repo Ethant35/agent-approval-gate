@@ -7,7 +7,7 @@ Author: Ethan
 Repository: https://github.com/Ethant35/agent-approval-gate
 Review: https://github.com/Ethant35/agent-approval-gate/pull/1
 Release target: `v1.0.0`
-Tested implementation commit: `43ff0b7b91a670bbda6e85d43d932ad2a2345ced`. Later release commits add only acceptance evidence and documentation; the implementation/test diff is checked before release.
+Tested implementation commit: `44c27e765662d736cea89dfab5c14d4ffaa50871`. Later release commits add only acceptance evidence, documentation, and inclusion of that evidence in the package; the implementation/test diff is checked before release.
 
 ## Environment and commands
 
@@ -24,7 +24,7 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-Results: **32 passed, 0 failed, 0 skipped, no retries, 33.0 seconds**. Strict server and React TypeScript checks passed. Native C compiled with warnings treated as errors. Production build and formatting passed. Full npm dependency audit reported **0 vulnerabilities**. All executors are real; no unit tests or mock executors substitute for acceptance.
+Results: **32 passed, 0 failed, 0 skipped, no retries, 31.6 seconds**. Strict server and React TypeScript checks passed. Native C compiled with warnings treated as errors. Production build and formatting passed. Full npm dependency audit reported **0 vulnerabilities**. All executors are real; no unit tests or mock executors substitute for acceptance.
 
 The generated npm tarball was installed into an empty prefix with `npm install`. Its actual `.bin/aag` command started the server, served the dashboard, accepted an agent request, required human approval, read the real temporary file, and returned the correct content. Package version and author were verified as 1.0.0 and Ethan.
 
@@ -34,28 +34,28 @@ GitHub Actions are **intentionally omitted and disabled per Ethan**. The reposit
 
 | ID | Real scenario | Result | Duration |
 | --- | --- | --- | --- |
-| AG-01 | installation and real CLI startup | PASS | 0.51s |
-| AG-02 | dashboard policies, history, keyboard and theme | PASS | 0.92s |
-| AG-03 | automatic allowed read and CLI submission | PASS | 0.58s |
-| AG-04 | forbidden write does not execute | PASS | 0.36s |
-| AG-05 | pending approval blocks execution | PASS | 0.37s |
-| AG-06 | real browser approval executes exactly once | PASS | 0.92s |
-| AG-07 | browser rejection | PASS | 0.68s |
-| AG-08 | expired approval rejected | PASS | 0.73s |
-| AG-09 | approval token replay rejected | PASS | 0.47s |
-| AG-10 | immutable parameters and exact file identity | PASS | 0.47s |
-| AG-11 | traversal, symlink and parent replacement | PASS | 0.48s |
-| AG-12 | blocked command has no side effect | PASS | 0.36s |
-| AG-13 | unauthorized network and alternate IP never arrive | PASS | 0.48s |
-| AG-14 | budgets retain unknown costs and settle recorded actuals | PASS | 0.38s |
-| AG-15 | concurrent approvals cannot oversubscribe | PASS | 0.38s |
-| AG-16 | restart preserves policy pending requests audit budgets | PASS | 0.84s |
-| AG-17 | authentication CSRF origins and self approval | PASS | 0.42s |
-| AG-18 | dashboard disconnect keeps pending blocked | PASS | 0.73s |
-| AG-19 | native Codex MCP proposal approval execution result | PASS | 13.59s |
+| AG-01 | installation and real CLI startup | PASS | 0.52s |
+| AG-02 | dashboard policies, history, keyboard and theme | PASS | 0.87s |
+| AG-03 | automatic allowed read and CLI submission | PASS | 0.57s |
+| AG-04 | forbidden write does not execute | PASS | 0.37s |
+| AG-05 | pending approval blocks execution | PASS | 0.38s |
+| AG-06 | real browser approval executes exactly once | PASS | 0.99s |
+| AG-07 | browser rejection | PASS | 0.69s |
+| AG-08 | expired approval rejected | PASS | 0.75s |
+| AG-09 | approval token replay rejected | PASS | 0.49s |
+| AG-10 | immutable parameters and exact file identity | PASS | 0.50s |
+| AG-11 | traversal, symlink and parent replacement | PASS | 0.50s |
+| AG-12 | blocked command has no side effect | PASS | 0.37s |
+| AG-13 | unauthorized network and alternate IP never arrive | PASS | 0.50s |
+| AG-14 | budgets retain unknown costs and settle recorded actuals | PASS | 0.39s |
+| AG-15 | concurrent approvals cannot oversubscribe | PASS | 0.40s |
+| AG-16 | restart preserves policy pending requests audit budgets | PASS | 0.87s |
+| AG-17 | authentication CSRF origins and self approval | PASS | 0.39s |
+| AG-18 | dashboard disconnect keeps pending blocked | PASS | 0.65s |
+| AG-19 | native Codex MCP proposal approval execution result | PASS | 11.59s |
 | AG-20 | CLI audit export matches actual transitions | PASS | 0.47s |
-| AG-21 | real executor failure records FAILED | PASS | 0.48s |
-| AG-22 | cancellation kills subprocess and child | PASS | 0.48s |
+| AG-21 | real executor failure records FAILED | PASS | 0.49s |
+| AG-22 | cancellation kills subprocess and child | PASS | 0.49s |
 
 ## Additional adversarial scenarios
 
@@ -92,3 +92,5 @@ These tests support the documented mediated boundaries, not universal security a
 ## Failures repaired before final acceptance
 
 The first process profile lacked a required root-directory read, preventing process startup. A narrow permission fixed it; successful process, exit-code, child-cancellation, and sandbox denial checks then passed. The vulnerable static-file plugin was removed in favor of fixed asset routes, followed by a zero-vulnerability audit. Native Codex initially required host MCP permission and then exposed ambiguous wait semantics; invocation-scoped configuration and terminal-state waiting fixed both. Curl failed before connecting in an early sandbox test; a real socket probe with a positive control replaced it. None of those failed or partial runs is counted as release acceptance.
+
+A final native-helper review added a length check before appending the missing-file marker. The complete 32-scenario suite was rerun on commit `44c27e7` and passed; the earlier 43ff0b7 run is superseded. Finder/Windows Explorer display of PNG author metadata was not verified; the saved PNG Author field and package/Git author values were checked directly.

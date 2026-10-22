@@ -4,12 +4,12 @@ Author: Ethan
 
 ## Current status
 
-Local v1 acceptance is complete. All 22 required tests and 10 additional E2E scenarios passed in a clean independent checkout (32/32, 33.0 seconds, zero retries/skips). Native Codex integration passed with real browser approval and actual result return. Package installation/startup/approval/execution smoke passed. No release is claimed before GitHub publication is verified.
+Local v1 acceptance is complete. All 22 required tests and 10 additional E2E scenarios passed in a clean independent checkout (32/32, 31.6 seconds, zero retries/skips). Native Codex integration passed with real browser approval and actual result return. Package installation/startup/approval/execution smoke passed. No release is claimed before GitHub publication is verified.
 
 Repository: https://github.com/Ethant35/agent-approval-gate
 Local path: /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate
 Branch: codex/initial-release
-Tested implementation commit: 43ff0b7b91a670bbda6e85d43d932ad2a2345ced
+Tested implementation commit: 44c27e765662d736cea89dfab5c14d4ffaa50871
 PR: https://github.com/Ethant35/agent-approval-gate/pull/1
 Release target: https://github.com/Ethant35/agent-approval-gate/releases/tag/v1.0.0
 Goal: active until merge/tag/release and verification finish.
@@ -30,7 +30,7 @@ GitHub Actions: repository-level disabled; zero workflows and zero runs. Do not 
 
 ## Usage and processes
 
-Supported usage-stop loop is running in this chat (cell 40), checking `get_usage_limits` every 50 seconds. Last observed 18% used, 82% remaining. At exhaustion it calls the checkout-scoped `scripts/stop-active.mjs` and appends a shutdown note. It does not persist beyond this chat runtime. No Luna workers remain active; each completed worker was interrupted. All test gateway/native-agent processes have been stopped. No production gateway is left running. `.acceptance/` contains task-created disposable clone/package fixtures and generated tarball; evidence/ contains sanitized durable results.
+Supported usage-stop loop is running in this chat (cell 40), checking `get_usage_limits` every 50 seconds. Last observed 20% used, 80% remaining. At exhaustion it calls the checkout-scoped `scripts/stop-active.mjs` and appends a shutdown note. It does not persist beyond this chat runtime. No Luna workers remain active; each completed worker was interrupted. All test gateway/native-agent processes have been stopped. No production gateway is left running. `.acceptance/` contains task-created disposable clone/package fixtures and generated tarball; evidence/ contains sanitized durable results.
 
 ## Resume commands
 
