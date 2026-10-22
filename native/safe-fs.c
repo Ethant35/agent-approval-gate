@@ -39,7 +39,7 @@ int main(int argc,char **argv) {
  int missing=fd<0&&errno==ENOENT;
  if(fd<0&&!missing)fail("open");
  if(missing)strcat(fingerprint,"missing;");
- else {struct stat s;if(fstat(fd,&s)<0)fail("stat");if(!S_ISREG(s.st_mode)||s.st_nlink!=1){errno=EPERM;fail("regular unlinked-alias-free file required");}stamp(fd);}
+ else {struct stat s;if(fstat(fd,&s)<0)fail("stat");if(!S_ISREG(s.st_mode)||s.st_nlink!=1){errno=EPERM;fail("single-link regular file required");}stamp(fd);}
  if(inspecting){puts(fingerprint);return 0;}
  if(strcmp(argv[3],fingerprint)){errno=ESTALE;fail("resource changed since authorization");}
  if(writing){

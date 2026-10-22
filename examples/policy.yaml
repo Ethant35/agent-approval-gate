@@ -1,0 +1,25 @@
+# Author: Ethan. Replace /absolute/workspace with your canonical existing directory.
+version: 1
+default: approval
+workspace: /absolute/workspace
+filesystem:
+  allow: [/absolute/workspace]
+  deny: [/absolute/workspace/secrets]
+commands: []
+network:
+  allow: []
+  deny: []
+  allowPrivate: false
+limits:
+  maxDurationMs: 10000
+  approvalTtlMs: 300000
+  subagentConcurrency: 1
+budgets:
+  - sessionId: demo
+    currency: USD
+    maximum: 1000
+rules:
+  - id: read-only
+    category: filesystem
+    operation: read
+    effect: allow

@@ -35,18 +35,31 @@ function getBaseUrl(): URL {
     return fail('AAG_URL must be a valid URL.');
   }
   const loopbacks = new Set(['127.0.0.1', 'localhost', '[::1]']);
-  if (!['http:', 'https:'].includes(url.protocol) || !loopbacks.has(url.hostname) || url.username || url.password) {
-    return fail('AAG_URL must use HTTP(S) on the loopback host 127.0.0.1, localhost, or ::1, with no embedded credentials.');
+  if (
+    !['http:', 'https:'].includes(url.protocol) ||
+    !loopbacks.has(url.hostname) ||
+    url.username ||
+    url.password
+  ) {
+    return fail(
+      'AAG_URL must use HTTP(S) on the loopback host 127.0.0.1, localhost, or ::1, with no embedded credentials.',
+    );
   }
   return url;
 }
 
-async function api(path: string, options: { method?: string; body?: unknown; human?: boolean } = {}): Promise<unknown> {
+async function api(
+  path: string,
+  options: { method?: string; body?: unknown; human?: boolean } = {},
+): Promise<unknown> {
   const token = process.env.AAG_TOKEN;
   if (!token) return fail('AAG_TOKEN is required for gateway API calls.');
   const base = getBaseUrl();
   const url = new URL(path.replace(/^\//, ''), `${base.toString().replace(/\/$/, '')}/`);
-  const headers: Record<string, string> = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/json',
+  };
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
   if (options.body !== undefined) headers['X-AAG-Intent'] = options.human ? 'human' : 'agent';
   const response = await fetch(url, {
@@ -73,16 +86,26 @@ async function api(path: string, options: { method?: string; body?: unknown; hum
   }
   const bytes = new Uint8Array(totalBytes);
   let offset = 0;
-  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
   const text = new TextDecoder().decode(bytes);
   let payload: unknown = text;
   if (text) {
-    try { payload = JSON.parse(text); } catch { /* Preserve a useful plain-text error. */ }
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      /* Preserve a useful plain-text error. */
+    }
   }
   if (!response.ok) {
-    const detail = typeof payload === 'object' && payload !== null && 'error' in payload
-      ? String((payload as { error: unknown }).error)
-      : typeof payload === 'string' ? payload : JSON.stringify(payload);
+    const detail =
+      typeof payload === 'object' && payload !== null && 'error' in payload
+        ? String((payload as { error: unknown }).error)
+        : typeof payload === 'string'
+          ? payload
+          : JSON.stringify(payload);
     return fail(`Gateway returned HTTP ${response.status}: ${detail}`);
   }
   return payload;
@@ -98,7 +121,8 @@ function parseOptions(args: string[]): Options {
     else if (flag === '--policy') options.policy = value;
     else if (flag === '--port') {
       const port = Number(value);
-      if (!Number.isInteger(port) || port < 1 || port > 65535) return fail('--port must be an integer from 1 to 65535.');
+      if (!Number.isInteger(port) || port < 1 || port > 65535)
+        return fail('--port must be an integer from 1 to 65535.');
       options.port = port;
     } else return fail(`Unknown option: ${flag}`);
     i++;
@@ -121,8 +145,20 @@ async function run(argv: string[]): Promise<void> {
   if (command === 'serve') {
     const options = parseOptions(args);
     const { startServer } = await import('./server.js');
-    const server = await startServer({ dataDir: options.data, port: options.port, policyFile: options.policy });
-    const stop = (): void => { void server.close().then(() => process.exit(0), (error: unknown) => { process.stderr.write(`${String(error)}\n`); process.exit(1); }); };
+    const server = await startServer({
+      dataDir: options.data,
+      port: options.port,
+      policyFile: options.policy,
+    });
+    const stop = (): void => {
+      void server.close().then(
+        () => process.exit(0),
+        (error: unknown) => {
+          process.stderr.write(`${String(error)}\n`);
+          process.exit(1);
+        },
+      );
+    };
     process.once('SIGINT', stop);
     process.once('SIGTERM', stop);
     return;
@@ -139,28 +175,57 @@ async function run(argv: string[]): Promise<void> {
     return fail('Use: aag policy validate PATH | list | apply PATH');
   }
   if (command === 'submit') {
-    if (args.length !== 2 || args[0] !== '--file') return fail('Use: aag submit --file ACTION.json');
+    if (args.length !== 2 || args[0] !== '--file')
+      return fail('Use: aag submit --file ACTION.json');
     const action: unknown = JSON.parse(await readFile(args[1]!, 'utf8'));
     return json(await api('/v1/requests', { method: 'POST', body: action }));
   }
   if (command === 'requests' && args.length === 0) return json(await api('/v1/requests'));
-  if (command === 'inspect' && args.length === 1) return json(await api(`/v1/requests/${encodeURIComponent(args[0]!)}`));
+  if (command === 'inspect' && args.length === 1)
+    return json(await api(`/v1/requests/${encodeURIComponent(args[0]!)}`));
   if (command === 'approve' && args.length === 1) {
     const id = args[0]!;
-    const record = await api(`/v1/requests/${encodeURIComponent(id)}`) as RequestRecord;
-    if (!record || typeof record.approvalToken !== 'string' || !record.approvalToken) return fail('This request has no active approval token.');
-    return json(await api(`/v1/requests/${encodeURIComponent(id)}/approve`, { method: 'POST', body: { token: record.approvalToken }, human: true }));
+    const record = (await api(`/v1/requests/${encodeURIComponent(id)}`)) as RequestRecord;
+    if (!record || typeof record.approvalToken !== 'string' || !record.approvalToken)
+      return fail('This request has no active approval token.');
+    return json(
+      await api(`/v1/requests/${encodeURIComponent(id)}/approve`, {
+        method: 'POST',
+        body: { token: record.approvalToken },
+        human: true,
+      }),
+    );
   }
   if ((command === 'deny' || command === 'cancel') && args.length === 1) {
     const endpoint = command === 'deny' ? 'deny' : 'cancel';
-    return json(await api(`/v1/requests/${encodeURIComponent(args[0]!)}/${endpoint}`, { method: 'POST', body: {}, human: true }));
+    return json(
+      await api(`/v1/requests/${encodeURIComponent(args[0]!)}/${endpoint}`, {
+        method: 'POST',
+        body: {},
+        human: true,
+      }),
+    );
   }
-  if (command === 'audit' && args.length === 1 && args[0] === 'export') return json(await api('/v1/audit'));
+  if (command === 'audit' && args.length === 1 && args[0] === 'export')
+    return json(await api('/v1/audit'));
   if (command === 'doctor' && args.length === 0) {
     const nativeCandidates = ['dist/safe-fs'];
     const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
     const native = nativeCandidates.find((path) => existsSync(resolve(packageRoot, path)));
-    json({ node: process.version, supportedNode: Number(process.versions.node.split('.')[0]) >= 22, platform: platform(), release: release(), nativeExecutor: native ?? 'not found', sandbox: process.platform === 'darwin' ? 'macOS sandbox support is platform-dependent; inspect local policy and runtime configuration' : 'OS sandbox is not detected by this diagnostic', apiUrl: process.env.AAG_URL ?? DEFAULT_URL });
+    json({
+      node: process.version,
+      supportedNode: Number(process.versions.node.split('.')[0]) >= 22,
+      platform: platform(),
+      release: release(),
+      nativeExecutor: native ?? 'not found',
+      sandbox:
+        process.platform === 'darwin'
+          ? existsSync('/usr/bin/sandbox-exec')
+            ? 'macOS Seatbelt available; run E2E checks to verify enforcement'
+            : 'macOS Seatbelt not found'
+          : 'OS sandbox is not detected by this diagnostic',
+      apiUrl: process.env.AAG_URL ?? DEFAULT_URL,
+    });
     return;
   }
   if (command === 'mcp' && args.length === 0) {
