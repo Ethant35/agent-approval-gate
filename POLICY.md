@@ -4,6 +4,8 @@ Author: Ethan
 
 Policies are YAML documents with strict fields; unknown fields, invalid values, duplicate rule IDs, duplicate budgets, and invalid origins are rejected. Failed apply attempts leave the previous validated policy in force. An invalid startup policy prevents startup. Policy application is human-only and creates a persisted revision.
 
+From 1.0.1, absolute policy paths normalize repeated separators, dot components, and trailing separators before storage; parent traversal remains forbidden. Older persisted policies are revalidated on startup. If normalization changes a policy, startup creates a revision and old pending approvals require resubmission. The private-state directory must use its native canonical spelling and remain outside the workspace. Existing process approvals from 1.0.0 lack workspace identity and fail closed; resubmit them after upgrading. Existing unchanged filesystem approvals retain their normal restart behavior.
+
 ## Precedence
 
 1. Validate action schema and category/operation pairing.

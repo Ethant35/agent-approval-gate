@@ -14,6 +14,7 @@ export function run(
   input: string,
   signal: AbortSignal,
   cwd?: string,
+  environmentDir = cwd,
 ): Promise<{ stdout: string; stderr: string; exitCode: number; signal: NodeJS.Signals | null }> {
   return new Promise((resolve, reject) => {
     if (signal.aborted) {
@@ -27,8 +28,8 @@ export function run(
       env: {
         PATH: '/usr/bin:/bin',
         LANG: 'en_US.UTF-8',
-        HOME: cwd || '/nonexistent',
-        TMPDIR: cwd || '/nonexistent',
+        HOME: environmentDir || '/nonexistent',
+        TMPDIR: environmentDir || '/nonexistent',
       },
     });
     let stdout = Buffer.alloc(0),
@@ -90,7 +91,17 @@ export async function snapshot(a: Action): Promise<string> {
     const real = realpathSync(a.parameters.executable!);
     const s = statSync(real);
     if (!s.isFile()) throw Error('Executable must be a file');
-    return JSON.stringify([real, s.dev, s.ino, s.size, s.mtimeMs, s.ctimeMs]);
+    const directory = await run(
+      helper,
+      ['inspect-directory', a.resourceScope, '', '1048576'],
+      '',
+      AbortSignal.timeout(5000),
+    );
+    if (directory.exitCode) throw Error(directory.stderr.trim());
+    return JSON.stringify({
+      executable: [real, s.dev, s.ino, s.size, s.mtimeMs, s.ctimeMs],
+      workspace: directory.stdout.trim(),
+    });
   }
   return '';
 }
@@ -195,9 +206,23 @@ export async function execute(
     return a.operation === 'read' ? { content: r.stdout } : { bytesWritten: Number(r.stdout) };
   }
   if (a.category === 'http') return request(a, p, signal);
-  if ((await snapshot(a)) !== fingerprint) throw Error('Executable changed since authorization');
+  if ((await snapshot(a)) !== fingerprint)
+    throw Error('Executable or workspace changed since authorization');
   const command = sandbox(p, a.parameters.executable!, a.parameters.args!);
-  const r = await run(command.exe, command.args, '', signal, p.workspace);
+  const r = await run(
+    helper,
+    [
+      'run-workspace',
+      a.resourceScope,
+      JSON.parse(fingerprint).workspace,
+      command.exe,
+      ...command.args,
+    ],
+    '',
+    signal,
+    undefined,
+    p.workspace,
+  );
   if (r.exitCode !== 0) throw Error(JSON.stringify(r));
   return {
     ...r,

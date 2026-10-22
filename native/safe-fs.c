@@ -24,15 +24,24 @@ static void stamp(int fd) {
  if(len<0||(size_t)len>=sizeof(fingerprint)-n) {errno=EOVERFLOW;fail("path");}
 }
 int main(int argc,char **argv) {
- if(argc!=5) {fprintf(stderr,"usage: safe-fs inspect|read|write absolute-path expected-fingerprint max-bytes\n");return 2;}
+ int launching=argc>=5&&!strcmp(argv[1],"run-workspace");
+ int directory=argc>=2&&(!strcmp(argv[1],"inspect-directory")||launching);
+ if((!launching&&argc!=5)||(launching&&argv[4][0]!='/')) {fprintf(stderr,"usage: safe-fs inspect|read|write|inspect-directory path fingerprint max-bytes; run-workspace path fingerprint executable [args]\n");return 2;}
  if(argv[2][0]!='/'||strlen(argv[2])>4096) {errno=EINVAL;fail("absolute path required");}
  char *path=strdup(argv[2]+1), *save=NULL, *part=strtok_r(path,"/",&save);
  int dir=open("/",O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC);if(dir<0)fail("root"); stamp(dir);
- if(!part){errno=EINVAL;fail("file required");}
- while(1){
+ if(!part&&!directory){errno=EINVAL;fail("file required");}
+ while(part){
   if(!strcmp(part,".")||!strcmp(part,"..")){errno=EPERM;fail("traversal");}
-  char *next=strtok_r(NULL,"/",&save); if(!next)break;
+  char *next=strtok_r(NULL,"/",&save); if(!next&&!directory)break;
   int child=openat(dir,part,O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC);if(child<0)fail("parent");close(dir);dir=child;stamp(dir);part=next;
+ }
+ if(directory){
+  if(!launching){puts(fingerprint);return 0;}
+  if(strcmp(argv[3],fingerprint)){errno=ESTALE;fail("workspace changed since authorization");}
+  if(fchdir(dir)<0)fail("workspace cwd");
+  close(dir);free(path);
+  execv(argv[4],argv+4);fail("execute");
  }
  int writing=!strcmp(argv[1],"write"), inspecting=!strcmp(argv[1],"inspect");
  int fd=openat(dir,part,(writing?O_WRONLY:O_RDONLY)|O_NOFOLLOW|O_NONBLOCK|O_CLOEXEC);

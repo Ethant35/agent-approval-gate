@@ -3,7 +3,7 @@ import path from 'node:path';
 import { realpathSync } from 'node:fs';
 import { policySchema, type Policy, type Action } from './contracts.js';
 export function within(root: string, target: string) {
-  return target === root || target.startsWith(root + path.sep);
+  return target === root || target.startsWith(root.endsWith(path.sep) ? root : root + path.sep);
 }
 function deniedPath(root: string, target: string) {
   const key = (v: string) => (process.platform === 'darwin' ? v.normalize('NFD').toLowerCase() : v);
@@ -12,14 +12,18 @@ function deniedPath(root: string, target: string) {
 export function absolute(value: string) {
   if (!path.isAbsolute(value) || value.split(/[\\/]/).includes('..') || value.includes('\0'))
     throw Error('Absolute path without traversal required');
-  return path.normalize(value);
+  return path.resolve(value);
 }
 export function parsePolicy(yaml: string): Policy {
   const p = policySchema.parse(parse(yaml, { maxAliasCount: 20 }));
   p.workspace = realpathSync.native(absolute(p.workspace));
-  for (const a of [...p.filesystem.allow, ...p.filesystem.deny])
-    if (!within(p.workspace, absolute(a))) throw Error('Filesystem paths must be inside workspace');
-  for (const c of p.commands) absolute(c.executable);
+  for (const key of ['allow', 'deny'] as const)
+    p.filesystem[key] = p.filesystem[key].map((value) => {
+      const canonical = absolute(value);
+      if (!within(p.workspace, canonical)) throw Error('Filesystem paths must be inside workspace');
+      return canonical;
+    });
+  for (const c of p.commands) c.executable = absolute(c.executable);
   for (const h of [...p.network.allow, ...p.network.deny]) {
     const u = new URL(h);
     if (u.origin !== h || !['http:', 'https:'].includes(u.protocol))

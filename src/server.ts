@@ -33,7 +33,7 @@ export async function startServer(
   );
   mkdirSync(data, { recursive: true, mode: 0o700 });
   chmodSync(data, 0o700);
-  if (realpathSync(data) !== data) throw Error('Data directory must use a canonical path');
+  if (realpathSync.native(data) !== data) throw Error('Data directory must use a canonical path');
   const lock = path.join(data, 'server.lock');
   writeFileSync(lock, String(process.pid), { flag: 'wx', mode: 0o600 });
   let store: Store | undefined;
@@ -47,9 +47,6 @@ export async function startServer(
       if (!/^[a-f0-9]{64}$/.test(t)) throw Error('Invalid credential file');
       return t;
     };
-    const human = credential('human'),
-      agent = credential('agent');
-    if (human === agent) throw Error('Credentials must differ');
     store = new Store(path.join(data, 'gateway.sqlite'));
     const db = store;
     const safePolicy = (p: Policy) => {
@@ -61,7 +58,13 @@ export async function startServer(
       db.apply(safePolicy(parsePolicy(readFileSync(options.policyFile, 'utf8'))));
     if (!db.policy())
       db.apply(safePolicy(parsePolicy(stringify(defaultPolicy(realpathSync(process.cwd()))))));
-    safePolicy(db.policy()!.policy);
+    const previous = db.policy()!.policy;
+    const normalized = safePolicy(parsePolicy(stringify(previous)));
+    // Upgrade persisted policies too; a changed representation invalidates prior approvals.
+    if (JSON.stringify(normalized) !== JSON.stringify(previous)) db.apply(normalized);
+    const human = credential('human'),
+      agent = credential('agent');
+    if (human === agent) throw Error('Credentials must differ');
     for (const r of db.list())
       if (['EXECUTING', 'ALLOWED', 'APPROVED', 'SUBMITTED'].includes(r.state))
         db.transition(

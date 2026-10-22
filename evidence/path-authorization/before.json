@@ -1,0 +1,61 @@
+{
+  "author": "Ethan",
+  "implementation": "471b6966106b232964589dba0fc1c6cd7b866a28",
+  "stats": {
+    "startTime": "2026-10-22T19:38:38.048Z",
+    "duration": 15464.086000000001,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 6,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "depth: equivalent deny path suffix /",
+      "status": "unexpected",
+      "errors": [
+        "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"DENIED\"\nReceived: \"COMPLETED\"\n\n  701 |         .toMatch(/COMPLETED|FAILED/);\n  702 |     }\n> 703 |     expect((await api('/requests/' + a.id)).body.state).toBe('DENIED');\n      |                                                         ^\n  704 |     expect(readFileSync(path.join(workspace, 'denied/secret'), 'utf8')).toBe('secret');\n  705 |   });\n  706 | }\n    at /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests/gateway.spec.ts:703:57"
+      ]
+    },
+    {
+      "title": "depth: equivalent deny path suffix /.",
+      "status": "unexpected",
+      "errors": [
+        "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"DENIED\"\nReceived: \"COMPLETED\"\n\n  701 |         .toMatch(/COMPLETED|FAILED/);\n  702 |     }\n> 703 |     expect((await api('/requests/' + a.id)).body.state).toBe('DENIED');\n      |                                                         ^\n  704 |     expect(readFileSync(path.join(workspace, 'denied/secret'), 'utf8')).toBe('secret');\n  705 |   });\n  706 | }\n    at /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests/gateway.spec.ts:703:57"
+      ]
+    },
+    {
+      "title": "depth: equivalent deny path suffix //",
+      "status": "unexpected",
+      "errors": [
+        "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"DENIED\"\nReceived: \"COMPLETED\"\n\n  701 |         .toMatch(/COMPLETED|FAILED/);\n  702 |     }\n> 703 |     expect((await api('/requests/' + a.id)).body.state).toBe('DENIED');\n      |                                                         ^\n  704 |     expect(readFileSync(path.join(workspace, 'denied/secret'), 'utf8')).toBe('secret');\n  705 |   });\n  706 | }\n    at /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests/gateway.spec.ts:703:57"
+      ]
+    },
+    {
+      "title": "depth: equivalent allowed paths still permit an ordinary read",
+      "status": "unexpected",
+      "errors": [
+        "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"COMPLETED\"\nReceived: \"DENIED\"\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n\n  113 | }\n  114 | async function state(id: string, state: string) {\n> 115 |   await expect.poll(async () => (await api('/requests/' + id)).body.state).toBe(state);\n      |                                                                            ^\n  116 |   return (await api('/requests/' + id)).body;\n  117 | }\n  118 | async function approve(id: string) {\n    at state (/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests/gateway.spec.ts:115:76)\n    at /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests/gateway.spec.ts:712:17"
+      ]
+    },
+    {
+      "title": "depth: case alias cannot hide private state inside workspace",
+      "status": "unexpected",
+      "errors": [
+        "Error: gateway must reject overlapping state before listening\n\nexpect(received).toBe(expected) // Object.is equality\n\nExpected: false\nReceived: true\n\n  736 |   child.stderr!.on('data', (b) => (output += b));\n  737 |   await expect.poll(() => output.includes('\"url\"') || child.exitCode !== null).toBe(true);\n> 738 |   expect(output.includes('\"url\"'), 'gateway must reject overlapping state before listening').toBe(\n      |                                                                                              ^\n  739 |     false,\n  740 |   );\n  741 |   expect(child.exitCode).not.toBe(0);\n    at /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests/gateway.spec.ts:738:94"
+      ]
+    },
+    {
+      "title": "depth: replaced directory workspace invalidates subprocess approval",
+      "status": "unexpected",
+      "errors": [
+        "Error: old approval must not write to replacement directory\n\nexpect(received).toBe(expected) // Object.is equality\n\nExpected: false\nReceived: true\n\n  761 |       existsSync(path.join(destination, 'marker.txt')),\n  762 |       'old approval must not write to replacement directory',\n> 763 |     ).toBe(false);\n      |       ^\n  764 |     expect((await api('/requests/' + a.id)).body.state).toMatch(/FAILED|DENIED/);\n  765 |     expect(existsSync(path.join(original, 'marker.txt'))).toBe(false);\n  766 |   });\n    at /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests/gateway.spec.ts:763:7"
+      ]
+    },
+    {
+      "title": "depth: replaced symlink workspace invalidates subprocess approval",
+      "status": "expected",
+      "errors": []
+    }
+  ]
+}

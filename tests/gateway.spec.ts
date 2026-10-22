@@ -15,6 +15,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import net from 'node:net';
 import http from 'node:http';
+import { DatabaseSync } from 'node:sqlite';
 import { stringify } from 'yaml';
 import type { Action, Policy } from '../src/contracts.js';
 const repo = path.resolve('.'),
@@ -686,4 +687,161 @@ test('filesystem create and text result format', async () => {
   expect(readFileSync(a.parameters.path!, 'utf8')).toBe('approved content');
   await submit({ ...action('text', 'read', 'new.txt'), expectedResultFormat: 'text' });
   expect((await state('text', 'COMPLETED')).result).toBe('approved content');
+});
+
+// Deeper verification: these assert the security contract, not implementation details.
+for (const suffix of ['/', '/.', '//']) {
+  test(`depth: equivalent deny path suffix ${suffix}`, async () => {
+    policy.filesystem.deny = [path.join(workspace, 'denied') + suffix];
+    await apply();
+    const a = action('deny-spelling', 'read', 'denied/secret');
+    const result = await submit(a);
+    if (result.state !== 'DENIED') {
+      await expect
+        .poll(async () => (await api('/requests/' + a.id)).body.state)
+        .toMatch(/COMPLETED|FAILED/);
+    }
+    expect((await api('/requests/' + a.id)).body.state).toBe('DENIED');
+    expect(readFileSync(path.join(workspace, 'denied/secret'), 'utf8')).toBe('secret');
+  });
+}
+
+test('depth: equivalent allowed paths still permit an ordinary read', async () => {
+  policy.filesystem.allow = [workspace + '/./'];
+  await apply();
+  await submit(action('allow-spelling', 'read'));
+  expect((await state('allow-spelling', 'COMPLETED')).result.content).toBe('before');
+});
+
+for (const spelling of ['WORKSPACE', 'workspace']) {
+  test(`depth: ${spelling} cannot hide private state inside workspace`, async () => {
+    const alias = path.join(root, spelling, 'operator-state');
+    // This release target's case-insensitive fixture must actually alias the same directory.
+    expect(realpathSync.native(path.join(root, 'WORKSPACE'))).toBe(workspace);
+    const child = spawn(
+      process.execPath,
+      [
+        cli,
+        'serve',
+        '--data',
+        alias,
+        '--port',
+        String(await port()),
+        '--policy',
+        path.join(root, 'policy.yaml'),
+      ],
+      { cwd: workspace, stdio: ['ignore', 'pipe', 'pipe'] },
+    );
+    children.push(child);
+    let output = '';
+    child.stdout!.on('data', (b) => (output += b));
+    child.stderr!.on('data', (b) => (output += b));
+    await expect.poll(() => output.includes('"url"') || child.exitCode !== null).toBe(true);
+    expect(output.includes('"url"'), 'gateway must reject overlapping state before listening').toBe(
+      false,
+    );
+    expect(child.exitCode).not.toBe(0);
+    expect(existsSync(path.join(workspace, 'operator-state/human.token'))).toBe(false);
+  });
+}
+
+for (const category of ['shell', 'subagent'] as const) {
+  for (const kind of ['directory', 'symlink'] as const) {
+    test(`depth: replaced ${kind} workspace invalidates ${category} approval`, async () => {
+      const a = shell('workspace-swap', ['-c', 'printf changed > marker.txt'], category);
+      policy.commands = [{ executable: a.parameters.executable!, args: a.parameters.args! }];
+      await apply();
+      expect((await submit(a)).state).toBe('PENDING_APPROVAL');
+      const original = path.join(root, 'original-workspace');
+      renameSync(workspace, original);
+      const destination = kind === 'directory' ? workspace : path.join(root, 'outside');
+      mkdirSync(destination);
+      if (kind === 'symlink') symlinkSync(destination, workspace);
+      await approve(a.id);
+      await expect
+        .poll(async () => (await api('/requests/' + a.id)).body.state)
+        .toMatch(/FAILED|DENIED|COMPLETED/);
+      expect(
+        existsSync(path.join(destination, 'marker.txt')),
+        'old approval must not write to replacement directory',
+      ).toBe(false);
+      expect((await api('/requests/' + a.id)).body.state).toMatch(/FAILED|DENIED/);
+      expect(existsSync(path.join(original, 'marker.txt'))).toBe(false);
+    });
+  }
+}
+
+test('depth: persisted legacy policy is normalized and old approval revoked on restart', async () => {
+  await submit(action('legacy-pending'));
+  const revision = (await api('/policy')).body.revision;
+  await stop();
+  // Offline v1.0.0 data fixture; no executor or request handler is replaced.
+  const db = new DatabaseSync(path.join(data, 'gateway.sqlite'));
+  try {
+    policy.filesystem.deny = [path.join(workspace, 'denied') + '/.'];
+    policy.filesystem.allow = [workspace + '/./'];
+    db.prepare('UPDATE policies SET json=? WHERE revision=?').run(JSON.stringify(policy), revision);
+  } finally {
+    db.close();
+  }
+  await start(false);
+  const current = (await api('/policy')).body;
+  expect(current.revision).toBeGreaterThan(revision);
+  expect(current.policy.filesystem.allow).toEqual([workspace]);
+  expect(current.policy.filesystem.deny).toEqual([path.join(workspace, 'denied')]);
+  expect((await approve('legacy-pending')).status).toBe(400);
+  expect(readFileSync(path.join(workspace, 'target.txt'), 'utf8')).toBe('before');
+  expect((await submit(action('legacy-denied', 'read', 'denied/secret'))).state).toBe('DENIED');
+  await submit(action('legacy-allowed', 'read'));
+  expect((await state('legacy-allowed', 'COMPLETED')).result.content).toBe('before');
+});
+
+test('depth: normalized deny reaches OS sandbox while approved working directory still executes', async () => {
+  policy.filesystem.deny = [path.join(workspace, 'denied') + '/./'];
+  const control = shell('workspace-control', ['-c', 'printf allowed > marker.txt; cat marker.txt']);
+  const blocked = shell('normalized-process-deny', [
+    '-c',
+    'cat denied/secret; printf bad > denied/secret',
+  ]);
+  policy.commands = [control, blocked].map((a) => ({
+    executable: a.parameters.executable!,
+    args: a.parameters.args!,
+  }));
+  await apply();
+  await submit(control);
+  await approve(control.id);
+  expect((await state(control.id, 'COMPLETED')).result.stdout).toBe('allowed');
+  expect(readFileSync(path.join(workspace, 'marker.txt'), 'utf8')).toBe('allowed');
+  await submit(blocked);
+  await approve(blocked.id);
+  const result = await state(blocked.id, 'FAILED');
+  expect(result.reason).toContain('Operation not permitted');
+  expect(result.reason).not.toContain('"stdout":"secret');
+  expect(readFileSync(path.join(workspace, 'denied/secret'), 'utf8')).toBe('secret');
+});
+
+test('depth: legacy process approval without workspace identity fails closed after upgrade', async () => {
+  const a = shell('old-process', ['-c', 'printf allowed > upgrade-marker']);
+  policy.commands = [{ executable: a.parameters.executable!, args: a.parameters.args! }];
+  await apply();
+  await submit(a);
+  await stop();
+  const db = new DatabaseSync(path.join(data, 'gateway.sqlite'));
+  try {
+    const row = db.prepare('SELECT json FROM requests WHERE id=?').get(a.id) as { json: string };
+    const record = JSON.parse(row.json);
+    record.fingerprint = JSON.stringify(JSON.parse(record.fingerprint).executable);
+    db.prepare('UPDATE requests SET json=? WHERE id=?').run(JSON.stringify(record), a.id);
+  } finally {
+    db.close();
+  }
+  await start(false);
+  await approve(a.id);
+  expect((await state(a.id, 'FAILED')).reason).toContain('workspace changed');
+  expect(existsSync(path.join(workspace, 'upgrade-marker'))).toBe(false);
+  const fresh = { ...a, id: 'fresh-process' };
+  await submit(fresh);
+  await approve(fresh.id);
+  await state(fresh.id, 'COMPLETED');
+  expect(readFileSync(path.join(workspace, 'upgrade-marker'), 'utf8')).toBe('allowed');
 });
