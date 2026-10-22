@@ -38,7 +38,7 @@ int main(int argc,char **argv) {
  int fd=openat(dir,part,(writing?O_WRONLY:O_RDONLY)|O_NOFOLLOW|O_NONBLOCK|O_CLOEXEC);
  int missing=fd<0&&errno==ENOENT;
  if(fd<0&&!missing)fail("open");
- if(missing)strcat(fingerprint,"missing;");
+ if(missing){if(strlen(fingerprint)+sizeof("missing;")>sizeof(fingerprint)){errno=ENAMETOOLONG;fail("fingerprint limit");}strcat(fingerprint,"missing;");}
  else {struct stat s;if(fstat(fd,&s)<0)fail("stat");if(!S_ISREG(s.st_mode)||s.st_nlink!=1){errno=EPERM;fail("single-link regular file required");}stamp(fd);}
  if(inspecting){puts(fingerprint);return 0;}
  if(strcmp(argv[3],fingerprint)){errno=ESTALE;fail("resource changed since authorization");}
