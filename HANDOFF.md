@@ -1,32 +1,46 @@
 # Agent Approval Gate handoff
+
 Author: Ethan
 
-Status: ACTIVE, implementation started; NOT RELEASED. Goal remains active.
+## Current status
+
+Local v1 acceptance is complete. All 22 required tests and 10 additional E2E scenarios passed in a clean independent checkout (32/32, 33.0 seconds, zero retries/skips). Native Codex integration passed with real browser approval and actual result return. Package installation/startup/approval/execution smoke passed. No release is claimed before GitHub publication is verified.
+
 Repository: https://github.com/Ethant35/agent-approval-gate
-Local: /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate
+Local path: /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate
 Branch: codex/initial-release
-Base: see `git log -1`; no implementation commit yet.
+Tested implementation commit: 43ff0b7b91a670bbda6e85d43d932ad2a2345ced
+PR: https://github.com/Ethant35/agent-approval-gate/pull/1
+Release target: https://github.com/Ethant35/agent-approval-gate/releases/tag/v1.0.0
+Goal: active until merge/tag/release and verification finish.
 
-Verified: GitHub CLI authenticated as Ethant35; origin exact; original MIT license preserved. Repository Actions disabled via repository permissions API, verified enabled=false. No workflow files exist. Parent Git repository is not this project.
-Usage at startup: 1% used (99% remaining). Stop all project work on exhausted applicable account window; never buy/reset credits to continue.
+## Completed
 
-Architecture: Node 22 strict TypeScript, Fastify, React, node:sqlite, YAML; separate human/agent tokens; immutable requests; atomic budget reservation; native descriptor-based filesystem helper; sandboxed shell/subagent; pinned DNS HTTP executor; stdio MCP agent adapter.
+Strict TypeScript/Fastify/React/SQLite/YAML app; all CLI commands; authenticated human/agent API; Codex MCP; descriptor-based filesystem protection; exact-command macOS Seatbelt executor; DNS-pinned bounded HTTP; generic local subagent adapter; one-use approvals; policy revision validation; atomic budgets and ordered audit; scoped agent/session credentials; compact accessible light/dark dashboard; documentation and sanitized evidence. Original MIT license preserved. All author metadata checked uses Ethan.
 
-Tests: none run yet. AG-01 through AG-22 all pending. Native Codex integration and platform isolation must be tested; release forbidden until all applicable local gates pass. GitHub Actions intentionally omitted per Ethan.
+Checks: `npm ci`, `npm run check`, `npm run build`, `npm run format:check`, full `npm run test:e2e`, and `npm audit --audit-level=high` passed in `.acceptance/clean-source`. Audit: zero vulnerabilities. Packaged `.bin/aag` startup and real approved filesystem result passed in `.acceptance/package-install`. Exact evidence and repaired failures are in ACCEPTANCE.md and evidence/.
 
-Next: implement core, dashboard, CLI/MCP; build; real-process Playwright E2E; native Codex acceptance; security review; clean installation; record evidence in ACCEPTANCE.md; PR; merge/tag/release only upon acceptance.
-Running processes: none. Do not edit ~/.codex/config.toml. Use at most two bounded Luna High assistants, no nested agents.
-Resume: `cd '/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate'`, `git status`, `npm ci`, `npm run build`, `npm run test:e2e` (once implemented).
+Supported release platform: macOS arm64; observed macOS 27.2, Node 22.13.1, Codex CLI 0.163.0. No unsupported-platform or arbitrary-agent sandbox claim. Review SECURITY.md for remaining boundaries.
 
-## Implementation milestone (2026-10-22)
-Core implementation added: strict action/policy schemas; persistent SQLite lifecycle and transactional budgets; descriptor-based native filesystem helper; macOS Seatbelt process executor; pinned-address HTTP; authenticated Fastify API; React dashboard; CLI and MCP. Both bounded Luna assistants completed and were interrupted. Lead implemented core and E2E suite. `npm run build` passes. First local E2E run is in progress; AG-01 through AG-07 passed so far. `npm audit` exposed high severity @fastify/static vulnerabilities; dependency removed in favor of an exact build-file route allowlist. Need rerun build/audit/E2E after this change. Release still forbidden.
-Usage-stop checker is running as a supported tool loop at 50-second intervals; last reported 6% used, 94% remaining. It is attached to this chat runtime, not persistent after chat execution ends. No credentials read by checker.
+## Pending release steps
 
-## Security/integration milestone
-Implementation commit: dcca46d (subsequent hardening uncommitted). Added exact static routes and removed vulnerable plugin; npm audit reports zero vulnerabilities. All four selected process tests passed after narrowly allowing Seatbelt root-directory reads. Added atomic audit/lifecycle persistence, audit result details, scoped agent/session credentials, case-alias denials, and extra real E2E adversarial scenarios. Frontend now uses compact tool headings and no redundant tagline/marketing copy; exact-parameter confirmation includes keyboard focus management.
-AG-19 attempt 1 reached native Codex MCP but Codex's tool approval mode blocked calls. Test-only documented `mcp_servers.aag.default_tools_approval_mode="approve"` permits gateway interface calls (does not approve gateway actions). Attempt 2 submitted, browser-approved, and executed the action; model exit wait timed out. Fixing MCP wait semantics and preserving native diagnostics. AG-19 is NOT yet passed. No release or merge authorized until it passes.
-Current local non-native rerun running; usage checker still active (10% used last seen). No user config changes.
+Commit acceptance documentation/evidence, verify implementation/test files match tested commit, push with repository Actions still disabled, mark PR ready, review diff, merge, tag v1.0.0, build/install final release tarball, publish release with checksum, verify remote tag/release/assets, then mark goal complete. All applicable local acceptance gates passed; no remaining known failing test or external blocker.
 
-## Release candidate checkpoint
-All 22 required scenarios have passed in targeted/partial runs, including native Codex AG-19 (11.7 seconds, real browser approval and actual result). No final combined-suite or clean-install pass claimed yet. Additional real socket probe confirmed baseline connectivity and denied sandbox connectivity. Removed broad executable-parent read permission. Audit dependencies: zero vulnerabilities. TypeScript/UI checks and formatting checks underway. Candidate version is 1.0.0 but no tag/release exists. All docs drafted; ACCEPTANCE.md remains explicitly pending.
-Current usage checker cell is 40; supported tool poll every 50 seconds, with checkout-specific emergency process cleanup and HANDOFF append at exhaustion. Latest usage 16% used. Active Luna workers: none. Need final combined E2E, fresh independent clone install/build/test, sanitized evidence, PR, merge and release after gates pass.
+GitHub Actions: repository-level disabled; zero workflows and zero runs. Do not enable, add, or dispatch Actions. Do not edit ~/.codex/config.toml. Parent Open source Git checkout is unrelated; all changes stay in this independent repository.
+
+## Usage and processes
+
+Supported usage-stop loop is running in this chat (cell 40), checking `get_usage_limits` every 50 seconds. Last observed 18% used, 82% remaining. At exhaustion it calls the checkout-scoped `scripts/stop-active.mjs` and appends a shutdown note. It does not persist beyond this chat runtime. No Luna workers remain active; each completed worker was interrupted. All test gateway/native-agent processes have been stopped. No production gateway is left running. `.acceptance/` contains task-created disposable clone/package fixtures and generated tarball; evidence/ contains sanitized durable results.
+
+## Resume commands
+
+```sh
+cd '/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate'
+git status
+git log -3 --oneline
+gh pr view 1 --repo Ethant35/agent-approval-gate
+gh api repos/Ethant35/agent-approval-gate/actions/permissions
+gh release view v1.0.0 --repo Ethant35/agent-approval-gate
+```
+
+First check authoritative account usage. If no release exists, continue the pending steps. If release exists, verify remote tag/assets and goal status before repeating work. Do not rerun the model integration merely to inspect existing evidence.

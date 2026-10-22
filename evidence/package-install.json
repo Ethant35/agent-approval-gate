@@ -1,0 +1,17 @@
+{
+  "author": "Ethan",
+  "at": "2026-10-22T19:18:03.713Z",
+  "version": "1.0.0",
+  "installation": "npm install from generated tarball into empty prefix",
+  "cli": "installed node_modules/.bin/aag",
+  "binding": "127.0.0.1",
+  "checks": {
+    "startup": "PASS",
+    "dashboardAsset": "PASS",
+    "agentSubmission": "PASS",
+    "humanApproval": "PASS",
+    "realFilesystemResult": "PASS",
+    "authorMetadata": "Ethan"
+  },
+  "outcome": "PASS"
+}

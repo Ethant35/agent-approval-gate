@@ -1,0 +1,217 @@
+{
+  "author": "Ethan",
+  "testedCommit": "43ff0b7b91a670bbda6e85d43d932ad2a2345ced",
+  "source": "independent git clone --no-local; npm ci",
+  "platform": {
+    "os": "macOS 27.2 (26B118)",
+    "arch": "arm64",
+    "node": "22.13.1",
+    "codex": "0.163.0",
+    "nativeModel": "gpt-6-luna",
+    "nativeReasoning": "high"
+  },
+  "stats": {
+    "startTime": "2026-10-22T19:16:03.787Z",
+    "duration": 33044.16,
+    "expected": 32,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "name": "AG-01 installation and real CLI startup",
+      "status": "passed",
+      "durationMs": 506,
+      "attempts": 1
+    },
+    {
+      "name": "AG-02 dashboard policies, history, keyboard and theme",
+      "status": "passed",
+      "durationMs": 915,
+      "attempts": 1
+    },
+    {
+      "name": "AG-03 automatic allowed read and CLI submission",
+      "status": "passed",
+      "durationMs": 581,
+      "attempts": 1
+    },
+    {
+      "name": "AG-04 forbidden write does not execute",
+      "status": "passed",
+      "durationMs": 363,
+      "attempts": 1
+    },
+    {
+      "name": "AG-05 pending approval blocks execution",
+      "status": "passed",
+      "durationMs": 369,
+      "attempts": 1
+    },
+    {
+      "name": "AG-06 real browser approval executes exactly once",
+      "status": "passed",
+      "durationMs": 923,
+      "attempts": 1
+    },
+    {
+      "name": "AG-07 browser rejection",
+      "status": "passed",
+      "durationMs": 676,
+      "attempts": 1
+    },
+    {
+      "name": "AG-08 expired approval rejected",
+      "status": "passed",
+      "durationMs": 730,
+      "attempts": 1
+    },
+    {
+      "name": "AG-09 approval token replay rejected",
+      "status": "passed",
+      "durationMs": 473,
+      "attempts": 1
+    },
+    {
+      "name": "AG-10 immutable parameters and exact file identity",
+      "status": "passed",
+      "durationMs": 474,
+      "attempts": 1
+    },
+    {
+      "name": "AG-11 traversal, symlink and parent replacement",
+      "status": "passed",
+      "durationMs": 477,
+      "attempts": 1
+    },
+    {
+      "name": "AG-12 blocked command has no side effect",
+      "status": "passed",
+      "durationMs": 364,
+      "attempts": 1
+    },
+    {
+      "name": "AG-13 unauthorized network and alternate IP never arrive",
+      "status": "passed",
+      "durationMs": 476,
+      "attempts": 1
+    },
+    {
+      "name": "AG-14 budgets retain unknown costs and settle recorded actuals",
+      "status": "passed",
+      "durationMs": 377,
+      "attempts": 1
+    },
+    {
+      "name": "AG-15 concurrent approvals cannot oversubscribe",
+      "status": "passed",
+      "durationMs": 382,
+      "attempts": 1
+    },
+    {
+      "name": "AG-16 restart preserves policy pending requests audit budgets",
+      "status": "passed",
+      "durationMs": 837,
+      "attempts": 1
+    },
+    {
+      "name": "AG-17 authentication CSRF origins and self approval",
+      "status": "passed",
+      "durationMs": 421,
+      "attempts": 1
+    },
+    {
+      "name": "AG-18 dashboard disconnect keeps pending blocked",
+      "status": "passed",
+      "durationMs": 734,
+      "attempts": 1
+    },
+    {
+      "name": "AG-19 native Codex MCP proposal approval execution result",
+      "status": "passed",
+      "durationMs": 13593,
+      "attempts": 1
+    },
+    {
+      "name": "AG-20 CLI audit export matches actual transitions",
+      "status": "passed",
+      "durationMs": 467,
+      "attempts": 1
+    },
+    {
+      "name": "AG-21 real executor failure records FAILED",
+      "status": "passed",
+      "durationMs": 482,
+      "attempts": 1
+    },
+    {
+      "name": "AG-22 cancellation kills subprocess and child",
+      "status": "passed",
+      "durationMs": 483,
+      "attempts": 1
+    },
+    {
+      "name": "security: sandbox denies outside write, network and secret read",
+      "status": "passed",
+      "durationMs": 484,
+      "attempts": 1
+    },
+    {
+      "name": "security: invalid policy fails closed and policy revision revokes approval",
+      "status": "passed",
+      "durationMs": 383,
+      "attempts": 1
+    },
+    {
+      "name": "subagent real adapter and concurrency enforcement",
+      "status": "passed",
+      "durationMs": 2239,
+      "attempts": 1
+    },
+    {
+      "name": "security: scoped credentials enforce agent/session identity and ownership",
+      "status": "passed",
+      "durationMs": 770,
+      "attempts": 1
+    },
+    {
+      "name": "security: redirect never reaches a second destination",
+      "status": "passed",
+      "durationMs": 475,
+      "attempts": 1
+    },
+    {
+      "name": "security: OS sandbox blocks actual HTTP connection",
+      "status": "passed",
+      "durationMs": 582,
+      "attempts": 1
+    },
+    {
+      "name": "security: timeout terminates running command",
+      "status": "passed",
+      "durationMs": 737,
+      "attempts": 1
+    },
+    {
+      "name": "security: hardlink and case-alias denied paths",
+      "status": "passed",
+      "durationMs": 373,
+      "attempts": 1
+    },
+    {
+      "name": "security: canonical routing cannot bypass API authentication",
+      "status": "passed",
+      "durationMs": 365,
+      "attempts": 1
+    },
+    {
+      "name": "filesystem create and text result format",
+      "status": "passed",
+      "durationMs": 484,
+      "attempts": 1
+    }
+  ],
+  "githubActions": "intentionally omitted and repository-disabled",
+  "unitTests": "none; real E2E only"
+}
