@@ -1,0 +1,22 @@
+{
+  "author": "Ethan",
+  "verifiedAt": "2026-10-22T19:51:15.865935+00:00",
+  "release": "https://github.com/Ethant35/agent-approval-gate/releases/tag/v1.0.1",
+  "pullRequest": "https://github.com/Ethant35/agent-approval-gate/pull/3",
+  "releaseCommit": "8c202c8b3fabac6ccf75b1b739193f397300d400",
+  "implementationCommit": "023ff465d2548376c7e7cd27fa38f06d6d005233",
+  "isDraft": false,
+  "isPrerelease": false,
+  "asset": "agent-approval-gate-1.0.1.tgz",
+  "sha256": "9324f13f9973a8f1d82259a834c34ac404e6682376bc849b314d43a98b04a4ab",
+  "downloadChecksum": "PASS",
+  "runtimeFilesByteIdenticalToCleanAndInstalled": 11,
+  "githubActionsEnabled": false,
+  "githubActionRunCount": 0,
+  "fullE2E": {
+    "passed": 45,
+    "failed": 0,
+    "skipped": 0,
+    "retries": 0
+  }
+}
