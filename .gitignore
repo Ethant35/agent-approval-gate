@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.aag/
+test-results/
+playwright-report/
+*.sqlite*
+.env
+.acceptance/
+*.tgz
