@@ -1,0 +1,25 @@
+{
+  "author": "Ethan",
+  "checks": [
+    {
+      "name": "check",
+      "exitCode": 0
+    },
+    {
+      "name": "format",
+      "exitCode": 0
+    },
+    {
+      "name": "core",
+      "exitCode": 0
+    },
+    {
+      "name": "native",
+      "exitCode": 0
+    },
+    {
+      "name": "audit",
+      "exitCode": 0
+    }
+  ]
+}

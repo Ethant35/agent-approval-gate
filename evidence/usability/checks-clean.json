@@ -1,0 +1,34 @@
+{
+  "author": "Ethan",
+  "source": "tracked and current new files in separate clean directory",
+  "checks": [
+    {
+      "name": "install-clean",
+      "exitCode": 0
+    },
+    {
+      "name": "check-clean",
+      "exitCode": 0
+    },
+    {
+      "name": "format-clean",
+      "exitCode": 0
+    },
+    {
+      "name": "core-clean",
+      "exitCode": 0
+    },
+    {
+      "name": "native-clean",
+      "exitCode": 0
+    },
+    {
+      "name": "audit-clean",
+      "exitCode": 0
+    },
+    {
+      "name": "e2e-clean",
+      "exitCode": 0
+    }
+  ]
+}

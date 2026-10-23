@@ -1,0 +1,1200 @@
+// Author: Ethan. Native macOS launcher and WebKit security boundary.
+import AppKit
+import Darwin
+import Foundation
+import WebKit
+
+enum DesktopMode: String, Decodable {
+  case workspace
+  case tutorial
+}
+
+struct ReadyMessage: Decodable {
+  let type: String
+  let url: String
+  let operatorToken: String
+  let workspace: String
+  let dataDir: String
+  let mode: DesktopMode
+  let tutorialRequestId: String?
+  let version: String
+}
+
+enum LauncherFailure: LocalizedError {
+  case missingBundledRuntime
+  case invalidReadyMessage
+  case invalidReadyOrigin
+  case invalidReadyPaths
+  case processDidNotStart
+  case processLaunchFailed
+  case gatewayClosedBeforeReady
+  case gatewayReportedFailure(String)
+
+  var errorDescription: String? {
+    switch self {
+    case .missingBundledRuntime:
+      return "The bundled gateway runtime is missing. Reinstall Agent Approval Gate."
+    case .invalidReadyMessage, .invalidReadyOrigin, .invalidReadyPaths:
+      return "The local gateway returned an invalid startup response. It was stopped."
+    case .processDidNotStart:
+      return "The local gateway could not start. Check the app installation and try again."
+    case .processLaunchFailed, .gatewayClosedBeforeReady:
+      return "The local gateway stopped before it became ready. Check the app installation and try again."
+    case .gatewayReportedFailure(let message):
+      return message
+    }
+  }
+}
+
+private final class BoundedDiagnostics: @unchecked Sendable {
+  private let lock = NSLock()
+  private var bytes = Data()
+  private let limit = 4096
+
+  func consume(_ handle: FileHandle) {
+    handle.readabilityHandler = { [weak self] readable in
+      let data = readable.availableData
+      guard !data.isEmpty else {
+        readable.readabilityHandler = nil
+        return
+      }
+      self?.lock.lock()
+      if let self, self.bytes.count < self.limit {
+        self.bytes.append(data.prefix(self.limit - self.bytes.count))
+      }
+      self?.lock.unlock()
+    }
+  }
+
+  var safeMessage: String? {
+    lock.lock()
+    let data = bytes
+    lock.unlock()
+    guard var value = String(data: data, encoding: .utf8), !value.isEmpty else { return nil }
+    value = value.replacingOccurrences(of: "\\u001B\\[[;\\d]*m", with: "", options: .regularExpression)
+    value = value.replacingOccurrences(of: "(?i)bearer\\s+[^\\s]+", with: "Bearer [redacted]", options: .regularExpression)
+    value = value.replacingOccurrences(of: "\\b[a-fA-F0-9]{32,}\\b", with: "[redacted]", options: .regularExpression)
+    value = value.replacingOccurrences(of: "[\\r\\n\\t]+", with: " ", options: .regularExpression)
+    value = value.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !value.isEmpty else { return nil }
+    return String(value.prefix(400))
+  }
+}
+
+@MainActor
+final class GatewayProcess {
+  private let applicationSupportRoot: URL
+  private var process: Process?
+  private var input: Pipe?
+  private var output: Pipe?
+  private var diagnostics: BoundedDiagnostics?
+  private var isStopping = false
+  var onUnexpectedTermination: (() -> Void)?
+  private(set) var ready: ReadyMessage?
+  var isReadyAndRunning: Bool { ready != nil && process?.isRunning == true && !isStopping }
+
+  init(applicationSupportRoot: URL, requiresFreshRoot: Bool = false) throws {
+    if requiresFreshRoot, FileManager.default.fileExists(atPath: applicationSupportRoot.path) {
+      throw LauncherFailure.invalidReadyPaths
+    }
+    self.applicationSupportRoot = try Self.preparePrivateDirectory(applicationSupportRoot)
+  }
+
+  func start(mode: DesktopMode, workspace: URL? = nil) async throws -> ReadyMessage {
+    guard process == nil else { throw LauncherFailure.processDidNotStart }
+    let resources = Self.resourceDirectory()
+    let runtime = resources.appending(path: "runtime/bin/node")
+    let entry = resources.appending(path: "gateway/dist/desktop.js")
+    guard FileManager.default.isExecutableFile(atPath: runtime.path),
+          FileManager.default.isReadableFile(atPath: entry.path)
+    else { throw LauncherFailure.missingBundledRuntime }
+
+    var arguments = [entry.path, "--root", applicationSupportRoot.path]
+    if mode == .tutorial {
+      guard workspace == nil else { throw LauncherFailure.invalidReadyMessage }
+      arguments.append("--tutorial")
+    } else {
+      guard let workspace = try Self.canonicalDirectory(workspace) else {
+        throw LauncherFailure.invalidReadyMessage
+      }
+      arguments.append(contentsOf: ["--workspace", workspace.path])
+    }
+
+    let child = Process()
+    let childInput = Pipe()
+    let childOutput = Pipe()
+    let childError = Pipe()
+    let errorCapture = BoundedDiagnostics()
+    errorCapture.consume(childError.fileHandleForReading)
+    child.executableURL = runtime
+    child.arguments = arguments
+    child.environment = [
+      "HOME": NSHomeDirectory(),
+      "PATH": "/usr/bin:/bin",
+      "TMPDIR": FileManager.default.temporaryDirectory.path,
+    ]
+    child.standardInput = childInput
+    child.standardOutput = childOutput
+    child.standardError = childError
+    do {
+      try child.run()
+    } catch {
+      childInput.fileHandleForWriting.closeFile()
+      childOutput.fileHandleForReading.closeFile()
+      childError.fileHandleForReading.closeFile()
+      throw LauncherFailure.processLaunchFailed
+    }
+
+    process = child
+    input = childInput
+    output = childOutput
+    diagnostics = errorCapture
+    child.terminationHandler = { [weak self] terminated in
+      Task { @MainActor [weak self] in
+        guard let self, self.process === terminated, !self.isStopping, self.ready != nil else { return }
+        self.onUnexpectedTermination?()
+      }
+    }
+    do {
+      let line = try await Self.readOneLine(from: childOutput.fileHandleForReading, limit: 64 * 1024)
+      let message = try JSONDecoder().decode(ReadyMessage.self, from: line)
+      try Self.validate(message, expectedMode: mode, requestedWorkspace: workspace,
+                        applicationSupportRoot: applicationSupportRoot)
+      ready = message
+      Self.discardSubsequentOutput(childOutput.fileHandleForReading)
+      return message
+    } catch {
+      await stop()
+      if let message = errorCapture.safeMessage {
+        throw LauncherFailure.gatewayReportedFailure(message)
+      }
+      throw error is LauncherFailure ? error : LauncherFailure.invalidReadyMessage
+    }
+  }
+
+  /// Close stdin first so the backend can stop its children and release its native lease.
+  func stop() async {
+    isStopping = true
+    ready = nil
+    onUnexpectedTermination = nil
+    input?.fileHandleForWriting.closeFile()
+    input = nil
+    if let child = process, child.isRunning {
+      try? await Task.sleep(for: .seconds(2))
+      if child.isRunning {
+        child.terminate()
+        for _ in 0..<20 where child.isRunning {
+          try? await Task.sleep(for: .milliseconds(100))
+        }
+        if child.isRunning { _ = Darwin.kill(child.processIdentifier, SIGKILL) }
+      }
+      await Task.detached { child.waitUntilExit() }.value
+    }
+    process?.terminationHandler = nil
+    output?.fileHandleForReading.closeFile()
+    output = nil
+    diagnostics = nil
+    process = nil
+    isStopping = false
+  }
+
+  func terminateForSelfTest() {
+    guard ready != nil, let child = process, child.isRunning else { return }
+    _ = Darwin.kill(child.processIdentifier, SIGKILL)
+  }
+
+  private static func preparePrivateDirectory(_ url: URL) throws -> URL {
+    let manager = FileManager.default
+    try manager.createDirectory(at: url, withIntermediateDirectories: true)
+    try manager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: url.path)
+    return try canonicalPath(url)
+  }
+
+  private static func resourceDirectory() -> URL {
+    if let resources = Bundle.main.resourceURL,
+       FileManager.default.isExecutableFile(atPath: resources.appending(path: "runtime/bin/node").path),
+       FileManager.default.isReadableFile(atPath: resources.appending(path: "gateway/dist/desktop.js").path) {
+      return resources
+    }
+    let executable = URL(fileURLWithPath: CommandLine.arguments[0])
+      .standardizedFileURL.resolvingSymlinksInPath()
+    return executable.deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .appendingPathComponent("Resources", isDirectory: true)
+  }
+
+  static func canonicalDirectoryForUI(_ url: URL) throws -> URL? {
+    try canonicalDirectory(url)
+  }
+
+  private static func canonicalDirectory(_ url: URL?) throws -> URL? {
+    guard let url else { return nil }
+    let canonical = try canonicalPath(url)
+    let values = try canonical.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+    guard values.isDirectory == true, values.isSymbolicLink != true else {
+      throw LauncherFailure.invalidReadyPaths
+    }
+    return canonical
+  }
+
+  private static func canonicalPath(_ url: URL) throws -> URL {
+    guard let resolved = Darwin.realpath(url.path, nil) else {
+      throw LauncherFailure.invalidReadyPaths
+    }
+    defer { free(resolved) }
+    return URL(fileURLWithPath: String(cString: resolved), isDirectory: true)
+  }
+
+  private static func readOneLine(from handle: FileHandle, limit: Int) async throws -> Data {
+    try await withCheckedThrowingContinuation { continuation in
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          var data = Data()
+          while data.count < limit {
+            guard let byte = try handle.read(upToCount: 1), !byte.isEmpty else {
+              throw LauncherFailure.gatewayClosedBeforeReady
+            }
+            if byte[byte.startIndex] == 0x0a {
+              continuation.resume(returning: data)
+              return
+            }
+            data.append(byte)
+          }
+          throw LauncherFailure.invalidReadyMessage
+        } catch {
+          continuation.resume(throwing: error)
+        }
+      }
+    }
+  }
+
+  private static func discardSubsequentOutput(_ handle: FileHandle) {
+    handle.readabilityHandler = { readable in
+      let bytes = readable.availableData
+      if bytes.isEmpty { readable.readabilityHandler = nil }
+      // The backend protocol forbids further stdout messages. Discard bytes so
+      // accidental diagnostics cannot become a pipe backpressure or log leak.
+    }
+  }
+
+  private static func validate(
+    _ message: ReadyMessage,
+    expectedMode: DesktopMode,
+    requestedWorkspace: URL?,
+    applicationSupportRoot: URL
+  ) throws {
+    guard message.type == "ready", message.mode == expectedMode,
+          message.operatorToken.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil,
+          !message.version.isEmpty
+    else { throw LauncherFailure.invalidReadyMessage }
+
+    guard let url = URLComponents(string: message.url),
+          url.scheme == "http", url.host == "127.0.0.1", url.port.map({ (1...65535).contains($0) }) == true,
+          url.user == nil, url.password == nil, url.query == nil, url.fragment == nil,
+          url.path.isEmpty || url.path == "/"
+    else { throw LauncherFailure.invalidReadyOrigin }
+
+    let rootURL = try canonicalPath(applicationSupportRoot)
+    let root = rootURL.path + "/"
+    let dataDirURL = try canonicalPath(URL(fileURLWithPath: message.dataDir))
+    let dataDir = dataDirURL.path
+    let dataValues = try dataDirURL.resourceValues(forKeys: [.isDirectoryKey])
+    guard dataDir.hasPrefix(root), dataDir != rootURL.path, dataValues.isDirectory == true,
+          let workspace = try canonicalDirectory(URL(fileURLWithPath: message.workspace))
+    else { throw LauncherFailure.invalidReadyPaths }
+
+    if expectedMode == .workspace {
+      guard let requestedWorkspace = try canonicalDirectory(requestedWorkspace),
+            workspace.path == requestedWorkspace.path,
+            message.tutorialRequestId == nil
+      else { throw LauncherFailure.invalidReadyPaths }
+    } else {
+      guard workspace.path.hasPrefix(root), let id = message.tutorialRequestId, !id.isEmpty else {
+        throw LauncherFailure.invalidReadyPaths
+      }
+    }
+  }
+}
+
+@MainActor
+final class OriginNavigationPolicy: NSObject, WKNavigationDelegate, WKUIDelegate {
+  private let origin: (scheme: String, host: String, port: Int)
+  var didFinishMainFrame: (() -> Void)?
+
+  init(serverURL: URL) {
+    origin = (serverURL.scheme ?? "", serverURL.host ?? "", serverURL.port ?? -1)
+  }
+
+  func webView(
+    _ webView: WKWebView,
+    decidePolicyFor action: WKNavigationAction,
+    decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+  ) {
+    guard !action.shouldPerformDownload,
+          let target = action.request.url,
+          let frame = action.targetFrame,
+          sameOrigin(target), frame.isMainFrame || sameOrigin(target)
+    else { decisionHandler(.cancel); return }
+    decisionHandler(.allow)
+  }
+
+  func webView(
+    _ webView: WKWebView,
+    decidePolicyFor response: WKNavigationResponse,
+    decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+  ) {
+    let headers = (response.response as? HTTPURLResponse)?.allHeaderFields
+    let attachment = headers?.contains { key, value in
+      String(describing: key).caseInsensitiveCompare("Content-Disposition") == .orderedSame &&
+        String(describing: value).lowercased().contains("attachment")
+    } ?? false
+    guard !attachment, response.canShowMIMEType,
+          let url = response.response.url, sameOrigin(url)
+    else { decisionHandler(.cancel); return }
+    decisionHandler(.allow)
+  }
+
+  func webView(
+    _ webView: WKWebView,
+    createWebViewWith configuration: WKWebViewConfiguration,
+    for action: WKNavigationAction,
+    windowFeatures: WKWindowFeatures
+  ) -> WKWebView? {
+    nil
+  }
+
+  func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    didFinishMainFrame?()
+  }
+
+  private func sameOrigin(_ url: URL) -> Bool {
+    guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return false }
+    return components.scheme == origin.scheme && components.host == origin.host &&
+      components.port == origin.port && components.user == nil && components.password == nil
+  }
+}
+
+@MainActor
+struct SecuredDashboard {
+  let webView: WKWebView
+  private let serverURL: URL
+  // Keep the delegate alive for the lifetime of the WKWebView.
+  private let navigationPolicy: OriginNavigationPolicy
+  var didFinishMainFrame: (() -> Void)? {
+    get { navigationPolicy.didFinishMainFrame }
+    nonmutating set { navigationPolicy.didFinishMainFrame = newValue }
+  }
+
+  init(ready: ReadyMessage) throws {
+    guard let url = URL(string: ready.url), url.scheme == "http",
+          url.host == "127.0.0.1", let port = url.port
+    else { throw LauncherFailure.invalidReadyOrigin }
+
+    let configuration = WKWebViewConfiguration()
+    configuration.websiteDataStore = .nonPersistent()
+    let controller = WKUserContentController()
+    var metadata: [String: Any] = [
+      "mode": ready.mode.rawValue,
+      "workspace": ready.workspace,
+      "version": ready.version,
+    ]
+    if let id = ready.tutorialRequestId { metadata["tutorialRequestId"] = id }
+    let bootstrap = """
+      (() => {
+        const expectedOrigin = \(try Self.jsLiteral("http://127.0.0.1:\(port)"));
+        if (window.top !== window || location.origin !== expectedOrigin) return;
+        sessionStorage.setItem("aag-human-token", \(try Self.jsLiteral(ready.operatorToken)));
+        Object.defineProperty(window, "__AAG_DESKTOP__", {
+          value: \(try Self.jsLiteral(metadata)), configurable: false, writable: false
+        });
+      })();
+      """
+    controller.addUserScript(WKUserScript(
+      source: bootstrap,
+      injectionTime: .atDocumentStart,
+      forMainFrameOnly: true
+    ))
+    configuration.userContentController = controller
+
+    webView = WKWebView(frame: .zero, configuration: configuration)
+    webView.isInspectable = false
+    navigationPolicy = OriginNavigationPolicy(serverURL: url)
+    serverURL = url
+    webView.navigationDelegate = navigationPolicy
+    webView.uiDelegate = navigationPolicy
+  }
+
+  func load() {
+    webView.load(URLRequest(url: serverURL))
+  }
+
+  func clearSession() async {
+    webView.stopLoading()
+    webView.loadHTMLString("", baseURL: nil)
+    webView.configuration.userContentController.removeAllUserScripts()
+    await withCheckedContinuation { continuation in
+      webView.configuration.websiteDataStore.removeData(
+        ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+        modifiedSince: .distantPast
+      ) { continuation.resume() }
+    }
+  }
+
+  func verifySessionCleared(completion: @escaping (Bool) -> Void) {
+    guard webView.url?.absoluteString != serverURL.absoluteString else {
+      completion(false)
+      return
+    }
+    webView.evaluateJavaScript("sessionStorage.getItem('aag-human-token')") { result, error in
+      if error != nil {
+        completion(true)
+      } else {
+        completion((result as? String) == nil)
+      }
+    }
+  }
+
+  func runTutorialSelfTest(completion: @escaping (String) -> Void) {
+    let script = """
+      return await (async () => {
+        try {
+          const fail = stage => `FAIL:${stage}`;
+          for (let attempt = 0; attempt < 50 && !document.querySelector('#root')?.firstElementChild; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          if (!document.querySelector('#root')?.firstElementChild) return fail('dashboard-render');
+          for (let attempt = 0; attempt < 50 && !document.querySelector('.connection.is-connected'); attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          if (!document.querySelector('.connection.is-connected')) return fail('dashboard-connection');
+          const context = window.__AAG_DESKTOP__;
+          const token = sessionStorage.getItem('aag-human-token') || '';
+          if (!context || context.mode !== 'tutorial' || !context.tutorialRequestId || !/^[a-f0-9]{64}$/.test(token)) return fail('desktop-context');
+          if (location.origin !== 'http://127.0.0.1:\(webView.url?.port ?? 0)') return fail('origin');
+          if (window.open('https://aag.invalid/') !== null) return fail('popup-boundary');
+          const unauthenticated = await fetch('/v1/policy');
+          if (unauthenticated.status !== 401) return fail('unauthenticated-denial');
+          const headers = { Authorization: `Bearer ${token}` };
+          const health = await fetch('/v1/health', { headers });
+          if (!health.ok) return fail('authenticated-health');
+          const requestURL = `/v1/requests/${encodeURIComponent(context.tutorialRequestId)}`;
+          const pendingResponse = await fetch(requestURL, { headers });
+          if (!pendingResponse.ok) return fail('tutorial-request');
+          const pending = await pendingResponse.json();
+          if (pending.state !== 'PENDING_APPROVAL') return fail('pending-state');
+          const approve = [...document.querySelectorAll('.request-card.is-pending button')]
+            .find(button => button.textContent?.trim() === 'Approve');
+          if (!approve) return fail('approval-button');
+          approve.click();
+          for (let attempt = 0; attempt < 50 && ![...document.querySelectorAll('button')]
+            .some(button => button.textContent?.trim() === 'Confirm approval'); attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          const confirm = [...document.querySelectorAll('button')]
+            .find(button => button.textContent?.trim() === 'Confirm approval');
+          if (!confirm) return fail('approval-confirmation');
+          confirm.click();
+          for (let attempt = 0; attempt < 100; attempt++) {
+            const response = await fetch(requestURL, { headers });
+            if (!response.ok) return fail('request-poll');
+            const current = await response.json();
+            if (current.state === 'COMPLETED') return 'PASS';
+            if (['FAILED', 'DENIED', 'EXPIRED', 'CANCELLED'].includes(current.state)) return fail('terminal-state');
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          return fail('write-timeout');
+        } catch {
+          return 'FAIL:javascript-exception';
+        }
+      })();
+      """
+    webView.callAsyncJavaScript(script, arguments: [:], in: nil, in: .page) { result in
+      completion((try? result.get() as? String) ?? "FAIL:web-evaluation")
+    }
+  }
+
+  func runWorkspaceSelfTest(completion: @escaping (String) -> Void) {
+    let script = """
+      return await (async () => {
+        try {
+          const fail = stage => `FAIL:${stage}`;
+          const expectedOrigin = 'http://127.0.0.1:\(webView.url?.port ?? 0)';
+          for (let attempt = 0; attempt < 50 && !document.querySelector('#root')?.firstElementChild; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          for (let attempt = 0; attempt < 50 && !document.querySelector('.connection.is-connected'); attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          const context = window.__AAG_DESKTOP__;
+          const token = sessionStorage.getItem('aag-human-token') || '';
+          if (!document.querySelector('#root')?.firstElementChild) return fail('workspace-dashboard-render');
+          if (!document.querySelector('.connection.is-connected')) return fail('workspace-dashboard-connection');
+          if (!context || context.mode !== 'workspace' || !/^[a-f0-9]{64}$/.test(token)) return fail('workspace-context');
+          if (location.origin !== expectedOrigin) return fail('workspace-origin');
+          const unauthenticated = await fetch('/v1/policy');
+          if (unauthenticated.status !== 401) return fail('workspace-unauthenticated-denial');
+          const headers = { Authorization: `Bearer ${token}` };
+          const health = await fetch('/v1/health', { headers });
+          if (!health.ok) return fail('workspace-health');
+          const target = `${context.workspace}/native-self-test.txt`;
+          const submitted = await fetch('/v1/requests', {
+            method: 'POST',
+            headers: { ...headers, 'Content-Type': 'application/json', 'X-AAG-Intent': 'human' },
+            body: JSON.stringify({
+              id: 'native-returning-write', agentId: 'agent', sessionId: 'native-self-test',
+              category: 'filesystem', operation: 'write',
+              parameters: { path: target, content: 'Native launcher approval verified.\\n' },
+              resourceScope: target, timestamp: new Date().toISOString(),
+              requestedPermissions: ['filesystem:write'], expectedResultFormat: 'json'
+            })
+          });
+          if (!submitted.ok || (await submitted.json()).state !== 'PENDING_APPROVAL') return fail('workspace-submit');
+          const requestURL = '/v1/requests/native-returning-write';
+          for (let attempt = 0; attempt < 50 && !document.querySelector('.request-card.is-pending button'); attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          const approve = [...document.querySelectorAll('.request-card.is-pending button')]
+            .find(button => button.textContent?.trim() === 'Approve');
+          if (!approve) return fail('workspace-approval-button');
+          approve.click();
+          for (let attempt = 0; attempt < 50 && ![...document.querySelectorAll('button')]
+            .some(button => button.textContent?.trim() === 'Confirm approval'); attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          const confirm = [...document.querySelectorAll('button')]
+            .find(button => button.textContent?.trim() === 'Confirm approval');
+          if (!confirm) return fail('workspace-approval-confirmation');
+          confirm.click();
+          let completed = false;
+          for (let attempt = 0; attempt < 100; attempt++) {
+            const response = await fetch(requestURL, { headers });
+            if (!response.ok) return fail('workspace-request-poll');
+            const current = await response.json();
+            if (current.state === 'COMPLETED') { completed = true; break; }
+            if (['FAILED', 'DENIED', 'EXPIRED', 'CANCELLED'].includes(current.state)) return fail('workspace-terminal-state');
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          if (!completed) return fail('workspace-write-timeout');
+          for (const href of ['https://aag.invalid/', 'data:text/html,blocked']) {
+            const link = document.createElement('a'); link.href = href; link.target = '_self';
+            document.body.append(link); link.click(); link.remove();
+            await new Promise(resolve => setTimeout(resolve, 150));
+            if (location.origin !== expectedOrigin) return fail('off-origin-navigation');
+          }
+          if (window.open('https://aag.invalid/') !== null) return fail('popup-boundary');
+          return 'PASS';
+        } catch {
+          return 'FAIL:workspace-javascript-exception';
+        }
+      })();
+      """
+    webView.callAsyncJavaScript(script, arguments: [:], in: nil, in: .page) { result in
+      completion((try? result.get() as? String) ?? "FAIL:workspace-web-evaluation")
+    }
+  }
+
+  func runWorkspaceReturnSelfTest(completion: @escaping (String) -> Void) {
+    let script = """
+      return await (async () => {
+        try {
+          const context = window.__AAG_DESKTOP__;
+          const token = sessionStorage.getItem('aag-human-token') || '';
+          if (!context || context.mode !== 'workspace' || !/^[a-f0-9]{64}$/.test(token)) return 'FAIL:return-context';
+          for (let attempt = 0; attempt < 50 && !document.querySelector('.connection.is-connected'); attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          if (!document.querySelector('.connection.is-connected')) return 'FAIL:return-dashboard-connection';
+          const response = await fetch('/v1/requests/native-returning-write', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (!response.ok) return 'FAIL:return-history-request';
+          const request = await response.json();
+          if (request.state !== 'COMPLETED') return 'FAIL:return-history-state';
+          return 'PASS';
+        } catch {
+          return 'FAIL:return-javascript-exception';
+        }
+      })();
+      """
+    webView.callAsyncJavaScript(script, arguments: [:], in: nil, in: .page) { result in
+      completion((try? result.get() as? String) ?? "FAIL:return-web-evaluation")
+    }
+  }
+
+  func saveSelfTestSnapshot(to url: URL, completion: @escaping (Bool) -> Void) {
+    webView.takeSnapshot(with: nil) { image, _ in
+      guard let image, let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
+            let png = NSBitmapImageRep(cgImage: cgImage).representation(using: .png, properties: [:])
+      else { completion(false); return }
+      do {
+        try png.write(to: url, options: .atomic)
+        completion(true)
+      } catch {
+        completion(false)
+      }
+    }
+  }
+
+  private static func jsLiteral(_ value: Any) throws -> String {
+    let data = try JSONSerialization.data(withJSONObject: value, options: [.fragmentsAllowed, .sortedKeys])
+    guard let string = String(data: data, encoding: .utf8) else {
+      throw LauncherFailure.invalidReadyMessage
+    }
+    return string.replacingOccurrences(of: "<", with: "\\u003c")
+  }
+}
+
+private struct LauncherArguments {
+  let selfTest: Bool
+  let testRoot: URL?
+
+  init(_ arguments: [String]) throws {
+    var selfTest = false
+    var testRoot: URL?
+    var index = 0
+    while index < arguments.count {
+      switch arguments[index] {
+      case "--self-test":
+        selfTest = true
+        index += 1
+      case "--test-root":
+        guard index + 1 < arguments.count else { throw LauncherFailure.invalidReadyPaths }
+        testRoot = URL(fileURLWithPath: arguments[index + 1])
+        index += 2
+      default:
+        throw LauncherFailure.invalidReadyPaths
+      }
+    }
+    guard selfTest == (testRoot != nil), testRoot?.path.hasPrefix("/") ?? true else {
+      throw LauncherFailure.invalidReadyPaths
+    }
+    self.selfTest = selfTest
+    self.testRoot = testRoot
+  }
+}
+
+@MainActor
+final class LauncherApplication: NSObject, NSApplicationDelegate {
+  private let arguments: LauncherArguments
+  private let preferences: UserDefaults
+  private let testPreferencesDomain: String?
+  private var window: NSWindow!
+  private let dashboardSlot = NSView()
+  private let titleLabel = NSTextField(labelWithString: "Agent Approval Gate")
+  private let statusLabel = NSTextField(labelWithString: "Choose a workspace or try the isolated tutorial.")
+  private let scopeLabel = NSTextField(labelWithString: "File actions need your approval. Commands and network requests start disabled. Only actions sent through this gateway are checked.")
+  private let workspaceLabel = NSTextField(labelWithString: "No workspace selected")
+  private let errorLabel = NSTextField(wrappingLabelWithString: "")
+  private var reopenButton: NSButton!
+  private var restartButton: NSButton!
+  private var stopButton: NSButton!
+  private var chooseButton: NSButton!
+  private var tutorialButton: NSButton!
+  private var gateway: GatewayProcess?
+  private var pendingUnexpectedGateway: GatewayProcess?
+  private var dashboard: SecuredDashboard?
+  private var activeMode: DesktopMode?
+  private var activeWorkspace: URL?
+  private var busy = false
+  private var selfTestPageStarted = false
+  private var selfTestRootInitialized = false
+  private var selfTestWorkspaceReopened = false
+  private var selfTestUnexpectedExitHandled = false
+  private var selfTestStartupExitInjected = false
+  private var selfTestStartupExitHandled = false
+  private var selfTestRetiredDashboard: SecuredDashboard?
+  private var selfTestWorkspace: URL?
+  private var selfTestApplicationDataRoot: URL?
+
+  fileprivate init(arguments: LauncherArguments) {
+    self.arguments = arguments
+    if arguments.selfTest {
+      let domain = "AgentApprovalGate.NativeSelfTest.\(UUID().uuidString)"
+      preferences = UserDefaults(suiteName: domain)!
+      testPreferencesDomain = domain
+    } else {
+      preferences = .standard
+      testPreferencesDomain = nil
+    }
+  }
+
+  func applicationDidFinishLaunching(_ notification: Notification) {
+    NSApp.setActivationPolicy(arguments.selfTest ? .accessory : .regular)
+    buildWindow()
+    if arguments.selfTest {
+      window.orderOut(nil)
+      guard let root = arguments.testRoot else { finishSelfTest("FAIL:test-root"); return }
+      do {
+        guard !FileManager.default.fileExists(atPath: root.path) else {
+          finishSelfTest("FAIL:test-root-not-fresh")
+          return
+        }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false)
+        try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: root.path)
+        let appData = root.appendingPathComponent("appdata", isDirectory: true)
+        let workspacePath = root.appendingPathComponent("workspace", isDirectory: true)
+        try FileManager.default.createDirectory(at: workspacePath, withIntermediateDirectories: false)
+        try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: workspacePath.path)
+        guard let workspace = try GatewayProcess.canonicalDirectoryForUI(workspacePath) else {
+          finishSelfTest("FAIL:test-workspace")
+          return
+        }
+        selfTestWorkspace = workspace
+        guard titleLabel.stringValue == "Agent Approval Gate",
+              scopeLabel.stringValue.contains("Only actions sent through this gateway are checked."),
+              chooseButton.title == "Choose Workspace",
+              tutorialButton.title == "Try Tutorial"
+        else {
+          finishSelfTest("FAIL:native-start-screen")
+          return
+        }
+        selfTestApplicationDataRoot = appData
+        tutorialButton.performClick(nil)
+      } catch {
+        finishSelfTest("FAIL:test-root-setup")
+      }
+    } else {
+      window.makeKeyAndOrderFront(nil)
+      NSApp.activate(ignoringOtherApps: true)
+      updateReturningWorkspace()
+    }
+  }
+
+  func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+    true
+  }
+
+  func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+    guard gateway != nil else { return .terminateNow }
+    Task { @MainActor in
+      await stopSession()
+      sender.reply(toApplicationShouldTerminate: true)
+    }
+    return .terminateLater
+  }
+
+  @objc private func chooseWorkspace(_ sender: Any?) {
+    let panel = NSOpenPanel()
+    panel.canChooseFiles = false
+    panel.canChooseDirectories = true
+    panel.allowsMultipleSelection = false
+    panel.resolvesAliases = true
+    panel.prompt = "Use Workspace"
+    panel.message = "Choose the folder where mediated file actions may run."
+    guard panel.runModal() == .OK, let url = panel.url else { return }
+    do {
+      guard let workspace = try GatewayProcess.canonicalDirectoryForUI(url) else {
+        showError("Choose an existing workspace directory.")
+        return
+      }
+      preferences.set(workspace.path, forKey: "lastWorkspacePath")
+      start(mode: .workspace, workspace: workspace)
+    } catch {
+      showError("The selected workspace is not available.")
+    }
+  }
+
+  @objc private func tryTutorial(_ sender: Any?) {
+    start(
+      mode: .tutorial,
+      workspace: nil,
+      supportRoot: arguments.selfTest ? selfTestApplicationDataRoot : nil,
+      isTest: arguments.selfTest
+    )
+  }
+
+  @objc private func reopenLastWorkspace(_ sender: Any?) {
+    guard let path = preferences.string(forKey: "lastWorkspacePath") else { return }
+    do {
+      guard let workspace = try GatewayProcess.canonicalDirectoryForUI(URL(fileURLWithPath: path)) else {
+        showError("The saved workspace is unavailable. Choose it again to continue.")
+        return
+      }
+      start(
+        mode: .workspace,
+        workspace: workspace,
+        supportRoot: arguments.selfTest ? selfTestApplicationDataRoot : nil,
+        isTest: arguments.selfTest
+      )
+    } catch {
+      showError("The saved workspace is unavailable. Choose it again to continue.")
+    }
+  }
+
+  @objc private func restartGateway(_ sender: Any?) {
+    guard let mode = activeMode else { return }
+    start(
+      mode: mode,
+      workspace: activeWorkspace,
+      supportRoot: arguments.selfTest ? selfTestApplicationDataRoot : nil,
+      isTest: arguments.selfTest
+    )
+  }
+
+  @objc private func stopGateway(_ sender: Any?) {
+    Task { @MainActor in
+      await stopSession()
+      statusLabel.stringValue = "Gateway stopped."
+    }
+  }
+
+  private func buildWindow() {
+    window = NSWindow(
+      contentRect: NSRect(x: 0, y: 0, width: 1120, height: 760),
+      styleMask: [.titled, .closable, .miniaturizable, .resizable],
+      backing: .buffered,
+      defer: false
+    )
+    window.title = "Agent Approval Gate"
+    window.minSize = NSSize(width: 720, height: 480)
+    window.center()
+
+    titleLabel.font = .systemFont(ofSize: 18, weight: .semibold)
+    scopeLabel.lineBreakMode = .byWordWrapping
+    scopeLabel.maximumNumberOfLines = 2
+    workspaceLabel.lineBreakMode = .byTruncatingMiddle
+    errorLabel.textColor = .systemRed
+    errorLabel.isHidden = true
+
+    chooseButton = button("Choose Workspace", #selector(chooseWorkspace(_:)))
+    tutorialButton = button("Try Tutorial", #selector(tryTutorial(_:)))
+    reopenButton = button("Reopen Last Workspace", #selector(reopenLastWorkspace(_:)))
+    restartButton = button("Restart Gateway", #selector(restartGateway(_:)))
+    stopButton = button("Stop Gateway", #selector(stopGateway(_:)))
+    reopenButton.isEnabled = preferences.string(forKey: "lastWorkspacePath") != nil
+    restartButton.isEnabled = false
+    stopButton.isEnabled = false
+
+    let controls = NSStackView(views: [chooseButton, tutorialButton, reopenButton, restartButton, stopButton])
+    controls.orientation = .horizontal
+    controls.alignment = .centerY
+    controls.distribution = .fill
+    controls.spacing = 8
+
+    dashboardSlot.translatesAutoresizingMaskIntoConstraints = false
+    dashboardSlot.setContentHuggingPriority(.defaultLow, for: .vertical)
+    dashboardSlot.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+    dashboardSlot.heightAnchor.constraint(greaterThanOrEqualToConstant: 300).isActive = true
+
+    let content = NSStackView(views: [titleLabel, scopeLabel, controls, workspaceLabel, statusLabel, errorLabel, dashboardSlot])
+    content.orientation = .vertical
+    content.alignment = .leading
+    content.distribution = .fill
+    content.spacing = 10
+    content.edgeInsets = NSEdgeInsets(top: 16, left: 18, bottom: 16, right: 18)
+    content.translatesAutoresizingMaskIntoConstraints = false
+    let root = NSView()
+    root.addSubview(content)
+    NSLayoutConstraint.activate([
+      content.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+      content.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+      content.topAnchor.constraint(equalTo: root.topAnchor),
+      content.bottomAnchor.constraint(equalTo: root.bottomAnchor),
+      dashboardSlot.widthAnchor.constraint(equalTo: content.widthAnchor),
+    ])
+    window.contentView = root
+  }
+
+  private func button(_ title: String, _ action: Selector) -> NSButton {
+    let control = NSButton(title: title, target: self, action: action)
+    control.bezelStyle = .rounded
+    control.setAccessibilityIdentifier(title.lowercased().replacingOccurrences(of: " ", with: "-"))
+    return control
+  }
+
+  private func start(
+    mode: DesktopMode,
+    workspace: URL?,
+    supportRoot: URL? = nil,
+    isTest: Bool = false
+  ) {
+    guard !busy else { return }
+    busy = true
+    errorLabel.isHidden = true
+    statusLabel.stringValue = "Starting the local gateway…"
+    updateControls()
+    Task { @MainActor in
+      await stopSession()
+      do {
+        let root: URL
+        if let supportRoot {
+          root = supportRoot
+        } else {
+          let appSupport = try FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+          )
+          root = appSupport.appendingPathComponent("Agent Approval Gate", isDirectory: true)
+        }
+        let host = try GatewayProcess(
+          applicationSupportRoot: root,
+          requiresFreshRoot: isTest && !selfTestRootInitialized
+        )
+        host.onUnexpectedTermination = { [self, weak host] in
+          guard let host else { return }
+          self.handleUnexpectedTermination(of: host)
+        }
+        if isTest { selfTestRootInitialized = true }
+        // Keep the process reachable during the handshake so app termination can close stdin.
+        gateway = host
+        let ready = try await host.start(mode: mode, workspace: workspace)
+        guard host.isReadyAndRunning else { throw LauncherFailure.gatewayClosedBeforeReady }
+        activeMode = mode
+        activeWorkspace = workspace
+
+        if isTest && mode == .tutorial && !selfTestStartupExitInjected {
+          selfTestStartupExitInjected = true
+          host.terminateForSelfTest()
+          for _ in 0..<20 where host.isReadyAndRunning {
+            try? await Task.sleep(for: .milliseconds(10))
+          }
+          if !host.isReadyAndRunning {
+            busy = false
+            updateControls()
+            if let pending = pendingUnexpectedGateway {
+              pendingUnexpectedGateway = nil
+              handleUnexpectedTermination(of: pending)
+            } else {
+              handleUnexpectedTermination(of: host)
+            }
+            return
+          }
+        }
+        guard host.isReadyAndRunning else { throw LauncherFailure.gatewayClosedBeforeReady }
+        let page = try SecuredDashboard(ready: ready)
+        gateway = host
+        dashboard = page
+        activeMode = mode
+        activeWorkspace = workspace
+        workspaceLabel.stringValue = mode == .tutorial
+          ? "Tutorial workspace: \(ready.workspace)"
+          : "Workspace: \(ready.workspace)"
+        if isTest {
+          page.didFinishMainFrame = { [weak owner = self] in
+            guard let owner, !owner.selfTestPageStarted, let page = owner.dashboard else { return }
+            owner.selfTestPageStarted = true
+            if owner.activeMode == .tutorial {
+              page.runTutorialSelfTest { result in owner.completeTutorialSelfTest(result) }
+            } else if owner.selfTestWorkspaceReopened {
+              page.runWorkspaceReturnSelfTest { result in owner.completeWorkspaceReturnSelfTest(result) }
+            } else {
+              page.runWorkspaceSelfTest { result in owner.completeWorkspaceSelfTest(result) }
+            }
+          }
+        }
+        install(page.webView)
+        page.load()
+        statusLabel.stringValue = "Gateway is running on this Mac."
+        busy = false
+        updateControls()
+        drainPendingUnexpectedTermination()
+      } catch {
+        await stopSession()
+        pendingUnexpectedGateway = nil
+        busy = false
+        statusLabel.stringValue = "Gateway stopped."
+        let safeError = error is LauncherFailure ? error.localizedDescription :
+          "The local gateway could not start. Check the app installation and try again."
+        showError(safeError)
+        updateControls()
+        if isTest {
+          let failure = error as NSError
+          let diagnostic = "Self-test startup failed: \(safeError) (\(failure.domain), \(failure.code)).\n"
+          try? FileHandle.standardError.write(contentsOf: Data(diagnostic.utf8))
+          finishSelfTest("FAIL:startup")
+        }
+      }
+    }
+  }
+
+  private func stopSession() async {
+    if let dashboard { await dashboard.clearSession() }
+    dashboard = nil
+    for view in dashboardSlot.subviews { view.removeFromSuperview() }
+    if let gateway { await gateway.stop() }
+    gateway = nil
+    activeMode = nil
+    activeWorkspace = nil
+    updateControls()
+  }
+
+  private func handleUnexpectedTermination(of host: GatewayProcess) {
+    guard gateway === host else { return }
+    if busy {
+      pendingUnexpectedGateway = host
+      return
+    }
+    busy = true
+    statusLabel.stringValue = "The local gateway stopped unexpectedly. Clearing the page session…"
+    errorLabel.isHidden = true
+    updateControls()
+    let retired = dashboard
+    dashboard = nil
+    for view in dashboardSlot.subviews { view.removeFromSuperview() }
+    Task { @MainActor in
+      if let retired { await retired.clearSession() }
+      await host.stop()
+      gateway = nil
+      if arguments.selfTest { selfTestRetiredDashboard = retired }
+      statusLabel.stringValue = "Gateway stopped unexpectedly."
+      showError("The local gateway stopped unexpectedly. Its page session was cleared. Select Restart Gateway to reconnect.")
+      busy = false
+      updateControls()
+
+      if arguments.selfTest {
+        guard host.ready == nil, dashboard == nil, gateway == nil,
+              (activeMode == .workspace && activeWorkspace == selfTestWorkspace) ||
+                (activeMode == .tutorial && selfTestStartupExitInjected && !selfTestStartupExitHandled),
+              restartButton.isEnabled, !stopButton.isEnabled,
+              statusLabel.stringValue == "Gateway stopped unexpectedly.",
+              !errorLabel.isHidden, errorLabel.stringValue.contains("reconnect"),
+              (retired != nil || activeMode == .tutorial)
+        else {
+          finishSelfTest("FAIL:unexpected-exit-ui-state")
+          return
+        }
+        let recover = { [self] in
+          if activeMode == .tutorial {
+            selfTestStartupExitHandled = true
+          } else {
+            selfTestUnexpectedExitHandled = true
+          }
+          self.selfTestPageStarted = false
+          self.restartButton.performClick(nil)
+        }
+        if let retired {
+          retired.verifySessionCleared { [self] cleared in
+            guard cleared else { self.finishSelfTest("FAIL:unexpected-exit-token-clear"); return }
+            recover()
+          }
+        } else {
+          recover()
+        }
+      }
+    }
+  }
+
+  private func drainPendingUnexpectedTermination() {
+    guard let pending = pendingUnexpectedGateway else { return }
+    pendingUnexpectedGateway = nil
+    handleUnexpectedTermination(of: pending)
+  }
+
+  private func install(_ view: NSView) {
+    for child in dashboardSlot.subviews { child.removeFromSuperview() }
+    view.translatesAutoresizingMaskIntoConstraints = false
+    dashboardSlot.addSubview(view)
+    NSLayoutConstraint.activate([
+      view.leadingAnchor.constraint(equalTo: dashboardSlot.leadingAnchor),
+      view.trailingAnchor.constraint(equalTo: dashboardSlot.trailingAnchor),
+      view.topAnchor.constraint(equalTo: dashboardSlot.topAnchor),
+      view.bottomAnchor.constraint(equalTo: dashboardSlot.bottomAnchor),
+    ])
+  }
+
+  private func updateControls() {
+    reopenButton?.isEnabled = !busy && preferences.string(forKey: "lastWorkspacePath") != nil
+    restartButton?.isEnabled = !busy && activeMode != nil
+    stopButton?.isEnabled = !busy && gateway != nil
+  }
+
+  private func updateReturningWorkspace() {
+    if let last = preferences.string(forKey: "lastWorkspacePath") {
+      workspaceLabel.stringValue = "Last workspace: \(last)"
+      statusLabel.stringValue = "Reopen it, or choose another workspace."
+      reopenButton.isEnabled = FileManager.default.fileExists(atPath: last)
+    }
+  }
+
+  private func showError(_ text: String) {
+    errorLabel.stringValue = text
+    errorLabel.isHidden = false
+  }
+
+  private func finishSelfTest(_ result: String) {
+    guard arguments.selfTest else { return }
+    Task { @MainActor in
+      await stopSession()
+      let passed = result == "PASS"
+      if !passed {
+        try? FileHandle.standardError.write(contentsOf: Data(("Self-test tutorial failed: \(result)\n").utf8))
+      }
+      let message = passed ? "AAG_SELF_TEST_OK\n" : "AAG_SELF_TEST_FAILED\n"
+      if let domain = testPreferencesDomain { preferences.removePersistentDomain(forName: domain) }
+      let handle = passed ? FileHandle.standardOutput : FileHandle.standardError
+      if let data = message.data(using: .utf8) { try? handle.write(contentsOf: data) }
+      if passed {
+        NSApp.terminate(nil)
+      } else {
+        Darwin.exit(1)
+      }
+    }
+  }
+
+  private func completeTutorialSelfTest(_ result: String) {
+    guard arguments.selfTest else { return }
+    guard result == "PASS", let workspace = selfTestWorkspace else {
+      finishSelfTest(result == "PASS" ? "FAIL:test-workspace-path" : result)
+      return
+    }
+    selfTestPageStarted = false
+    preferences.set(workspace.path, forKey: "lastWorkspacePath")
+    reopenButton.isEnabled = true
+    reopenButton.performClick(nil)
+  }
+
+  private func completeWorkspaceSelfTest(_ result: String) {
+    guard arguments.selfTest else { return }
+    guard result == "PASS", let workspace = selfTestWorkspace else {
+      finishSelfTest(result)
+      return
+    }
+    let output = workspace.appendingPathComponent("native-self-test.txt")
+    guard let contents = try? String(contentsOf: output, encoding: .utf8),
+          contents == "Native launcher approval verified.\n" else {
+      finishSelfTest("FAIL:workspace-file-content")
+      return
+    }
+    selfTestWorkspaceReopened = true
+    selfTestPageStarted = false
+    preferences.set(workspace.path, forKey: "lastWorkspacePath")
+    reopenButton.isEnabled = true
+    reopenButton.performClick(nil)
+  }
+
+  private func completeWorkspaceReturnSelfTest(_ result: String) {
+    guard arguments.selfTest, result == "PASS", let root = arguments.testRoot else {
+      finishSelfTest(result)
+      return
+    }
+    guard selfTestUnexpectedExitHandled else {
+      guard let gateway else { finishSelfTest("FAIL:unexpected-exit-child"); return }
+      gateway.terminateForSelfTest()
+      return
+    }
+    let snapshot = root.appendingPathComponent("self-test-dashboard.png")
+    dashboard?.saveSelfTestSnapshot(to: snapshot) { [weak owner = self] saved in
+      owner?.finishSelfTest(saved ? "PASS" : "FAIL:screenshot")
+    }
+  }
+}
+
+@main
+struct NativeLauncherMain {
+  @MainActor
+  static func main() {
+    let args: LauncherArguments
+    do {
+      args = try LauncherArguments(Array(CommandLine.arguments.dropFirst()))
+    } catch {
+      FileHandle.standardError.write(Data("Invalid launcher arguments.\n".utf8))
+      Darwin.exit(2)
+    }
+    let application = NSApplication.shared
+    let delegate = LauncherApplication(arguments: args)
+    application.delegate = delegate
+    application.run()
+  }
+}

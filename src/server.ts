@@ -28,9 +28,17 @@ const secretEqual = (a: string, b: string) => {
 };
 const done = new Set(['COMPLETED', 'DENIED', 'FAILED', 'EXPIRED', 'CANCELLED']);
 export async function startServer(
-  options: { dataDir?: string; port?: number; policyFile?: string } = {},
+  options: {
+    dataDir?: string;
+    port?: number;
+    policyFile?: string;
+    startupLog?: boolean;
+    operatorToken?: string;
+  } = {},
 ) {
   requireRuntime();
+  if (options.operatorToken !== undefined && !/^[a-f0-9]{64}$/.test(options.operatorToken))
+    throw Error('Invalid in-memory operator credential');
   const data = path.resolve(
     options.dataDir || path.join(homedir(), '.local/share/agent-approval-gate'),
   );
@@ -81,6 +89,8 @@ export async function startServer(
     const human = credential('human'),
       agent = credential('agent');
     if (human === agent) throw Error('Credentials must differ');
+    if (options.operatorToken === agent || options.operatorToken === human)
+      throw Error('In-memory operator credential must differ from persistent credentials');
     for (const r of db.states(['EXECUTING', 'ALLOWED', 'APPROVED', 'SUBMITTED']))
       db.transition(
         r,
@@ -109,7 +119,11 @@ export async function startServer(
     let origin = `http://127.0.0.1:${configuredPort}`;
     const principal = (auth: string | undefined) => {
       const t = auth?.startsWith('Bearer ') ? auth.slice(7) : '';
-      if (secretEqual(t, human)) return 'human';
+      if (
+        secretEqual(t, human) ||
+        (options.operatorToken !== undefined && secretEqual(t, options.operatorToken))
+      )
+        return 'human';
       if (secretEqual(t, agent)) return 'agent';
       const hash = createHash('sha256').update(t).digest('hex');
       return db.principalByHash(hash) || '';
@@ -215,7 +229,7 @@ export async function startServer(
         .header('Cache-Control', 'no-store')
         .header(
           'Content-Security-Policy',
-          "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+          "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
         );
       if (
         req.url.split('?')[0]!.includes('%') ||
@@ -504,14 +518,15 @@ export async function startServer(
       }
     }, 1000);
     timer.unref();
-    console.log(
-      JSON.stringify({
-        url: origin,
-        dataDir: data,
-        credentials:
-          'human.token for operator; agent.token for MCP. Keep human token outside agent context.',
-      }),
-    );
+    if (options.startupLog !== false)
+      console.log(
+        JSON.stringify({
+          url: origin,
+          dataDir: data,
+          credentials:
+            'human.token for operator; agent.token for MCP. Keep human token outside agent context.',
+        }),
+      );
     let closePromise: Promise<void> | undefined;
     const close = () =>
       (closePromise ??= (async () => {
@@ -534,7 +549,7 @@ export async function startServer(
     };
     process.once('SIGINT', shutdown);
     process.once('SIGTERM', shutdown);
-    return { close };
+    return { close, url: origin };
   } catch (e) {
     try {
       store?.close();

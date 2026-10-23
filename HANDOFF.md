@@ -1,3 +1,17 @@
+# Desktop 2.1 local qualification complete; release pending
+
+Author: Ethan. Current objective is the authorized downloadable macOS launcher. All local release gates pass. The source changes have not yet been committed/pushed. Do not call the release complete before the draft assets have been downloaded and checked.
+
+Branch codex/desktop-usability starts at77965b6bef4a6da23ab8da4b46876b802be4a8d1. Candidate2.1.0 bundles Node24.22.1/native helper, native workspace chooser, separate per-workspace policy/history, last-workspace recall, real isolated tutorial, fresh per-child operator bearer, and startup/crash/reconnect handling. Source security review has no unresolved in-scope defect; arbitrary same-user process access is explicitly out of scope. All seven requested usability skills plus approved Semgrep were applied.
+
+Clean checks: build/check/format,30core,56E2E,1243native,0dependency vulnerabilities. Later controlled newer-version refusal assertion passes with state unchanged. Actual signed native self-test and signed bundled-process acceptance pass;14JS/web files and all file-backed helper Mach-O sections match the clean build. App/DMG Accepted notary IDs and quarantined local mounted-install checks are in evidence/usability. DMG SHA256 dbd5f0cd4ae70510880e53e6401533bd47b6486db0221278375f06fe23f20631. Package archive installation also passes. No unfamiliar-user or manual first-open-dialog testing is claimed.
+
+Sealed release staging: /private/tmp/aag-release-2.1.0-20261022. Preserve app, DMG and SHA256SUMS.txt until release is verified. Repo archive agent-approval-gate-2.1.0.tgz and its checksum are ready. Temporary signed/installed tests are under /private/tmp/aag-*; clean test source is .acceptance/usability-clean. Keep historical runtime/legacy fixtures/duplicates and prior released artifacts. Raw Semgrep is local ignored;503 candidates reviewed,2partialpacks,15parseerrors, cloned repos removed.
+
+Both Luna High assistants finished and were interrupted. No nested agents. Usage checker cell47 runs every50sec; latest76%used. At90%used, stop work/ownworkers/processes, save precise handoff, pausegoal, stopchecker, endturn. No automatic resume, account credits/resets or provider bypass. No global config/hooks. Actions verifieddisabled. Next: source PR/attach/merge, draftrelease, upload/downloadsealedassets, remotechecksum/tag/installedappchecks, publish, final evidence-only bookkeeping and cleanup. No2.1remote writes yet.
+
+---
+
 # Completed qualification and release — 2026-10-22
 
 Author: Ethan.

@@ -1,0 +1,7 @@
+
+> agent-approval-gate@2.1.0 test:native
+> sh scripts/verify-native.sh
+
+Compiler: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Python: Python 3.15.0
+PASS native boundary checks=1243 structured_mutations=1200 seed=0xA6610 elapsed_seconds=13.05

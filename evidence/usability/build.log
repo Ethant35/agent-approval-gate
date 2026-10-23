@@ -1,0 +1,13 @@
+
+> agent-approval-gate@2.1.0 build
+> node scripts/build-native.mjs && tsc && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 23 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/web/index.html                   0.54 kB │ gzip:  0.33 kB
+../dist/web/assets/index-CcglO_gX.css   19.62 kB │ gzip:  4.77 kB
+../dist/web/assets/index-CkCXi4r8.js   257.24 kB │ gzip: 78.01 kB
+✓ built in 374ms

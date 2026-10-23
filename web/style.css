@@ -383,6 +383,42 @@ code {
   color: var(--info);
   border-color: transparent;
 }
+.status-submitted {
+  border-style: dotted;
+}
+.status-pending-approval {
+  border-style: double;
+  border-width: 3px;
+}
+.status-approved {
+  background: var(--info-soft);
+  color: var(--info);
+  border-style: solid;
+}
+.status-allowed {
+  border-style: solid;
+}
+.status-executing {
+  border-style: dashed;
+  border-width: 2px;
+}
+.status-completed {
+  border-style: solid;
+}
+.status-denied {
+  border-style: double;
+}
+.status-failed {
+  border-style: dashed;
+  border-width: 2px;
+}
+.status-expired {
+  border-style: dotted;
+  border-width: 2px;
+}
+.status-cancelled {
+  border-style: dashed;
+}
 .request-command {
   margin-top: 9px;
   padding: 9px 11px;
@@ -392,6 +428,40 @@ code {
   overflow-wrap: anywhere;
   color: var(--text);
   font-size: 11px;
+}
+.action-preview {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.action-preview > div {
+  min-width: 0;
+}
+.action-preview strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+}
+.action-preview code,
+.action-preview pre {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.action-preview pre {
+  max-height: 320px;
+  margin: 0;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-soft);
+  color: var(--text);
+}
+.action-preview p {
+  margin: 0;
 }
 .reason {
   color: var(--muted);
@@ -867,6 +937,65 @@ td code {
 }
 .setup-toggle {
   min-height: 36px;
+}
+.workspace-location {
+  max-width: 72ch;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.desktop-reconnect-help {
+  margin: 15px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.tutorial-guide {
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.tutorial-guide h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.tutorial-guide > p {
+  max-width: 68ch;
+  margin: 6px 0 13px;
+  color: var(--muted);
+}
+.tutorial-request-summary {
+  display: grid;
+  gap: 10px;
+}
+.tutorial-request-summary > p,
+.tutorial-request-summary > div > p {
+  margin: 0;
+}
+.tutorial-request-summary > p > strong,
+.tutorial-request-summary > div > strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.tutorial-request-summary > p > code {
+  overflow-wrap: anywhere;
+}
+.tutorial-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 34px;
+  text-decoration: none;
+}
+.tutorial-outcome {
+  max-width: 72ch;
+}
+.tutorial-outcome > p {
+  margin: 9px 0 4px;
 }
 .alert-error {
   background: var(--danger-soft);

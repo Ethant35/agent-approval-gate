@@ -1,0 +1,29 @@
+{
+  "author": "Ethan",
+  "files": [
+    "maintenance.js",
+    "runtime.js",
+    "policy.js",
+    "server.js",
+    "store.js",
+    "lease.js",
+    "desktop.js",
+    "executor.js",
+    "mcp.js",
+    "cli.js",
+    "contracts.js",
+    "web/index.html",
+    "web/assets/index-CcglO_gX.css",
+    "web/assets/index-CkCXi4r8.js"
+  ],
+  "allMatchCleanBuild": true,
+  "nativeHelper": "signed binary differs by signature; source identical, native acceptance and signed bundle runtime checks pass",
+  "nativeHelperSectionsMatchCleanBuild": {
+    "__TEXT/__text": "e992ae4bc123c0c9a96fa9c044ab2506408bbf9d7a69c6778560446b4bce4934",
+    "__TEXT/__stubs": "5489b95f0d07c6eb9e2d7bce23cbe38c995b3bea27d04b3d46db983516a8d61b",
+    "__TEXT/__cstring": "9cc32ee69f9af60309e12e70d580625ac7a0e6ac4ab00b8b6ca7f3df6e0b5ac3",
+    "__TEXT/__unwind_info": "3dfb65d9aeaf67187f2b9ed6a5d555dafa69a24c09c82a86110f4b3482eb4050",
+    "__DATA_CONST/__got": "f0588d965ac3cf66ec28b1819575e9e9470153775454fd31c69dcccb898a6a65",
+    "__DATA/__data": "c6e8790d2e2c7e9d9e16dbd7f997d8fcf9f811b555c337a50ebb67de69b62f12"
+  }
+}

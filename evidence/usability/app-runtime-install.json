@@ -1,0 +1,14 @@
+{
+  "author": "Ethan",
+  "verifiedAt": "2026-10-23T06:55:37.541Z",
+  "version": "2.1.0",
+  "packageAuthor": "Ethan",
+  "cli": "signed app bundled dist/cli.js",
+  "startup": "PASS",
+  "dashboard": "PASS",
+  "normalizedDeny": "PASS",
+  "allowedRead": "PASS",
+  "pendingBeforeApproval": "PASS",
+  "approvedNativeProcess": "PASS",
+  "protectedFileUnchanged": "PASS"
+}

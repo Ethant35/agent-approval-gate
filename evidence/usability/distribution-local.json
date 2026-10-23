@@ -1,0 +1,95 @@
+{
+  "author": "Ethan",
+  "dmgSha256": "dbd5f0cd4ae70510880e53e6401533bd47b6486db0221278375f06fe23f20631",
+  "checks": [
+    {
+      "command": [
+        "xcrun",
+        "stapler",
+        "staple",
+        "/private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg"
+      ],
+      "exitCode": 0,
+      "output": "Processing: /private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg\nProcessing: /private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg\nThe staple and validate action worked!\n"
+    },
+    {
+      "command": [
+        "xcrun",
+        "stapler",
+        "validate",
+        "/private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg"
+      ],
+      "exitCode": 0,
+      "output": "Processing: /private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg\nThe validate action worked!\n"
+    },
+    {
+      "command": [
+        "codesign",
+        "--verify",
+        "--verbose=2",
+        "/private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg"
+      ],
+      "exitCode": 0,
+      "output": "/private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg: valid on disk\n/private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg: satisfies its Designated Requirement\n"
+    },
+    {
+      "command": [
+        "spctl",
+        "--assess",
+        "--type",
+        "open",
+        "--context",
+        "context:primary-signature",
+        "--verbose=2",
+        "/private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg"
+      ],
+      "exitCode": 0,
+      "output": "/private/tmp/aag-release-2.1.0-20261022/Agent-Approval-Gate-2.1.0-macos-arm64.dmg: accepted\nsource=Notarized Developer ID\n"
+    },
+    {
+      "command": [
+        "codesign",
+        "--verify",
+        "--deep",
+        "--strict",
+        "/private/tmp/aag-release-2.1.0-20261022/installed/Agent Approval Gate.app"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "xcrun",
+        "stapler",
+        "validate",
+        "/private/tmp/aag-release-2.1.0-20261022/installed/Agent Approval Gate.app"
+      ],
+      "exitCode": 0,
+      "output": "Processing: /private/tmp/aag-release-2.1.0-20261022/installed/Agent Approval Gate.app\nThe validate action worked!\n"
+    },
+    {
+      "command": [
+        "spctl",
+        "--assess",
+        "--type",
+        "execute",
+        "--verbose=2",
+        "/private/tmp/aag-release-2.1.0-20261022/installed/Agent Approval Gate.app"
+      ],
+      "exitCode": 0,
+      "output": "/private/tmp/aag-release-2.1.0-20261022/installed/Agent Approval Gate.app: accepted\nsource=Notarized Developer ID\n"
+    },
+    {
+      "command": [
+        "syspolicy_check",
+        "distribution",
+        "/private/tmp/aag-release-2.1.0-20261022/installed/Agent Approval Gate.app"
+      ],
+      "exitCode": 0,
+      "output": "Only one signature found in file:///private/tmp/aag-release-2.1.0-20261022/installed/Agent%20Approval%20Gate.app, skipping dual signature check\nApp passed all pre-distribution checks and is ready for distribution.\n"
+    }
+  ],
+  "installedNativeSelfTest": "PASS",
+  "quarantinePreserved": "0083;00000000;AgentApprovalGateAcceptance;",
+  "launchMethod": "Hidden native executable self-test; no manual first-open dialog or unfamiliar-user study"
+}

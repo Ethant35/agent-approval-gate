@@ -111,7 +111,7 @@ function errorResult(error: unknown): { content: [{ type: 'text'; text: string }
 }
 
 export async function runMcpServer(): Promise<void> {
-  const server = new McpServer({ name: 'agent-approval-gate', version: '2.0.0' });
+  const server = new McpServer({ name: 'agent-approval-gate', version: '2.1.0' });
   server.registerTool(
     'aag_submit',
     {

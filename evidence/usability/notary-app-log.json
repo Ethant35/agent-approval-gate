@@ -1,0 +1,37 @@
+{
+  "logFormatVersion": 1,
+  "jobId": "ed7b8806-22a0-4511-852b-75d7cf21f457",
+  "status": "Accepted",
+  "statusSummary": "Ready for distribution",
+  "statusCode": 0,
+  "archiveFilename": "Agent-Approval-Gate-2.1.0-notary.zip",
+  "uploadDate": "2026-10-23T06:54:09.386Z",
+  "sha256": "1e2f4bd7017aa947817357d2f4cda8b781093a0973e0ac5c648f74fbe23bf20a",
+  "ticketContents": [
+    {
+      "path": "Agent-Approval-Gate-2.1.0-notary.zip/Agent Approval Gate.app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "c840bc2a488e3ea21eab70cec406f71677eb399b",
+      "arch": "arm64"
+    },
+    {
+      "path": "Agent-Approval-Gate-2.1.0-notary.zip/Agent Approval Gate.app/Contents/MacOS/AgentApprovalGate",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "c840bc2a488e3ea21eab70cec406f71677eb399b",
+      "arch": "arm64"
+    },
+    {
+      "path": "Agent-Approval-Gate-2.1.0-notary.zip/Agent Approval Gate.app/Contents/Resources/runtime/bin/node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "ab607b67dbcc79da0f8cbfa3172590985697a0b9",
+      "arch": "arm64"
+    },
+    {
+      "path": "Agent-Approval-Gate-2.1.0-notary.zip/Agent Approval Gate.app/Contents/Resources/gateway/dist/safe-fs",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "f3a4c2ef8db5a48e40e8cc8f286d6cbf6ccb57b6",
+      "arch": "arm64"
+    }
+  ],
+  "issues": null
+}

@@ -1,3 +1,13 @@
+# 2.1.0
+
+- Add a macOS arm64 launcher with a bundled runtime, workspace selection and separate saved policies/history.
+- Add an isolated real approval tutorial and direct native operator-session setup.
+- Show exact action parameters and clearer lifecycle states; preserve manual CLI/browser use.
+- Use process-lifetime desktop operator tokens and clear sessions when the child stops.
+- Add cold backups on version changes, guarded downgrade and tested old-CLI restore.
+
+The arm64 app and DMG are signed, notarized and locally qualified. See READINESS.md for exact platform, tests and limits.
+
 # Changelog
 
 Author: Ethan
