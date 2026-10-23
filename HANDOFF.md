@@ -1,12 +1,25 @@
-# Final local qualification — 2026-10-22
+# Completed qualification and release — 2026-10-22
 
-Author: Ethan. Version2.0.0 passed clean install/build/check/format/audit,26core tests,1243native checks, and all52E2E tests including live Codex. Final52-test run:52.002seconds, zero failures/skips/retries. All14 runtime files match the independent clean build. Installed archive acceptance passed real approved native execution. Semgrep final behavioral-source scan:332 candidates, no confirmed exploit; two partial packs disclosed. All26 skill applications are recorded.
+Author: Ethan.
 
-Final pagination repair keeps all100 active summaries visible, omits private fingerprints, and trims only excess timestamp precision while retaining UTC Z. Full details remain unchanged. Offline empty-lock recovery, short soak, partial Community rules, and browser lifecycle isolation remain documented limits.
+Agent Approval Gate 2.0.0 is published for macOS arm64 with Node 24.22.1–24.x. PR #5 merged implementation commit `78b872f43b6fc07b80efcef76fc900f040a9822d`; annotated tag `v2.0.0` points to merge commit `34965028b8727230fabb522f8eada968e4b58fa6`. Release: https://github.com/Ethant35/agent-approval-gate/releases/tag/v2.0.0.
 
-Remaining: seal final documentation archive, verify final installation/runtime bytes, publish authorized PR/merge/release, verify downloaded checksum/tag, then clean disposable work. No new remote mutation yet. Actions disabled; usage guard active at10% remaining (latest29% used). Goal tool still stores paused but Ethan explicitly resumed; do not replace goal. Both workers finished and interrupted. Duplicate files remain preserved in .acceptance/preserved-duplicates-2026-10-22.
+The independent clean install passed production/native build, strict checks, formatting, all 26 core/property/integration tests, all 52 E2E tests including live native Codex, 1,243 ASan/UBSan checks, and dependency audit with zero vulnerabilities. Final E2E duration: 52.002 seconds; no failures, skips, retries or flaky results. Every original acceptance assertion is unchanged. Fresh installed-archive tests passed a useful human-approved native process and protected-file checks. All 14 runtime files match the clean build and installed package.
+
+Downloaded release archive and checksum match SHA-256 `8dc896056611b8034d99d876ec5603df4cc74f200ee5d64e8ea17c1714d0fea2`; remote annotated tag resolves to the verified merge commit. Publication evidence is in evidence/readiness/release.json. This final handoff/evidence update changes no runtime and does not move the tag or rebuild the sealed archive.
+
+All 26 explicit skill applications are recorded. Final Semgrep run used the approved 11-pack plan: 332 candidates, no confirmed exploit, two partial external rule packs. Raw scans remain local and ignored. Disposable rule clones were removed. Final pagination repair keeps all 100 active summaries visible and timestamps schema-valid while retaining complete original detail.
+
+Residual limits remain explicit: empty interrupted lock markers need the tested offline recovery procedure; the soak lasted 30 seconds; Community rules provide no cross-file analysis; native structured mutations are not libFuzzer/LeakSanitizer; browser test projects isolate a separately reproduced external Chrome lifetime issue. See READINESS.md, SECURITY.md and supporting reports.
+
+Cleanup removed generated test checkout, package installations, downloaded release copy and browser result directories after saving sanitized evidence. No gateway, test browser, native helper or provider test process remains. Local Node 24 runtime and old-release fixture remain for reproducible checks. Preserved duplicate files remain in `.acceptance/preserved-duplicates-2026-10-22`; no user files were discarded. Both workers finished and were interrupted.
+
+GitHub Actions remains disabled with zero runs. Latest supported usage: 33% used, 67% remaining. No credits, resets, provider bypass, global settings or hooks were changed. Ethan is the package/evidence/implementation author and tagger. GitHub's generated merge identity is Ethant35; factual provenance is preserved. Finder/Explorer author display was not independently verified. The session usage checker is stopped after final bookkeeping; no future automation or production server is left running.
+
+The earlier paused/resumed snapshots below are historical. They do not change this completed release status.
 
 ---
+
 
 
 # RESUMED by Ethan — 2026-10-22

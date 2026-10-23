@@ -1,0 +1,16 @@
+{
+  "author": "Ethan",
+  "releaseUrl": "https://github.com/Ethant35/agent-approval-gate/releases/tag/v2.0.0",
+  "tag": "v2.0.0",
+  "tagCommit": "34965028b8727230fabb522f8eada968e4b58fa6",
+  "implementationCommit": "78b872f43b6fc07b80efcef76fc900f040a9822d",
+  "pullRequest": "https://github.com/Ethant35/agent-approval-gate/pull/5",
+  "publishedAt": "2026-10-23T05:33:20Z",
+  "publicRelease": true,
+  "downloadedSha256": "8dc896056611b8034d99d876ec5603df4cc74f200ee5d64e8ea17c1714d0fea2",
+  "downloadedChecksumMatched": true,
+  "runtimeFilesMatched": 14,
+  "personalAuthor": "Ethan",
+  "githubGeneratedMergeIdentity": "Ethant35",
+  "finderExplorerAuthorNotIndependentlyVerified": true
+}

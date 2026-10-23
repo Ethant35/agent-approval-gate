@@ -1,6 +1,6 @@
 # Production-readiness qualification
 
-Author: Ethan. Version 2.0.0 qualification, 2026-10-22. Clean acceptance and installed-package checks passed. Release-tag and remote-checksum verification are recorded separately after publication.
+Author: Ethan. Version 2.0.0 qualification, 2026-10-22. Clean acceptance and installed-package checks passed. The public v2.0.0 release tag, downloaded checksum and all runtime bytes are verified in evidence/readiness/release.json.
 
 Target: one local operator using mediated filesystem/HTTP tools and trusted exact command templates. Verified platform: macOS27.2 (26B118) arm64; Node24.22.1 with SQLite3.53.4. Other Node major lines and OS/architectures are unqualified. Native Codex integration does not mediate native tools outside MCP.
 
@@ -23,7 +23,7 @@ Target: one local operator using mediated filesystem/HTTP tools and trusted exac
 | Performance | history-before/after.json and soak.json |Measured bounded improvement; four-poller30-second soak only |
 | Onboarding / accessibility | seven additional browser scenarios |7/7 within clean52-test run; Axe/keyboard/narrow/theme pass |
 | Packaged fresh install / runtime bytes | scripts/verify-package.mjs |Pass; real installed CLI, protected read denial, useful approved native process, dashboard |
-| Metadata / license / release integrity | Ethan personal author, MIT and upstream notices retained |Package author/license and 14 runtime files verified; remote release record follows publication |
+| Metadata / license / release integrity | Ethan personal author, MIT and upstream notices retained |Package author/license and 14 runtime files verified; remote tag/checksum verified in release.json |
 
 ## Exact clean checks
 
