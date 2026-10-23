@@ -1,0 +1,28 @@
+{
+  "author": "Ethan",
+  "removedGeneratedAcceptanceDirectories": [
+    "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/usability-clean",
+    "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/package-install",
+    "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/desktop-release-2.1.0",
+    "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/signing-probe",
+    "/private/tmp/aag-release-2.1.0-20261022",
+    "/private/tmp/aag-signed-desktop-2.1.0-qualification",
+    "/private/tmp/aag-dmg-installed-2.1.0",
+    "/private/tmp/aag-downloaded-install-2.1.0",
+    "/private/tmp/aag-downloaded-native-2.1.0",
+    "/private/tmp/aag-native-lifetime-20261022-9657",
+    "/private/tmp/aag-native-self-test-20261022-20729"
+  ],
+  "preserved": [
+    "local runtime",
+    "legacy fixtures",
+    "historical releases",
+    "preserved duplicates",
+    "raw local Semgrep output",
+    "downloaded sealed 2.1 assets",
+    ".acceptance/usability-screenshots/downloaded-native.png"
+  ],
+  "remainingProjectTestServers": 0,
+  "actionsEnabled": false,
+  "actionsRuns": 0
+}

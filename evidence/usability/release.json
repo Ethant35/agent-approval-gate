@@ -1,0 +1,114 @@
+{
+  "author": "Ethan",
+  "version": "2.1.0",
+  "implementationCommit": "43e49ca2cab6e5b0bf0e94f065468593672c8846",
+  "releaseCommit": "e3af119235750bea9811a1a3dc1953a11818a985",
+  "pullRequest": "https://github.com/Ethant35/agent-approval-gate/pull/7",
+  "assets": {
+    "Agent-Approval-Gate-2.1.0-macos-arm64.dmg": "dbd5f0cd4ae70510880e53e6401533bd47b6486db0221278375f06fe23f20631",
+    "agent-approval-gate-2.1.0.tgz": "981be98991accd4fd896d1508399251ac57ee9c9bdc696cfac00cd0d37f55315"
+  },
+  "downloadedAssetsMatch": true,
+  "downloadedNativeSelfTest": "PASS",
+  "checks": [
+    {
+      "command": [
+        "xcrun",
+        "stapler",
+        "validate",
+        "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/release-download-2.1.0/Agent-Approval-Gate-2.1.0-macos-arm64.dmg"
+      ],
+      "exitCode": 0,
+      "output": "Processing: /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/release-download-2.1.0/Agent-Approval-Gate-2.1.0-macos-arm64.dmg\nThe validate action worked!\n"
+    },
+    {
+      "command": [
+        "spctl",
+        "--assess",
+        "--type",
+        "open",
+        "--context",
+        "context:primary-signature",
+        "--verbose=2",
+        "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/release-download-2.1.0/Agent-Approval-Gate-2.1.0-macos-arm64.dmg"
+      ],
+      "exitCode": 0,
+      "output": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/release-download-2.1.0/Agent-Approval-Gate-2.1.0-macos-arm64.dmg: accepted\nsource=Notarized Developer ID\n"
+    },
+    {
+      "command": [
+        "codesign",
+        "--verify",
+        "--deep",
+        "--strict",
+        "/private/tmp/aag-downloaded-install-2.1.0/Agent Approval Gate.app"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "xcrun",
+        "stapler",
+        "validate",
+        "/private/tmp/aag-downloaded-install-2.1.0/Agent Approval Gate.app"
+      ],
+      "exitCode": 0,
+      "output": "Processing: /private/tmp/aag-downloaded-install-2.1.0/Agent Approval Gate.app\nThe validate action worked!\n"
+    },
+    {
+      "command": [
+        "spctl",
+        "--assess",
+        "--type",
+        "execute",
+        "--verbose=2",
+        "/private/tmp/aag-downloaded-install-2.1.0/Agent Approval Gate.app"
+      ],
+      "exitCode": 0,
+      "output": "/private/tmp/aag-downloaded-install-2.1.0/Agent Approval Gate.app: accepted\nsource=Notarized Developer ID\n"
+    },
+    {
+      "command": [
+        "syspolicy_check",
+        "distribution",
+        "/private/tmp/aag-downloaded-install-2.1.0/Agent Approval Gate.app"
+      ],
+      "exitCode": 0,
+      "output": "Only one signature found in file:///private/tmp/aag-downloaded-install-2.1.0/Agent%20Approval%20Gate.app, skipping dual signature check\nApp passed all pre-distribution checks and is ready for distribution.\n"
+    }
+  ],
+  "quarantinePreserved": "0083;00000000;AgentApprovalGateDownloadedAcceptance;",
+  "status": "published",
+  "launchMethod": "Hidden native executable self-test; Gatekeeper and syspolicy assessments, no manual first-open dialog",
+  "url": "https://github.com/Ethant35/agent-approval-gate/releases/tag/v2.1.0",
+  "publishedAt": "2026-10-23T07:04:17Z",
+  "githubAssets": [
+    {
+      "name": "Agent-Approval-Gate-2.1.0-macos-arm64.dmg",
+      "size": 81657017,
+      "digest": "sha256:dbd5f0cd4ae70510880e53e6401533bd47b6486db0221278375f06fe23f20631",
+      "url": "https://github.com/Ethant35/agent-approval-gate/releases/download/v2.1.0/Agent-Approval-Gate-2.1.0-macos-arm64.dmg"
+    },
+    {
+      "name": "agent-approval-gate-2.1.0.tgz",
+      "size": 374329,
+      "digest": "sha256:981be98991accd4fd896d1508399251ac57ee9c9bdc696cfac00cd0d37f55315",
+      "url": "https://github.com/Ethant35/agent-approval-gate/releases/download/v2.1.0/agent-approval-gate-2.1.0.tgz"
+    },
+    {
+      "name": "agent-approval-gate-2.1.0.tgz.sha256",
+      "size": 96,
+      "digest": "sha256:ff096ce18dacdf3d54c344a821e8ac34c29af2deb6cfe97da253fee5263430ca",
+      "url": "https://github.com/Ethant35/agent-approval-gate/releases/download/v2.1.0/agent-approval-gate-2.1.0.tgz.sha256"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 108,
+      "digest": "sha256:daf2801a5aff4482106cec9f64c6cc23111f84e2ae0bb543b362460a28711a5f",
+      "url": "https://github.com/Ethant35/agent-approval-gate/releases/download/v2.1.0/SHA256SUMS.txt"
+    }
+  ],
+  "unauthenticatedPublicPackageDownloadMatches": true,
+  "publicDmgHead": "PASS"
+}
