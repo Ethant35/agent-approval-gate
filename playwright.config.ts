@@ -5,8 +5,9 @@ export default defineConfig({
   // Keep the gateway and accessibility suites in independent browser workers.
   // Local branded Chrome can exit during a long shared worker's API-only interval.
   projects: [
-    { name: 'gateway', testIgnore: '**/ui-readiness.spec.ts' },
+    { name: 'gateway', testIgnore: ['**/ui-readiness.spec.ts', '**/ui-desktop.spec.ts'] },
     { name: 'operator-ui', testMatch: '**/ui-readiness.spec.ts' },
+    { name: 'desktop-ui', testMatch: '**/ui-desktop.spec.ts' },
   ],
   fullyParallel: false,
   workers: 1,

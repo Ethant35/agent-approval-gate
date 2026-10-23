@@ -18,6 +18,12 @@ Agent-controlled inputs include IDs, timestamps, category/operation, parameters,
 - Human-only endpoints require the operator token. The private-state directory must use its native canonical path and remain disjoint from the canonical workspace; startup validates this before creating credentials. State-changing API requests require JSON and a custom intent header. Origin, Host, and cross-site Fetch Metadata checks prevent hostile web pages and DNS rebinding from treating localhost as trusted. Credentials are never accepted in query parameters. The fixed-asset dashboard uses a restrictive CSP and React text escaping.
 - Approval consumption, budget reservations, state changes, and audit entries are transactional. Parameters are immutable; policy revision changes invalidate approval. No agent-facing adapter exposes approval or settlement.
 
+## Desktop operator session
+
+The native app starts its bundled child through private pipes and receives a fresh in-memory operator bearer. That bearer lasts only for that child process and is different from the persistent CLI human credential. No HTTP pairing or setup endpoint issues credentials. The page cannot launch a gateway or choose a workspace. WebKit uses an isolated nonpersistent session, injects the capability only at the exact loopback origin, and blocks external navigation and popups. Session credentials are cleared when the child stops. The non-TTY check only validates transport shape; it does not authenticate a native parent.
+
+A process with unrestricted access under the same OS user can invoke the private entry with pipes, just as it can read that user's private persistent credential. This remains outside the mediated interface boundary. Do not permit an untrusted agent to run arbitrary local commands or read the app data directory. Default command rules are empty; approved process templates run under the existing Seatbelt policy. Signing authenticates the distributed app and does not create a separate OS identity for agents.
+
 ## Limits that remain
 
 This is not a sandbox for arbitrary agent behavior. Guarantees apply only to the supported mediated interfaces. Codex's built-in shell, filesystem, browser, and other tools do not automatically pass through this MCP server. Configure those separately. A prompt telling an agent to use the gateway is not a security boundary.

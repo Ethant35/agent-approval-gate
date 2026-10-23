@@ -32,3 +32,10 @@ Author: Ethan. All 26 explicitly invoked skills were read from the project-local
 | verification-before-completion | Recorded real failures, separate partial/focused/full runs, then clean install and installed archive checks | READINESS.md and evidence/readiness; publication only after final commands complete |
 
 No skill was installed globally and no hooks or Codex configuration were changed. Skill read/application does not itself constitute a passing release gate. Native/API/browser/source review findings are evidence-bounded, and exact clean qualification remains recorded separately.
+
+
+## Desktop usability phase (2.1 candidate)
+
+The seven explicit skills were loaded from the installed local skill directory. Shipping-and-launch supplies the actual installer and returning/update/rollback gates; api-and-interface-design preserves authenticated API/CLI/MCP while adding only internal desktop startup options; impeccable preserves the established dashboard and standard AppKit controls, records PRODUCT.md, and uses rendered inspection and mechanical detection; baseline-ui and fixing-accessibility keep labels, status text, focus and mobile/zoom behavior; systematic-debugging records red token-lifetime tests before the repair and diagnoses the ambiguous pre locator without weakening assertions; verification-before-completion requires actual bundle/signature/Gatekeeper/install evidence before release. Semgrep reuses the exact already-approved eleven-pack local-only plan, with metrics off and partial rules disclosed.
+
+The design detector flags the existing three-pixel pending-state accent border. This is retained as a deliberate redundant status cue alongside text and color, consistent with the requested clearer states and established dashboard. It is not a new decorative card pattern. Native screenshots and browser accessibility assertions provide separate checks; simulated native bootstrap browser tests do not establish AppKit behavior. Native self-tests keep windows hidden. No new global config, hook or telemetry is installed.

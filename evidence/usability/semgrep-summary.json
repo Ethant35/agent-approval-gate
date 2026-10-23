@@ -1,0 +1,32 @@
+{
+  "author": "Ethan",
+  "engine": "Semgrep Community 1.182.1",
+  "mode": "run-all",
+  "mergedFindings": 503,
+  "levels": {
+    "warning": 503
+  },
+  "rules": {
+    "raptor-bad-words": 447,
+    "raptor-signed-unsigned-conversion": 3,
+    "raptor-interesting-api-calls": 28,
+    "raptor-write-into-stack-buffer": 2,
+    "raptor-typos": 2,
+    "raptor-integer-truncation": 1,
+    "raptor-argv-envp-access": 13,
+    "raptor-integer-wraparound": 2,
+    "generic-one-liners": 4,
+    "exec": 1
+  },
+  "failed": 0,
+  "skipped": 0,
+  "coveredNothing": 0,
+  "oversized": 0,
+  "partialRulesets": [
+    "https://github.com/elttam/semgrep-rules",
+    "https://github.com/apiiro/malicious-code-ruleset"
+  ],
+  "snapshot": "Desktop ephemeral-token and native lifetime source; final documentation may differ",
+  "triage": "All 56 nonlexical locations unchanged from reviewed 2.0 source. New candidates are lexical vocabulary hits in Swift, desktop source, UI and documentation; no literal credentials or new execution edge. Manual desktop review covers actual WebKit/process boundaries.",
+  "confirmedExploitableFindings": 0
+}

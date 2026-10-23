@@ -1,3 +1,21 @@
+# Version 2.1 desktop qualification
+
+Author: Ethan. Local qualification completed 2026-10-22; release download verification is recorded separately after upload. Earlier version2.0 evidence below remains historical.
+
+On macOS27.2 (26B118) arm64, a separate clean installation passed the production build, strict TypeScript checks, formatting,30 core tests,56 browser tests (47.644s; no failures, skips, retries or flakes),1243 native ASan/UBSan checks and dependency audit with zero vulnerabilities. The later test-only downgrade assertion also passed: newer profile metadata is refused without database changes. Original acceptance assertions remain intact; one locator was narrowed to the same parameters field after a new preview added a second pre element.
+
+The signed native app passed actual hidden AppKit/WKWebView tutorial approval, regular workspace approval, returning history, startup-exit and post-ready crash recovery, token clearing, restart and off-origin/popup denial. Its bundled Node/helper passed real approved-process and protected-file checks. All14 JS/web runtime files and every file-backed helper Mach-O section match the separate clean build. Tutorial and update tests use real pending writes; the upgrade fixture uses an actual2.0.0 CLI database plus explicitly controlled launcher-version metadata because2.0 had no launcher.
+
+The app and DMG both received Apple notarization Accepted, were stapled and validated. The mounted DMG's copied, quarantined app passed strict codesign verification, Gatekeeper assessment, syspolicy_check distribution and the hidden native self-test. No quarantine flag was removed and no Gatekeeper bypass was used. This is automated installation/assessment; no manual first-open dialog or unfamiliar-user study is claimed. The app targets macOS14+, but onlymacOS27.2 is release-qualified here.
+
+Semgrep used the approved11-pack Community plan with metrics off:503 candidates, zero confirmed exploitable findings after contextual review, no failed/skipped/empty/oversized scans. Two external packs remain partial (15 parse errors). Swift received generic lexical scanning, not Swift-specific taint analysis. See docs/semgrep-readiness.md and docs/desktop-security-review.md. Same-user arbitrary process control remains outside this mediated gateway's boundary.
+
+Evidence: evidence/usability/{checks-clean.json,e2e-clean.json,runtime-identity.json,app-runtime-install.json,distribution-local.json,notary-app-status.json,notary-dmg-status.json}. App submission ed7b8806-22a0-4511-852b-75d7cf21f457; DMG submission a0743699-f687-46aa-bf1b-e291e955994e. Final sealed DMG SHA256: dbd5f0cd4ae70510880e53e6401533bd47b6486db0221278375f06fe23f20631.
+
+Personal package/provenance authorship is Ethan; upstream licenses and factual signing/Apple metadata are retained. Finder/Explorer author display is not independently verified. Raw security scans and temporary private test data stay local. GitHub Actions remains disabled; no global config/hooks or telemetry were added. Final release publication and downloaded-asset identity are tracked in HANDOFF.md and evidence/usability/release.json when complete.
+
+---
+
 # Production-readiness qualification
 
 Author: Ethan. Version 2.0.0 qualification, 2026-10-22. Clean acceptance and installed-package checks passed. The public v2.0.0 release tag, downloaded checksum and all runtime bytes are verified in evidence/readiness/release.json.

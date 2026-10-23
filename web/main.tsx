@@ -21,6 +21,19 @@ type Snapshot = {
   budgets: Budget[];
   audit: AuditEntry[];
 };
+type DesktopBootstrap = {
+  mode: 'workspace' | 'tutorial';
+  workspace: string;
+  tutorialRequestId?: string;
+  version: string;
+};
+declare global {
+  interface Window {
+    __AAG_DESKTOP__?: DesktopBootstrap;
+  }
+}
+const desktopBootstrap = window.__AAG_DESKTOP__;
+const tutorialBaseline = 'This file has not been approved yet.\n';
 const terminalStates: State[] = ['COMPLETED', 'FAILED', 'DENIED', 'EXPIRED', 'CANCELLED'];
 const allStates: State[] = [
   'SUBMITTED',
@@ -79,22 +92,81 @@ function actionLabel(request: RequestRecord) {
   if (action.category === 'http') return 'HTTP request';
   return 'Launch subagent';
 }
-function exactOperation(request: RequestRecord) {
+function ActionPreview({
+  request,
+  payloadOmitted = false,
+}: {
+  request: RequestRecord;
+  payloadOmitted?: boolean;
+}) {
   const { action } = request;
-  if ('payloadOmitted' in request && request.payloadOmitted) {
-    if (action.category === 'filesystem')
-      return `${action.operation.toUpperCase()} ${action.resourceScope}`;
-    if (action.category === 'http')
-      return `${action.operation.toUpperCase()} ${action.resourceScope}`;
-    return `${action.category} action in ${action.resourceScope}`;
-  }
+  if (payloadOmitted)
+    return (
+      <div className="action-preview">
+        <p>
+          {action.operation.toUpperCase()} {action.resourceScope}
+        </p>
+        <p className="muted">Open “Full parameters and scope” to load the exact action.</p>
+      </div>
+    );
   const p = action.parameters;
   if (action.category === 'filesystem')
-    return `${action.operation.toUpperCase()} ${p.path ?? '(path missing)'}`;
+    return (
+      <div className="action-preview">
+        <div>
+          <strong>File path</strong>
+          <code>{p.path ?? '(path missing)'}</code>
+        </div>
+        {p.content !== undefined && (
+          <div>
+            <strong>Proposed file content</strong>
+            <pre>{p.content}</pre>
+          </div>
+        )}
+      </div>
+    );
   if (action.category === 'shell')
-    return [p.executable ?? '(executable missing)', ...(p.args ?? [])].join(' ');
-  if (action.category === 'http') return `${p.method ?? 'GET'} ${p.url ?? '(URL missing)'}`;
-  return `Launch ${p.childAgentId ?? '(agent missing)'} with ${p.runner ?? '(runner missing)'}`;
+    return (
+      <div className="action-preview">
+        <div>
+          <strong>Executable</strong>
+          <code>{p.executable ?? '(executable missing)'}</code>
+        </div>
+        <div>
+          <strong>Arguments (JSON array)</strong>
+          <pre>{JSON.stringify(p.args ?? [], null, 2)}</pre>
+        </div>
+      </div>
+    );
+  if (action.category === 'http')
+    return (
+      <div className="action-preview">
+        <div>
+          <strong>Method</strong>
+          <code>{p.method ?? 'GET'}</code>
+        </div>
+        <div>
+          <strong>URL</strong>
+          <code>{p.url ?? '(URL missing)'}</code>
+        </div>
+        <div>
+          <strong>Request body</strong>
+          {p.body === undefined ? <p>(empty)</p> : <pre>{p.body}</pre>}
+        </div>
+      </div>
+    );
+  return (
+    <div className="action-preview">
+      <div>
+        <strong>Agent</strong>
+        <code>{p.childAgentId ?? '(agent missing)'}</code>
+      </div>
+      <div>
+        <strong>Runner</strong>
+        <code>{p.runner ?? '(runner missing)'}</code>
+      </div>
+    </div>
+  );
 }
 
 function App() {
@@ -119,12 +191,19 @@ function App() {
     budgets: [],
     audit: [],
   });
+  const tutorialRequest = desktopBootstrap?.tutorialRequestId
+    ? snapshot.requests.find((item) => item.action.id === desktopBootstrap.tutorialRequestId)
+    : undefined;
+  const tutorialRequestDetails = desktopBootstrap?.tutorialRequestId
+    ? requestDetails[desktopBootstrap.tutorialRequestId]
+    : undefined;
   const [filter, setFilter] = useState(() => readPreference('aag-request-filter', 'all'));
   const [search, setSearch] = useState(() => readPreference('aag-search', ''));
   const [auditSearch, setAuditSearch] = useState(() => readPreference('aag-audit-search', ''));
   const [theme, setTheme] = useState(() => readPreference<'light' | 'dark'>('aag-theme', 'light'));
   const [setupGuideOpen, setSetupGuideOpen] = useState(
     () =>
+      !desktopBootstrap &&
       readPreference<'unseen' | 'skipped' | 'completed'>('aag-setup-state', 'unseen') === 'unseen',
   );
   const [confirm, setConfirm] = useState<{
@@ -325,6 +404,14 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    const id =
+      desktopBootstrap?.mode === 'tutorial' ? desktopBootstrap.tutorialRequestId : undefined;
+    if (!connected || !id || !tutorialRequest) return;
+    if (requestDetails[id]?.state === tutorialRequest.state) return;
+    void loadRequestDetails(id, true).catch(() => {});
+  }, [connected, tutorialRequest?.state, tutorialRequestDetails?.state]);
+
   const loadAuditDetails = async (sequence: number) => {
     if (auditDetails[sequence]) return;
     try {
@@ -393,6 +480,20 @@ function App() {
           ? 'That token was not accepted. Check the human.token file in the gateway’s private data directory and try again.'
           : `Could not connect to the gateway. Check that it is running at this address, then try again. (${message})`,
       );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const retryDesktopConnection = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      if (!token) throw new Error('The desktop session has no operator token.');
+      await refresh(token);
+    } catch (cause) {
+      setConnected(false);
+      setError(cause instanceof Error ? cause.message : 'Could not reconnect to the gateway.');
     } finally {
       setLoading(false);
     }
@@ -517,16 +618,22 @@ function App() {
             aria-live="polite"
           >
             <i aria-hidden="true" />
-            {connected ? 'Gateway connected' : 'Gateway disconnected'}
+            {connected
+              ? 'Gateway connected'
+              : desktopBootstrap && token
+                ? 'Connecting to local gateway'
+                : 'Gateway disconnected'}
           </span>
-          <button
-            className="button button-quiet setup-toggle"
-            type="button"
-            aria-expanded={setupGuideOpen}
-            onClick={() => setSetupGuideOpen((open) => !open)}
-          >
-            {setupGuideOpen ? 'Close setup guide' : 'Setup guide'}
-          </button>
+          {!desktopBootstrap && (
+            <button
+              className="button button-quiet setup-toggle"
+              type="button"
+              aria-expanded={setupGuideOpen}
+              onClick={() => setSetupGuideOpen((open) => !open)}
+            >
+              {setupGuideOpen ? 'Close setup guide' : 'Setup guide'}
+            </button>
+          )}
           <button
             className="icon-button"
             type="button"
@@ -536,7 +643,7 @@ function App() {
           >
             {theme === 'light' ? '◐' : '☼'}
           </button>
-          {connected && (
+          {connected && !desktopBootstrap && (
             <button className="button button-quiet" type="button" onClick={disconnect}>
               Disconnect
             </button>
@@ -550,69 +657,107 @@ function App() {
 
       {!connected && (
         <main className="connect-wrap" id="top" tabIndex={-1}>
-          <div className="connect-card">
-            {setupGuideOpen && (
-              <section
-                className="setup-guide"
-                aria-label="First-time setup"
-                aria-describedby="setup-description"
-              >
-                <div className="setup-guide-heading">
-                  <h2>Before you connect</h2>
-                  <button
-                    className="text-button"
-                    type="button"
-                    onClick={() => {
-                      savePreference('aag-setup-state', 'skipped');
-                      setSetupGuideOpen(false);
-                    }}
-                  >
-                    Skip setup
-                  </button>
-                </div>
-                <p id="setup-description">
-                  The gateway runs on this Mac. These steps use its real data; no sample actions are
-                  sent.
-                </p>
-                <ol>
-                  <li>
-                    Run <code>aag serve</code> in a trusted terminal (or{' '}
-                    <code>node dist/cli.js serve</code> from the source checkout).
-                  </li>
-                  <li>
-                    Read <code>human.token</code> from the private data directory (by default{' '}
-                    <code>~/.local/share/agent-approval-gate</code>).
-                  </li>
-                  <li>Paste the token below. It stays in this browser tab’s session.</li>
-                </ol>
-              </section>
-            )}
-            <form onSubmit={connect} aria-busy={loading}>
-              <h1>Connect to gateway</h1>
+          {desktopBootstrap ? (
+            <section className="connect-card desktop-reconnect" aria-labelledby="reconnect-title">
+              <h1 id="reconnect-title">Reconnect to gateway</h1>
               <p>
-                Enter the human token created by <code>aag serve</code>. It stays in this browser
-                session.
+                {desktopBootstrap.workspace
+                  ? `The selected workspace is ${desktopBootstrap.workspace}.`
+                  : 'The selected workspace is not available.'}
               </p>
-              <label htmlFor="human-token">Human token</label>
-              <input
-                id="human-token"
-                name="human-token"
-                type="password"
-                autoComplete="current-password"
-                spellCheck={false}
-                value={tokenInput}
-                onChange={(event) => setTokenInput(event.target.value)}
-              />
               {error && (
                 <div role="alert" className="alert alert-error">
                   {error}
                 </div>
               )}
-              <button className="button button-primary full-width" type="submit" disabled={loading}>
-                {loading ? 'Connecting…' : 'Connect'}
+              {!token && !error && (
+                <p role="status" className="alert alert-error">
+                  The desktop session did not provide an operator token. Use Reconnect in the
+                  desktop toolbar to restore the session.
+                </p>
+              )}
+              <button
+                className="button button-primary full-width"
+                type="button"
+                onClick={() => void retryDesktopConnection()}
+                disabled={loading || !token}
+              >
+                {loading ? 'Reconnecting…' : 'Reconnect'}
               </button>
-            </form>
-          </div>
+              <p className="desktop-reconnect-help">
+                If the gateway stays disconnected, use the desktop toolbar to reconnect or choose
+                the workspace again. The browser view does not read or request the token file.
+              </p>
+            </section>
+          ) : (
+            <div className="connect-card">
+              {setupGuideOpen && (
+                <section
+                  className="setup-guide"
+                  aria-label="First-time setup"
+                  aria-describedby="setup-description"
+                >
+                  <div className="setup-guide-heading">
+                    <h2>Before you connect</h2>
+                    <button
+                      className="text-button"
+                      type="button"
+                      onClick={() => {
+                        savePreference('aag-setup-state', 'skipped');
+                        setSetupGuideOpen(false);
+                      }}
+                    >
+                      Skip setup
+                    </button>
+                  </div>
+                  <p id="setup-description">
+                    The gateway runs on this Mac. These steps use its real data; no sample actions
+                    are sent.
+                  </p>
+                  <ol>
+                    <li>
+                      Run <code>aag serve</code> in a trusted terminal (or{' '}
+                      <code>node dist/cli.js serve</code> from the source checkout).
+                    </li>
+                    <li>
+                      Read <code>human.token</code> from the private data directory (by default{' '}
+                      <code>~/.local/share/agent-approval-gate</code>).
+                    </li>
+                    <li>Paste the token below. It stays in this browser tab’s session.</li>
+                  </ol>
+                </section>
+              )}
+              <form onSubmit={connect} aria-busy={loading}>
+                <h1>Connect to gateway</h1>
+                <p>
+                  Enter the human token created by <code>aag serve</code>. It stays in this browser
+                  session.
+                </p>
+                <label htmlFor="human-token">Human token</label>
+                <input
+                  id="human-token"
+                  name="human-token"
+                  type="password"
+                  autoComplete="current-password"
+                  spellCheck={false}
+                  value={tokenInput}
+                  onChange={(event) => setTokenInput(event.target.value)}
+                />
+                {error && (
+                  <div role="alert" className="alert alert-error">
+                    {error}
+                  </div>
+                )}
+                <button
+                  className="button button-primary full-width"
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? 'Connecting…' : 'Connect'}
+                </button>
+              </form>
+            </div>
+          )}
         </main>
       )}
 
@@ -643,6 +788,9 @@ function App() {
           <div className="page-heading">
             <div>
               <h1>Action overview</h1>
+              {desktopBootstrap?.mode === 'workspace' && (
+                <p className="workspace-location">Workspace: {desktopBootstrap.workspace}</p>
+              )}
             </div>
             <span className="updated" role="status" aria-live="polite">
               Refreshes every second
@@ -660,6 +808,106 @@ function App() {
                 ×
               </button>
             </div>
+          )}
+          {desktopBootstrap?.mode === 'tutorial' && (
+            <section className="tutorial-guide" aria-labelledby="tutorial-title">
+              <h2 id="tutorial-title">Safe approval walkthrough</h2>
+              <p>
+                Review one real filesystem request in this isolated tutorial workspace. The same
+                approval checks and write path apply as in a selected workspace.
+              </p>
+              {tutorialRequest ? (
+                <div className="tutorial-request-summary">
+                  <p>
+                    <strong>Isolated workspace</strong>
+                    <code>{desktopBootstrap.workspace}</code>
+                  </p>
+                  <p>
+                    <strong>Request status</strong>
+                    <span className={statusClass(tutorialRequest.state)}>
+                      {tutorialRequest.state.replaceAll('_', ' ')}
+                    </span>
+                  </p>
+                  {tutorialRequest.state === 'PENDING_APPROVAL' && (
+                    <>
+                      <div>
+                        <strong>File before approval · tutorial fixture baseline</strong>
+                        <pre>{tutorialBaseline}</pre>
+                      </div>
+                      {tutorialRequestDetails ? (
+                        <div>
+                          <strong>Exact proposed write</strong>
+                          <ActionPreview request={tutorialRequestDetails} />
+                        </div>
+                      ) : (
+                        <p role="status">
+                          {requestDetailErrors[tutorialRequest.action.id]
+                            ? `Could not load the exact tutorial request: ${requestDetailErrors[tutorialRequest.action.id]}`
+                            : 'Loading the exact tutorial request…'}
+                        </p>
+                      )}
+                      <a className="button button-quiet tutorial-link" href="#tutorial-request">
+                        Review and decide
+                      </a>
+                    </>
+                  )}
+                  {tutorialRequest.state === 'COMPLETED' && (
+                    <div role="status" className="tutorial-outcome">
+                      <strong>The gateway reports that the write completed.</strong>
+                      {tutorialRequestDetails && (
+                        <>
+                          <p>Content submitted for the approved write:</p>
+                          <ActionPreview request={tutorialRequestDetails} />
+                          <p>Execution result reported by the gateway:</p>
+                          <pre>{JSON.stringify(tutorialRequestDetails.result, null, 2)}</pre>
+                        </>
+                      )}
+                      <p>
+                        To run this walkthrough again, choose “Try approval safely” in the desktop
+                        toolbar. It starts a fresh isolated tutorial.
+                      </p>
+                    </div>
+                  )}
+                  {tutorialRequest.state === 'DENIED' && (
+                    <p role="status" className="tutorial-outcome">
+                      The request was denied. The gateway did not execute this write.
+                    </p>
+                  )}
+                  {tutorialRequest.state === 'FAILED' && (
+                    <p role="status" className="tutorial-outcome">
+                      The write failed. Open the request below to inspect the gateway’s execution
+                      result before trying again.
+                    </p>
+                  )}
+                  {tutorialRequest.state === 'EXPIRED' && (
+                    <p role="status" className="tutorial-outcome">
+                      The approval expired before execution. Use the desktop toolbar’s “Try approval
+                      safely” control to start a fresh isolated tutorial.
+                    </p>
+                  )}
+                  {tutorialRequest.state === 'CANCELLED' && (
+                    <p role="status" className="tutorial-outcome">
+                      The request was cancelled before completion. Use the desktop toolbar’s “Try
+                      approval safely” control to start a fresh isolated tutorial.
+                    </p>
+                  )}
+                  {['SUBMITTED', 'ALLOWED', 'APPROVED', 'EXECUTING'].includes(
+                    tutorialRequest.state,
+                  ) && (
+                    <p role="status" className="tutorial-outcome">
+                      The gateway reports {tutorialRequest.state.replaceAll('_', ' ')}. The
+                      dashboard refreshes while the request is active.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p role="status">
+                  {desktopBootstrap.tutorialRequestId
+                    ? 'Waiting for the tutorial request to appear…'
+                    : 'The launcher did not provide a tutorial request ID. Return to the desktop toolbar and start the tutorial again.'}
+                </p>
+              )}
+            </section>
           )}
           <section className="metrics" aria-label="Gateway summary">
             <article className="metric">
@@ -742,6 +990,11 @@ function App() {
                   <article
                     className={`request-card ${request.state === 'PENDING_APPROVAL' ? 'is-pending' : ''}`}
                     key={request.action.id}
+                    id={
+                      request.action.id === desktopBootstrap?.tutorialRequestId
+                        ? 'tutorial-request'
+                        : undefined
+                    }
                   >
                     <div className="request-main">
                       <div className="request-title-line">
@@ -750,7 +1003,9 @@ function App() {
                           {request.state.replaceAll('_', ' ')}
                         </span>
                       </div>
-                      <div className="request-command">{exactOperation(shown)}</div>
+                      <div className="request-command">
+                        <ActionPreview request={shown} payloadOmitted={Boolean(payloadOmitted)} />
+                      </div>
                       <p className="reason">
                         {request.reason || 'No reason supplied by policy engine.'}
                       </p>
@@ -1153,7 +1408,8 @@ function App() {
                         {actionLabel(r)} <span className="muted">· {r.action.agentId}</span>
                       </strong>
                       <small>
-                        {exactOperation(r)} · {date(r.createdAt)}
+                        {r.action.operation.toUpperCase()} · {r.action.resourceScope} ·{' '}
+                        {date(r.createdAt)}
                       </small>
                     </div>
                     <span className={statusClass(r.state)}>{r.state}</span>
@@ -1208,7 +1464,7 @@ function App() {
           </p>
           <div className="confirm-summary">
             <strong>{actionLabel(confirm.request)}</strong>
-            <code>{exactOperation(confirm.request)}</code>
+            <ActionPreview request={confirm.request} />
             <span>
               Request ID: <code>{confirm.request.action.id}</code>
             </span>

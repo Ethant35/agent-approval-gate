@@ -1,0 +1,42 @@
+
+> agent-approval-gate@2.1.0 test:core
+> node --test tests/core/*.test.mjs
+
+✔ summary, detail and health routes preserve principal boundaries (353.608375ms)
+✔ active request cap rejects before persistence and cancellation restores capacity (776.946542ms)
+✔ CLI lists and exports every page, and reads a valid escaped result (872.395542ms)
+✔ actual 2.0.0 state gets a pre-update backup and remains useful after restore into old CLI (1096.420834ms)
+✔ desktop tutorial uses a real isolated pending action and keeps operator access off HTTP (420.530792ms)
+✔ desktop remembers workspace policies and isolates histories without reapplying defaults (615.655ms)
+✔ denied tutorial leaves its file unchanged and replay uses a fresh isolated session (395.260167ms)
+✔ summary pages bound payloads and preserve every row plus older pending work (809.750917ms)
+✔ summary pages include the whole active admission limit despite large private metadata (170.404416ms)
+✔ CLI cold backup and restore preserve pending approval through a useful write (806.257833ms)
+✔ CLI refuses to start from an INCOMPLETE state directory (91.839958ms)
+✔ cold backup restores pending state and can approve a useful result (663.779292ms)
+✔ backup refuses a live gateway and an existing destination without changing it (170.221042ms)
+✔ restore rejects a tampered backup before creating a destination (199.947ms)
+✔ backup rejects symlink and hardlinked credentials and leaves marked partial output (195.795459ms)
+✔ backup rejects missing and malformed credentials and keeps partial output marked (239.740375ms)
+✔ generated reservation, release, and settlement sequences match an independent ledger (56.398042ms)
+✔ generated over-budget transactions roll back earlier reservations completely (17.48525ms)
+✔ generated filesystem path spellings canonicalize idempotently in parsed policies (36.826125ms)
+✔ generated equivalent filesystem paths cannot bypass a matching deny entry (1.933875ms)
+✔ SIGKILL restart preserves pending requests without stale lock obstruction (517.569792ms)
+✔ second server cannot take a live lease and loss of lease stops the first server (448.671541ms)
+✔ credential symlink is rejected without changing its target (106.159791ms)
+✔ repeated empty lease marker refusal can be recovered offline without deleting it (672.849875ms)
+✔ stale legacy numeric lease marker is reclaimed by the native helper (139.32ms)
+✔ live numeric and malformed legacy lease markers fail closed without changing them (215.307708ms)
+✔ full database rolls back request plus audit, preserving committed budget and readable state (10.7425ms)
+✔ corrupt database fails startup without replacing the file (217.998667ms)
+✔ write lock fault puts the service in fail-closed recovery mode (5565.491667ms)
+✔ actual v1.0.1 crash state upgrades with pending work and unsettled cost intact (845.153834ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5844.157042

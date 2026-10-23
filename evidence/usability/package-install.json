@@ -1,0 +1,31 @@
+{
+  "author": "Ethan",
+  "verifiedAt": "2026-10-23T07:00:22.432Z",
+  "version": "2.1.0",
+  "packageAuthor": "Ethan",
+  "cli": "installed node_modules/.bin/aag",
+  "startup": "PASS",
+  "dashboard": "PASS",
+  "normalizedDeny": "PASS",
+  "allowedRead": "PASS",
+  "pendingBeforeApproval": "PASS",
+  "approvedNativeProcess": "PASS",
+  "protectedFileUnchanged": "PASS",
+  "runtimeFilesMatchArchiveBuild": [
+    "maintenance.js",
+    "runtime.js",
+    "policy.js",
+    "server.js",
+    "store.js",
+    "lease.js",
+    "desktop.js",
+    "safe-fs",
+    "executor.js",
+    "mcp.js",
+    "cli.js",
+    "contracts.js",
+    "web/index.html",
+    "web/assets/index-CcglO_gX.css",
+    "web/assets/index-CkCXi4r8.js"
+  ]
+}

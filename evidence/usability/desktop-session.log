@@ -1,0 +1,12 @@
+✔ actual 2.0.0 state gets a pre-update backup and remains useful after restore into old CLI (901.124292ms)
+✔ desktop tutorial uses a real isolated pending action and keeps operator access off HTTP (387.394ms)
+✔ desktop remembers workspace policies and isolates histories without reapplying defaults (536.757042ms)
+✔ denied tutorial leaves its file unchanged and replay uses a fresh isolated session (359.049291ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1332.625917

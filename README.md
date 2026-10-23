@@ -6,7 +6,17 @@ A local permission gateway for agent tools. It evaluates versioned policies, rec
 
 [Version 2 qualification](READINESS.md) · [Policy format](POLICY.md) · [Security boundaries](SECURITY.md) · [API and integrations](docs/API.md)
 
-## Install and start
+## macOS app
+
+The macOS arm64 app bundles Node and the native helper. It does not need a global Node installation. See the qualification status in READINESS.md before distributing a development build.
+
+Download the arm64 DMG from [Releases](https://github.com/Ethant35/agent-approval-gate/releases), open it, and drag **Agent Approval Gate** to **Applications**. Open the app and choose **Try Tutorial** to approve a real write in a fresh isolated folder. Choose **Choose Workspace** for your project. Files require approval; commands and network access start disabled. The app supplies its operator session without token-file copying.
+
+Each workspace has its own policy and history. **Reopen Last Workspace** returns to the last selection. **Stop Gateway** stops that session; **Restart Gateway** reconnects after a failure. Interrupted work is never retried automatically. Only actions sent through the gateway are checked; other tools and local processes require their own host controls.
+
+See [app operation and recovery](docs/desktop-operation.md) and [native security design](docs/native-launcher.md). The app's runtime and signing checks are separate from the earlier CLI release qualification.
+
+## Source / CLI install and start
 
 ```sh
 git clone https://github.com/Ethant35/agent-approval-gate.git

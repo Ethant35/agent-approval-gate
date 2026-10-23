@@ -1,6 +1,6 @@
 {
   "name": "agent-approval-gate",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Local policy and human approval gateway for agent actions",
   "author": "Ethan",
   "license": "MIT",

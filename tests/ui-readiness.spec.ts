@@ -217,7 +217,7 @@ test('approval dialog contains keyboard focus, confirms exact action, and restor
   const card = page.locator('.request-card').filter({ hasText: 'ui-approval' });
   const parameters = card.getByText('Full parameters and scope', { exact: true });
   await parameters.click();
-  await expect(card.locator('pre')).toContainText('approved result');
+  await expect(card.locator('.details-grid pre')).toContainText('approved result');
   await expect(card).toContainText(action.parameters.path!);
   const delayedDetail = async (route: import('@playwright/test').Route) => {
     await new Promise((resolve) => setTimeout(resolve, 250));
