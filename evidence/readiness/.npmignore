@@ -1,0 +1,4 @@
+# Author: Ethan. Post-pack evidence lives beside the sealed archive in Git/release assets.
+archive.json
+package-install.json
+release.json

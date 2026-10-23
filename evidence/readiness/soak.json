@@ -1,0 +1,34 @@
+{
+  "author": "Ethan",
+  "at": "2026-10-22T20:41:13.569Z",
+  "node": "v24.22.1",
+  "durationMs": 30115.379667,
+  "historyRows": 2500,
+  "concurrentPollers": 4,
+  "polls": 2284,
+  "latencyMs": {
+    "p50": 1.8723750000008295,
+    "p95": 3.339749999999867,
+    "p99": 6.191791999999623
+  },
+  "responseBytesMax": 51201,
+  "rssKiB": {
+    "first": 84560,
+    "last": 122976,
+    "max": 122976
+  },
+  "admission": {
+    "burst": 50,
+    "accepted": 8,
+    "rejected": 42,
+    "noUnapprovedSideEffect": true
+  },
+  "queryPlan": [
+    {
+      "id": 3,
+      "parent": 0,
+      "notused": 61,
+      "detail": "SEARCH requests USING INDEX requests_state (<expr>=?)"
+    }
+  ]
+}

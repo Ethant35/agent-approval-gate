@@ -12,8 +12,11 @@ type Budget = {
   remaining: number;
 };
 type AuditEntry = { sequence: number; requestId: string; state: State; reason: string; at: string };
+type DashboardRequest = RequestRecord & { payloadOmitted?: boolean };
+type AuditDetail = AuditEntry & Record<string, unknown>;
+type PageResult<T> = { data: T; nextCursor: string | null };
 type Snapshot = {
-  requests: RequestRecord[];
+  requests: DashboardRequest[];
   policy: { revision: number; policy: Policy };
   budgets: Budget[];
   audit: AuditEntry[];
@@ -61,6 +64,10 @@ function money(value: number, currency: string) {
     return `${currency} ${(value / 100).toFixed(2)}`;
   }
 }
+function mergeBy<T>(current: T[], incoming: T[], key: (item: T) => string) {
+  const seen = new Set(incoming.map(key));
+  return [...incoming, ...current.filter((item) => !seen.has(key(item)))];
+}
 function statusClass(state: string) {
   return `status status-${state.toLowerCase().replaceAll('_', '-')}`;
 }
@@ -74,6 +81,13 @@ function actionLabel(request: RequestRecord) {
 }
 function exactOperation(request: RequestRecord) {
   const { action } = request;
+  if ('payloadOmitted' in request && request.payloadOmitted) {
+    if (action.category === 'filesystem')
+      return `${action.operation.toUpperCase()} ${action.resourceScope}`;
+    if (action.category === 'http')
+      return `${action.operation.toUpperCase()} ${action.resourceScope}`;
+    return `${action.category} action in ${action.resourceScope}`;
+  }
   const p = action.parameters;
   if (action.category === 'filesystem')
     return `${action.operation.toUpperCase()} ${p.path ?? '(path missing)'}`;
@@ -89,6 +103,16 @@ function App() {
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [loadingAudit, setLoadingAudit] = useState(false);
+  const [requestCursor, setRequestCursor] = useState<string | null>(null);
+  const [auditCursor, setAuditCursor] = useState<string | null>(null);
+  const requestHistoryInitialized = useRef(false);
+  const auditHistoryInitialized = useRef(false);
+  const [requestDetails, setRequestDetails] = useState<Record<string, RequestRecord>>({});
+  const [requestDetailErrors, setRequestDetailErrors] = useState<Record<string, string>>({});
+  const [auditDetails, setAuditDetails] = useState<Record<number, AuditDetail>>({});
+  const [auditDetailErrors, setAuditDetailErrors] = useState<Record<number, string>>({});
   const [snapshot, setSnapshot] = useState<Snapshot>({
     requests: [],
     policy: { revision: 0, policy: {} as Policy },
@@ -99,12 +123,16 @@ function App() {
   const [search, setSearch] = useState(() => readPreference('aag-search', ''));
   const [auditSearch, setAuditSearch] = useState(() => readPreference('aag-audit-search', ''));
   const [theme, setTheme] = useState(() => readPreference<'light' | 'dark'>('aag-theme', 'light'));
+  const [setupGuideOpen, setSetupGuideOpen] = useState(
+    () =>
+      readPreference<'unseen' | 'skipped' | 'completed'>('aag-setup-state', 'unseen') === 'unseen',
+  );
   const [confirm, setConfirm] = useState<{
     request: RequestRecord;
     kind: 'approve' | 'deny';
   } | null>(null);
   const [busyId, setBusyId] = useState('');
-  const confirmDialogRef = useRef<HTMLElement>(null);
+  const confirmDialogRef = useRef<HTMLDialogElement>(null);
   const confirmBackRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
@@ -117,27 +145,22 @@ function App() {
   useEffect(() => savePreference('aag-audit-search', auditSearch), [auditSearch]);
 
   useEffect(() => {
+    const dialog = confirmDialogRef.current;
     if (!confirm) {
       restoreFocusRef.current?.focus();
       restoreFocusRef.current = null;
       return;
     }
+    if (dialog && !dialog.open) dialog.showModal();
     confirmBackRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        setConfirm(null);
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const dialog = confirmDialogRef.current;
-      if (!dialog) return;
+    const trapTab = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !dialog) return;
       const controls = [
         ...dialog.querySelectorAll<HTMLElement>(
           'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])',
         ),
       ].filter((control) => control.getAttribute('aria-hidden') !== 'true');
-      if (!controls.length) {
+      if (controls.length === 0) {
         event.preventDefault();
         dialog.focus();
         return;
@@ -158,11 +181,14 @@ function App() {
         first.focus();
       }
     };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    dialog?.addEventListener('keydown', trapTab);
+    return () => {
+      dialog?.removeEventListener('keydown', trapTab);
+      if (dialog?.open) dialog.close();
+    };
   }, [confirm]);
 
-  const api = useCallback(
+  const apiRequest = useCallback(
     async <T,>(path: string, options: RequestInit = {}, authToken = token): Promise<T> => {
       const headers = new Headers(options.headers);
       headers.set('Authorization', `Bearer ${authToken}`);
@@ -185,21 +211,137 @@ function App() {
     },
     [token],
   );
+  const api = apiRequest;
+
+  const apiPage = useCallback(
+    async <T,>(path: string, authToken = token): Promise<PageResult<T>> => {
+      const headers = new Headers({ Authorization: `Bearer ${authToken}` });
+      const response = await fetch(path, { headers, credentials: 'same-origin' });
+      if (!response.ok) {
+        let detail = `${response.status} ${response.statusText}`;
+        try {
+          const body = (await response.json()) as { error?: string; message?: string };
+          detail = body.error ?? body.message ?? detail;
+        } catch {
+          /* Keep status text. */
+        }
+        throw new Error(detail);
+      }
+      return {
+        data: (await response.json()) as T,
+        nextCursor: response.headers.get('X-AAG-Next-Cursor'),
+      };
+    },
+    [token],
+  );
 
   const refresh = useCallback(
     async (authToken = token) => {
-      const [requests, policy, budgets, audit] = await Promise.all([
-        api<RequestRecord[]>('/v1/requests', {}, authToken),
+      const [active, requests, policy, budgets, audit] = await Promise.all([
+        apiPage<DashboardRequest[]>('/v1/requests?scope=active&view=summary&limit=100', authToken),
+        apiPage<DashboardRequest[]>('/v1/requests?view=summary&limit=100', authToken),
         api<{ revision: number; policy: Policy }>('/v1/policy', {}, authToken),
         api<Budget[]>('/v1/budgets', {}, authToken),
-        api<AuditEntry[]>('/v1/audit', {}, authToken),
+        apiPage<AuditEntry[]>('/v1/audit?view=summary&limit=100', authToken),
       ]);
-      setSnapshot({ requests, policy, budgets, audit });
+      setSnapshot((current) => ({
+        requests: mergeBy(
+          current.requests,
+          mergeBy(active.data, requests.data, (item) => item.action.id),
+          (item) => item.action.id,
+        ),
+        policy,
+        budgets,
+        audit: mergeBy(current.audit, audit.data, (entry) => String(entry.sequence)),
+      }));
+      if (!requestHistoryInitialized.current) {
+        requestHistoryInitialized.current = true;
+        setRequestCursor(requests.nextCursor);
+      }
+      if (!auditHistoryInitialized.current) {
+        auditHistoryInitialized.current = true;
+        setAuditCursor(audit.nextCursor);
+      }
       setConnected(true);
       setError('');
     },
-    [api, token],
+    [api, apiPage, token],
   );
+
+  const loadOlderRequests = async () => {
+    if (!requestCursor || loadingRequests) return;
+    setLoadingRequests(true);
+    try {
+      const page = await apiPage<DashboardRequest[]>(
+        `/v1/requests?view=summary&limit=100&before=${encodeURIComponent(requestCursor)}`,
+      );
+      setSnapshot((current) => ({
+        ...current,
+        requests: mergeBy(current.requests, page.data, (item) => item.action.id),
+      }));
+      setRequestCursor(page.nextCursor);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load older actions.');
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  const loadOlderAudit = async () => {
+    if (!auditCursor || loadingAudit) return;
+    setLoadingAudit(true);
+    try {
+      const page = await apiPage<AuditEntry[]>(
+        `/v1/audit?view=summary&limit=100&before=${encodeURIComponent(auditCursor)}`,
+      );
+      setSnapshot((current) => ({
+        ...current,
+        audit: mergeBy(current.audit, page.data, (entry) => String(entry.sequence)),
+      }));
+      setAuditCursor(page.nextCursor);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load older audit entries.');
+    } finally {
+      setLoadingAudit(false);
+    }
+  };
+
+  const loadRequestDetails = async (id: string, fresh = false) => {
+    if (!fresh && requestDetails[id]) return requestDetails[id];
+    try {
+      const detail = await apiRequest<RequestRecord>(`/v1/requests/${encodeURIComponent(id)}`);
+      setRequestDetails((current) => ({ ...current, [id]: detail }));
+      setRequestDetailErrors((current) => {
+        const { [id]: _removed, ...remaining } = current;
+        return remaining;
+      });
+      return detail;
+    } catch (cause) {
+      setRequestDetailErrors((current) => ({
+        ...current,
+        [id]: cause instanceof Error ? cause.message : 'Could not load request details.',
+      }));
+      throw cause;
+    }
+  };
+
+  const loadAuditDetails = async (sequence: number) => {
+    if (auditDetails[sequence]) return;
+    try {
+      const detail = await apiRequest<AuditDetail>(`/v1/audit/${sequence}`);
+      setAuditDetails((current) => ({ ...current, [sequence]: detail }));
+      setAuditDetailErrors((current) => {
+        const { [sequence]: _removed, ...remaining } = current;
+        return remaining;
+      });
+    } catch (cause) {
+      setAuditDetailErrors((current) => ({
+        ...current,
+        [sequence]: cause instanceof Error ? cause.message : 'Could not load audit details.',
+      }));
+      throw cause;
+    }
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -241,9 +383,16 @@ function App() {
       sessionStorage.setItem('aag-human-token', candidate);
       setToken(candidate);
       setTokenInput('');
+      savePreference('aag-setup-state', 'completed');
+      setSetupGuideOpen(false);
     } catch (cause) {
       setConnected(false);
-      setError(cause instanceof Error ? cause.message : 'Connection failed.');
+      const message = cause instanceof Error ? cause.message : 'Connection failed.';
+      setError(
+        /401|403|unauthor|authorization required/i.test(message)
+          ? 'That token was not accepted. Check the human.token file in the gateway’s private data directory and try again.'
+          : `Could not connect to the gateway. Check that it is running at this address, then try again. (${message})`,
+      );
     } finally {
       setLoading(false);
     }
@@ -254,6 +403,14 @@ function App() {
     setToken('');
     setTokenInput('');
     setConnected(false);
+    requestHistoryInitialized.current = false;
+    auditHistoryInitialized.current = false;
+    setRequestCursor(null);
+    setAuditCursor(null);
+    setRequestDetails({});
+    setRequestDetailErrors({});
+    setAuditDetails({});
+    setAuditDetailErrors({});
     setSnapshot({
       requests: [],
       policy: { revision: 0, policy: {} as Policy },
@@ -280,13 +437,29 @@ function App() {
     }
   };
 
-  const openConfirmation = (
+  const openConfirmation = async (
     request: RequestRecord,
     kind: 'approve' | 'deny',
     trigger: HTMLElement,
   ) => {
-    restoreFocusRef.current = trigger;
-    setConfirm({ request, kind });
+    setBusyId(request.action.id);
+    setError('');
+    try {
+      const freshRequest = await loadRequestDetails(request.action.id, true);
+      if (freshRequest.state !== 'PENDING_APPROVAL') {
+        throw new Error(
+          'This request is no longer waiting for approval. The dashboard will refresh shortly.',
+        );
+      }
+      restoreFocusRef.current = trigger;
+      setConfirm({ request: freshRequest, kind });
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : 'Could not load the latest request details.',
+      );
+    } finally {
+      setBusyId('');
+    }
   };
 
   const visibleRequests = useMemo(
@@ -301,13 +474,15 @@ function App() {
           record.action.operation,
           record.reason,
           record.action.resourceScope,
-          JSON.stringify(record.action.parameters),
+          JSON.stringify(
+            requestDetails[record.action.id]?.action.parameters ?? record.action.parameters,
+          ),
         ]
           .join(' ')
           .toLowerCase();
         return matchesState && haystack.includes(search.toLowerCase());
       }),
-    [snapshot.requests, filter, search],
+    [snapshot.requests, requestDetails, filter, search],
   );
   const pending = snapshot.requests.filter((item) => item.state === 'PENDING_APPROVAL');
   const activeSessions = new Map<string, RequestRecord[]>();
@@ -327,7 +502,7 @@ function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a className="brand" href="#top" aria-label="Agent Approval Gate home">
+        <a className="brand" href="#top">
           <span className="brand-mark" aria-hidden="true">
             A
           </span>
@@ -336,10 +511,22 @@ function App() {
           </span>
         </a>
         <div className="top-actions">
-          <span className={`connection ${connected ? 'is-connected' : ''}`}>
+          <span
+            className={`connection ${connected ? 'is-connected' : ''}`}
+            role="status"
+            aria-live="polite"
+          >
             <i aria-hidden="true" />
             {connected ? 'Gateway connected' : 'Gateway disconnected'}
           </span>
+          <button
+            className="button button-quiet setup-toggle"
+            type="button"
+            aria-expanded={setupGuideOpen}
+            onClick={() => setSetupGuideOpen((open) => !open)}
+          >
+            {setupGuideOpen ? 'Close setup guide' : 'Setup guide'}
+          </button>
           <button
             className="icon-button"
             type="button"
@@ -357,42 +544,109 @@ function App() {
         </div>
       </header>
 
+      <a className="skip-link" href="#top">
+        Skip to main content
+      </a>
+
       {!connected && (
-        <main className="connect-wrap" id="top">
-          <form className="connect-card" onSubmit={connect}>
-            <h1>Connect to gateway</h1>
-            <p>
-              Enter the human token created by <code>aag serve</code>. It stays in this browser
-              session.
-            </p>
-            <label htmlFor="human-token">Human token</label>
-            <input
-              id="human-token"
-              type="password"
-              autoComplete="current-password"
-              value={tokenInput}
-              onChange={(event) => setTokenInput(event.target.value)}
-              autoFocus
-            />
-            {error && (
-              <div role="alert" className="alert alert-error">
-                {error}
-              </div>
+        <main className="connect-wrap" id="top" tabIndex={-1}>
+          <div className="connect-card">
+            {setupGuideOpen && (
+              <section
+                className="setup-guide"
+                aria-label="First-time setup"
+                aria-describedby="setup-description"
+              >
+                <div className="setup-guide-heading">
+                  <h2>Before you connect</h2>
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() => {
+                      savePreference('aag-setup-state', 'skipped');
+                      setSetupGuideOpen(false);
+                    }}
+                  >
+                    Skip setup
+                  </button>
+                </div>
+                <p id="setup-description">
+                  The gateway runs on this Mac. These steps use its real data; no sample actions are
+                  sent.
+                </p>
+                <ol>
+                  <li>
+                    Run <code>aag serve</code> in a trusted terminal (or{' '}
+                    <code>node dist/cli.js serve</code> from the source checkout).
+                  </li>
+                  <li>
+                    Read <code>human.token</code> from the private data directory (by default{' '}
+                    <code>~/.local/share/agent-approval-gate</code>).
+                  </li>
+                  <li>Paste the token below. It stays in this browser tab’s session.</li>
+                </ol>
+              </section>
             )}
-            <button className="button button-primary full-width" type="submit" disabled={loading}>
-              {loading ? 'Connecting…' : 'Connect'}
-            </button>
-          </form>
+            <form onSubmit={connect} aria-busy={loading}>
+              <h1>Connect to gateway</h1>
+              <p>
+                Enter the human token created by <code>aag serve</code>. It stays in this browser
+                session.
+              </p>
+              <label htmlFor="human-token">Human token</label>
+              <input
+                id="human-token"
+                name="human-token"
+                type="password"
+                autoComplete="current-password"
+                spellCheck={false}
+                value={tokenInput}
+                onChange={(event) => setTokenInput(event.target.value)}
+              />
+              {error && (
+                <div role="alert" className="alert alert-error">
+                  {error}
+                </div>
+              )}
+              <button className="button button-primary full-width" type="submit" disabled={loading}>
+                {loading ? 'Connecting…' : 'Connect'}
+              </button>
+            </form>
+          </div>
         </main>
       )}
 
       {connected && (
-        <main id="top" className="content">
+        <main id="top" className="content" tabIndex={-1}>
+          {setupGuideOpen && (
+            <section
+              className="setup-guide connected-setup"
+              aria-label="First-time setup"
+              aria-describedby="setup-description"
+            >
+              <div className="setup-guide-heading">
+                <h2>You’re connected</h2>
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() => setSetupGuideOpen(false)}
+                >
+                  Close setup guide
+                </button>
+              </div>
+              <p id="setup-description">
+                This overview is reading the live gateway. Requests appear here as agents submit
+                actions for policy checks and human review.
+              </p>
+            </section>
+          )}
           <div className="page-heading">
             <div>
               <h1>Action overview</h1>
             </div>
-            <span className="updated">Refreshes every second</span>
+            <span className="updated" role="status" aria-live="polite">
+              Refreshes every second
+            </span>
           </div>
           {error && (
             <div role="alert" className="alert alert-error inline-alert">
@@ -433,7 +687,11 @@ function App() {
             </article>
           </section>
 
-          <section className="panel request-panel" aria-labelledby="queue-title">
+          <section
+            className="panel request-panel"
+            aria-labelledby="queue-title"
+            aria-busy={loading || Boolean(busyId)}
+          >
             <div className="panel-heading">
               <div>
                 <h2 id="queue-title">Action queue</h2>
@@ -476,123 +734,192 @@ function App() {
                   </p>
                 </div>
               )}
-              {visibleRequests.map((request) => (
-                <article
-                  className={`request-card ${request.state === 'PENDING_APPROVAL' ? 'is-pending' : ''}`}
-                  key={request.action.id}
-                >
-                  <div className="request-main">
-                    <div className="request-title-line">
-                      <h3>{actionLabel(request)}</h3>
-                      <span className={statusClass(request.state)}>
-                        {request.state.replaceAll('_', ' ')}
-                      </span>
-                    </div>
-                    <div className="request-command">{exactOperation(request)}</div>
-                    <p className="reason">
-                      {request.reason || 'No reason supplied by policy engine.'}
-                    </p>
-                    <div className="request-meta">
-                      <span>
-                        <b>Agent</b>
-                        {request.action.agentId}
-                      </span>
-                      <span>
-                        <b>Session</b>
-                        {request.action.sessionId}
-                      </span>
-                      <span>
-                        <b>Request</b>
-                        <code>{request.action.id}</code>
-                      </span>
-                      <span>
-                        <b>Submitted</b>
-                        {date(request.createdAt)}
-                      </span>
-                    </div>
-                    <details className="details">
-                      <summary>Full parameters and scope</summary>
-                      <div className="details-grid">
-                        <div>
-                          <h4>Parameters</h4>
-                          <pre>{JSON.stringify(request.action.parameters, null, 2)}</pre>
-                        </div>
-                        <div>
-                          <h4>Resource scope</h4>
-                          <p className="scope-text">{request.action.resourceScope}</p>
-                          <h4>Requested permissions</h4>
-                          <p>{request.action.requestedPermissions.join(', ') || 'None declared'}</p>
-                          <h4>Expected result</h4>
-                          <p>{request.action.expectedResultFormat}</p>
-                          {request.action.maxCost && (
-                            <>
-                              <h4>Declared maximum cost</h4>
-                              <p>
-                                {money(
-                                  request.action.maxCost.amount,
-                                  request.action.maxCost.currency,
-                                )}
-                              </p>
-                            </>
-                          )}
-                        </div>
+              {visibleRequests.map((request) => {
+                const details = requestDetails[request.action.id];
+                const shown = details ?? request;
+                const payloadOmitted = !details && request.payloadOmitted;
+                return (
+                  <article
+                    className={`request-card ${request.state === 'PENDING_APPROVAL' ? 'is-pending' : ''}`}
+                    key={request.action.id}
+                  >
+                    <div className="request-main">
+                      <div className="request-title-line">
+                        <h3>{actionLabel(request)}</h3>
+                        <span className={statusClass(request.state)}>
+                          {request.state.replaceAll('_', ' ')}
+                        </span>
                       </div>
-                    </details>
-                    {request.state === 'PENDING_APPROVAL' && (
-                      <div className="expiry">
-                        <span aria-hidden="true">◷</span> Approval expires {date(request.expiresAt)}
+                      <div className="request-command">{exactOperation(shown)}</div>
+                      <p className="reason">
+                        {request.reason || 'No reason supplied by policy engine.'}
+                      </p>
+                      <div className="request-meta">
+                        <span>
+                          <b>Agent</b>
+                          {request.action.agentId}
+                        </span>
+                        <span>
+                          <b>Session</b>
+                          {request.action.sessionId}
+                        </span>
+                        <span>
+                          <b>Request</b>
+                          <code>{request.action.id}</code>
+                        </span>
+                        <span>
+                          <b>Submitted</b>
+                          {date(request.createdAt)}
+                        </span>
                       </div>
-                    )}
-                    {(request.state === 'COMPLETED' || request.state === 'FAILED') &&
-                      request.result !== undefined && (
-                        <details className="details result-details">
-                          <summary>Execution result</summary>
-                          <pre>
-                            {typeof request.result === 'string'
-                              ? request.result
-                              : JSON.stringify(request.result, null, 2)}
-                          </pre>
-                        </details>
-                      )}
-                  </div>
-                  <div className="request-actions">
-                    {request.state === 'PENDING_APPROVAL' && (
-                      <>
-                        <button
-                          className="button button-primary"
-                          type="button"
-                          onClick={(event) =>
-                            openConfirmation(request, 'approve', event.currentTarget)
+                      <details
+                        className="details"
+                        onToggle={(event) => {
+                          const open = event.currentTarget.open;
+                          if (open) {
+                            void loadRequestDetails(request.action.id).catch((cause) =>
+                              setError(
+                                cause instanceof Error
+                                  ? cause.message
+                                  : 'Could not load request details.',
+                              ),
+                            );
+                          } else {
+                            setRequestDetails((current) => {
+                              const { [request.action.id]: _removed, ...remaining } = current;
+                              return remaining;
+                            });
                           }
-                        >
-                          Approve
-                        </button>
+                        }}
+                      >
+                        <summary>Full parameters and scope</summary>
+                        <div className="details-grid">
+                          <div>
+                            <h4>Parameters</h4>
+                            {payloadOmitted ? (
+                              requestDetailErrors[request.action.id] ? (
+                                <p role="alert">
+                                  Could not load details: {requestDetailErrors[request.action.id]}
+                                </p>
+                              ) : (
+                                <p role="status">Loading private action details…</p>
+                              )
+                            ) : (
+                              <pre>{JSON.stringify(shown.action.parameters, null, 2)}</pre>
+                            )}
+                          </div>
+                          <div>
+                            <h4>Resource scope</h4>
+                            <p className="scope-text">{shown.action.resourceScope}</p>
+                            <h4>Requested permissions</h4>
+                            <p>{shown.action.requestedPermissions.join(', ') || 'None declared'}</p>
+                            <h4>Expected result</h4>
+                            <p>{shown.action.expectedResultFormat}</p>
+                            {shown.action.maxCost && (
+                              <>
+                                <h4>Declared maximum cost</h4>
+                                <p>
+                                  {money(
+                                    shown.action.maxCost.amount,
+                                    shown.action.maxCost.currency,
+                                  )}
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </details>
+                      {request.state === 'PENDING_APPROVAL' && (
+                        <div className="expiry">
+                          <span aria-hidden="true">◷</span> Approval expires{' '}
+                          {date(request.expiresAt)}
+                        </div>
+                      )}
+                      {(request.state === 'COMPLETED' || request.state === 'FAILED') &&
+                        (shown.result !== undefined || payloadOmitted) && (
+                          <details
+                            className="details result-details"
+                            onToggle={(event) => {
+                              if (event.currentTarget.open) {
+                                void loadRequestDetails(request.action.id).catch((cause) =>
+                                  setError(
+                                    cause instanceof Error
+                                      ? cause.message
+                                      : 'Could not load execution result.',
+                                  ),
+                                );
+                              }
+                            }}
+                          >
+                            <summary>Execution result</summary>
+                            {shown.result === undefined ? (
+                              <p role="status">Loading execution result…</p>
+                            ) : (
+                              <pre>
+                                {typeof shown.result === 'string'
+                                  ? shown.result
+                                  : JSON.stringify(shown.result, null, 2)}
+                              </pre>
+                            )}
+                          </details>
+                        )}
+                    </div>
+                    <div className="request-actions">
+                      {request.state === 'PENDING_APPROVAL' && (
+                        <>
+                          <button
+                            className="button button-primary"
+                            type="button"
+                            disabled={busyId === request.action.id}
+                            onClick={(event) =>
+                              void openConfirmation(request, 'approve', event.currentTarget)
+                            }
+                          >
+                            {busyId === request.action.id ? 'Loading…' : 'Approve'}
+                          </button>
+                          <button
+                            className="button button-danger-outline"
+                            type="button"
+                            disabled={busyId === request.action.id}
+                            onClick={(event) =>
+                              void openConfirmation(request, 'deny', event.currentTarget)
+                            }
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {['SUBMITTED', 'ALLOWED', 'APPROVED', 'EXECUTING'].includes(
+                        request.state,
+                      ) && (
                         <button
-                          className="button button-danger-outline"
+                          className="button button-quiet"
                           type="button"
                           disabled={busyId === request.action.id}
-                          onClick={(event) =>
-                            openConfirmation(request, 'deny', event.currentTarget)
-                          }
+                          onClick={() => void act(request, 'cancel')}
                         >
-                          Reject
+                          {busyId === request.action.id ? 'Cancelling…' : 'Cancel'}
                         </button>
-                      </>
-                    )}
-                    {['SUBMITTED', 'ALLOWED', 'APPROVED', 'EXECUTING'].includes(request.state) && (
-                      <button
-                        className="button button-quiet"
-                        type="button"
-                        disabled={busyId === request.action.id}
-                        onClick={() => void act(request, 'cancel')}
-                      >
-                        {busyId === request.action.id ? 'Cancelling…' : 'Cancel'}
-                      </button>
-                    )}
-                  </div>
-                </article>
-              ))}
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
+            <p className="muted history-note">
+              Active and pending actions stay visible above the latest saved history. Load older
+              actions to review earlier records.
+            </p>
+            {requestCursor && (
+              <button
+                className="button button-quiet load-more"
+                type="button"
+                disabled={loadingRequests}
+                onClick={() => void loadOlderRequests()}
+              >
+                {loadingRequests ? 'Loading older actions…' : 'Load older actions'}
+              </button>
+            )}
           </section>
 
           <div className="lower-grid">
@@ -741,24 +1068,68 @@ function App() {
                       .slice()
                       .reverse()
                       .map((entry) => (
-                        <tr key={`${entry.sequence}-${entry.requestId}-${entry.state}-${entry.at}`}>
-                          <td>{entry.sequence}</td>
-                          <td>
-                            <code>{entry.requestId}</code>
-                          </td>
-                          <td>
-                            <span className={statusClass(entry.state)}>
-                              {entry.state.replaceAll('_', ' ')}
-                            </span>
-                          </td>
-                          <td className="audit-reason">{entry.reason}</td>
-                          <td>{date(entry.at)}</td>
-                        </tr>
+                        <React.Fragment
+                          key={`${entry.sequence}-${entry.requestId}-${entry.state}-${entry.at}`}
+                        >
+                          <tr>
+                            <td>{entry.sequence}</td>
+                            <td>
+                              <code>{entry.requestId}</code>
+                            </td>
+                            <td>
+                              <span className={statusClass(entry.state)}>
+                                {entry.state.replaceAll('_', ' ')}
+                              </span>
+                            </td>
+                            <td className="audit-reason">{entry.reason}</td>
+                            <td>{date(entry.at)}</td>
+                          </tr>
+                          <tr className="audit-detail-row">
+                            <td colSpan={5}>
+                              <details
+                                className="details audit-details"
+                                onToggle={(event) => {
+                                  if (event.currentTarget.open) {
+                                    void loadAuditDetails(entry.sequence).catch((cause) =>
+                                      setError(
+                                        cause instanceof Error
+                                          ? cause.message
+                                          : 'Could not load audit details.',
+                                      ),
+                                    );
+                                  }
+                                }}
+                              >
+                                <summary>View full audit record</summary>
+                                {auditDetails[entry.sequence] ? (
+                                  <pre>{JSON.stringify(auditDetails[entry.sequence], null, 2)}</pre>
+                                ) : auditDetailErrors[entry.sequence] ? (
+                                  <p role="alert">
+                                    Could not load audit details:{' '}
+                                    {auditDetailErrors[entry.sequence]}
+                                  </p>
+                                ) : (
+                                  <p role="status">Loading audit details…</p>
+                                )}
+                              </details>
+                            </td>
+                          </tr>
+                        </React.Fragment>
                       ))
                   )}
                 </tbody>
               </table>
             </div>
+            {auditCursor && (
+              <button
+                className="button button-quiet load-more"
+                type="button"
+                disabled={loadingAudit}
+                onClick={() => void loadOlderAudit()}
+              >
+                {loadingAudit ? 'Loading older audit entries…' : 'Load older audit entries'}
+              </button>
+            )}
           </section>
 
           <section className="panel" aria-labelledby="activity-title">
@@ -802,91 +1173,87 @@ function App() {
         <span>Agent Approval Gate</span>
       </footer>
       {confirm && (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-          onMouseDown={(event) => {
+        <dialog
+          ref={confirmDialogRef}
+          className="confirm-modal"
+          aria-labelledby="confirm-title"
+          aria-describedby="confirm-description"
+          onCancel={(event) => {
+            event.preventDefault();
+            setConfirm(null);
+          }}
+          onClick={(event) => {
             if (event.target === event.currentTarget) setConfirm(null);
           }}
         >
-          <section
-            ref={confirmDialogRef}
-            className="confirm-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="confirm-title"
-            aria-describedby="confirm-description"
-            tabIndex={-1}
+          <button
+            className="modal-close"
+            type="button"
+            aria-label="Close confirmation"
+            onClick={() => setConfirm(null)}
           >
+            ×
+          </button>
+          <div className={`modal-symbol ${confirm.kind}`} aria-hidden="true">
+            {confirm.kind === 'approve' ? '!' : '×'}
+          </div>
+          <div className="eyebrow">HUMAN DECISION</div>
+          <h2 id="confirm-title">
+            {confirm.kind === 'approve' ? 'Confirm approval' : 'Confirm rejection'}
+          </h2>
+          <p id="confirm-description">
+            {confirm.kind === 'approve'
+              ? 'This action will be allowed to execute with the exact parameters shown below.'
+              : 'This action will be rejected and will not execute.'}
+          </p>
+          <div className="confirm-summary">
+            <strong>{actionLabel(confirm.request)}</strong>
+            <code>{exactOperation(confirm.request)}</code>
+            <span>
+              Request ID: <code>{confirm.request.action.id}</code>
+            </span>
+            <span>
+              Agent {confirm.request.action.agentId} · Session {confirm.request.action.sessionId}
+            </span>
+            <span>Scope: {confirm.request.action.resourceScope}</span>
+            <span>Expires {date(confirm.request.expiresAt)}</span>
+            {confirm.request.action.maxCost && (
+              <span>
+                Declared maximum cost:{' '}
+                {money(
+                  confirm.request.action.maxCost.amount,
+                  confirm.request.action.maxCost.currency,
+                )}
+              </span>
+            )}
+            <details className="confirm-parameters">
+              <summary>Exact parameters</summary>
+              <pre>{JSON.stringify(confirm.request.action.parameters, null, 2)}</pre>
+            </details>
+          </div>
+          <div className="modal-actions">
             <button
-              className="modal-close"
+              ref={confirmBackRef}
+              className="button button-quiet"
               type="button"
-              aria-label="Close confirmation"
               onClick={() => setConfirm(null)}
             >
-              ×
+              Go back
             </button>
-            <div className={`modal-symbol ${confirm.kind}`} aria-hidden="true">
-              {confirm.kind === 'approve' ? '!' : '×'}
-            </div>
-            <div className="eyebrow">HUMAN DECISION</div>
-            <h2 id="confirm-title">
-              {confirm.kind === 'approve' ? 'Confirm approval' : 'Confirm rejection'}
-            </h2>
-            <p id="confirm-description">
-              {confirm.kind === 'approve'
-                ? 'This action will be allowed to execute with the exact parameters shown below.'
-                : 'This action will be rejected and will not execute.'}
-            </p>
-            <div className="confirm-summary">
-              <strong>{actionLabel(confirm.request)}</strong>
-              <code>{exactOperation(confirm.request)}</code>
-              <span>
-                Request ID: <code>{confirm.request.action.id}</code>
-              </span>
-              <span>
-                Agent {confirm.request.action.agentId} · Session {confirm.request.action.sessionId}
-              </span>
-              <span>Scope: {confirm.request.action.resourceScope}</span>
-              <span>Expires {date(confirm.request.expiresAt)}</span>
-              {confirm.request.action.maxCost && (
-                <span>
-                  Declared maximum cost:{' '}
-                  {money(
-                    confirm.request.action.maxCost.amount,
-                    confirm.request.action.maxCost.currency,
-                  )}
-                </span>
-              )}
-              <details className="confirm-parameters">
-                <summary>Exact parameters</summary>
-                <pre>{JSON.stringify(confirm.request.action.parameters, null, 2)}</pre>
-              </details>
-            </div>
-            <div className="modal-actions">
-              <button
-                ref={confirmBackRef}
-                className="button button-quiet"
-                type="button"
-                onClick={() => setConfirm(null)}
-              >
-                Go back
-              </button>
-              <button
-                className={`button ${confirm.kind === 'approve' ? 'button-primary' : 'button-danger'}`}
-                type="button"
-                disabled={busyId === confirm.request.action.id}
-                onClick={() => void act(confirm.request, confirm.kind)}
-              >
-                {busyId === confirm.request.action.id
-                  ? 'Submitting…'
-                  : confirm.kind === 'approve'
-                    ? 'Confirm approval'
-                    : 'Confirm rejection'}
-              </button>
-            </div>
-          </section>
-        </div>
+            <button
+              className={`button ${confirm.kind === 'approve' ? 'button-primary' : 'button-danger'}`}
+              type="button"
+              disabled={busyId === confirm.request.action.id}
+              onClick={() => void act(confirm.request, confirm.kind)}
+            >
+              {busyId === confirm.request.action.id
+                ? 'Submitting…'
+                : confirm.kind === 'approve'
+                  ? 'Confirm approval'
+                  : 'Confirm rejection'}
+            </button>
+          </div>
+        </dialog>
       )}
     </div>
   );

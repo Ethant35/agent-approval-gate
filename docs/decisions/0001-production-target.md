@@ -1,0 +1,21 @@
+# Decision 0001: a bounded local gateway with recoverable state
+
+Author: Ethan. 2026-10-22. Accepted implementation direction; release qualification remains in READINESS.md.
+
+The product is a single-operator macOS arm64 gateway on loopback. Its security promise covers mediated requests and trusted exact command templates. It does not sandbox arbitrary hostile agents or mediate an agent's other tools. No hosted service, remote telemetry, Windows or Linux support is claimed.
+
+The qualification runtime is Node 24.22.1 (SQLite 3.53.4) on macOS 27.2 arm64. The official Node release was downloaded locally and checked against its SHA-256 manifest; no global runtime or Codex setting changed. The old Node 22.13.1 runtime embeds SQLite 3.47.2. SQLite documents a rare WAL-reset corruption issue fixed in 3.51.3 (and selected backports). This app uses one connection, so the published multi-connection scenario is not evidence that this app suffered corruption. A current patched LTS runtime is the defensible release floor. The supported package range is Node >=24.22.1 <25; other major lines are unqualified.
+
+Sources actually consulted: [Node release status](https://nodejs.org/en/about/previous-releases), [SQLite WAL](https://sqlite.org/wal.html), [SQLite corruption/backup guidance](https://sqlite.org/howtocorrupt.html), [Node 22.13.1 sqlite API source](https://raw.githubusercontent.com/nodejs/node/v22.13.1/doc/api/sqlite.md), and [Fastify server lifecycle](https://fastify.dev/docs/latest/Reference/Server/). Runtime APIs are also checked against the installed code and real tests.
+
+Crash recovery uses a native flock held by a helper tied to the server's stdin pipe. A persistent inode avoids unlink/recreate split-lock races; EOF releases it on parent death. Legacy live numeric PID markers block upgrade, while stale markers can recover. An empty or malformed marker fails closed and requires operator investigation. Losing the helper stops service. Interrupted executions are never retried automatically, and uncertain cost reservations remain reserved.
+
+Request and audit lists use stable integer cursor pages. The dashboard uses SQL-projected summaries without parameters, results or approval tokens, plus a separate active-request query. Details and approvals fetch the complete record. The CLI streams complete JSON arrays across pages. Small full responses retain their array shape and audit chronological order; external clients must follow X-AAG-Next-Cursor. This is a documented compatibility change for large lists and warrants a major release.
+
+Limits: 100 active requests, 8 concurrent preparations and 8 executions, 100 rows per page, a roughly 1.25 MB full-page budget (a single record is allowed), and a 16 MiB client response cap covering JSON expansion of the 1 MiB execution payload. SQLite's main file is capped at 1 GiB. WAL uses normal automatic checkpoints and a 16 MiB retained-journal target; that target is not a hard bound during a transaction or an external read lock. Full storage fails closed without deleting history or idempotency records. The operator archives state with the documented cold backup workflow.
+
+Schema changes are additive expression indexes only. No columns or old evidence are dropped. The old release can read the schema, but its stale-lock algorithm and directory-link fingerprints make rollback of a live state directory unsafe. Rollback uses a stopped service and the pre-upgrade backup in a fresh directory, with uncertain side effects reconciled before any resubmission. Fingerprint-format changes may require resubmission of old pending actions. A new request ID must never be used merely because a client timed out.
+
+Diagnostics answer three local questions: is the gateway available, is storage degraded, and how many preparations/executions are in flight? Fixed event names and SQLite primary error codes are allowed. Credentials, action payloads, request IDs, URLs, headers, stack traces and billing evidence are excluded from diagnostic output. The operator-controlled audit still contains action data and needs private backup/retention handling.
+
+No Actions, global hooks, remote service, feature-flag service or telemetry platform is required. Qualification is local and the archive must match the tested runtime bytes before publication.

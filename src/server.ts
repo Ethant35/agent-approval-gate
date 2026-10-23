@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import { requireRuntime } from './runtime.js';
 import {
   mkdirSync,
   readFileSync,
@@ -6,8 +7,8 @@ import {
   existsSync,
   realpathSync,
   chmodSync,
-  unlinkSync,
   readdirSync,
+  lstatSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
@@ -19,6 +20,7 @@ import { actionSchema, type Action, type Policy } from './contracts.js';
 import { parsePolicy, defaultPolicy, evaluate, within } from './policy.js';
 import { Store, type Stored } from './store.js';
 import { execute, snapshot, processSupported } from './executor.js';
+import { acquireLease } from './lease.js';
 const secretEqual = (a: string, b: string) => {
   const left = Buffer.from(a),
     right = Buffer.from(b);
@@ -28,26 +30,40 @@ const done = new Set(['COMPLETED', 'DENIED', 'FAILED', 'EXPIRED', 'CANCELLED']);
 export async function startServer(
   options: { dataDir?: string; port?: number; policyFile?: string } = {},
 ) {
+  requireRuntime();
   const data = path.resolve(
     options.dataDir || path.join(homedir(), '.local/share/agent-approval-gate'),
   );
   mkdirSync(data, { recursive: true, mode: 0o700 });
-  chmodSync(data, 0o700);
   if (realpathSync.native(data) !== data) throw Error('Data directory must use a canonical path');
+  chmodSync(data, 0o700);
+  if (existsSync(path.join(data, 'INCOMPLETE')))
+    throw Error('State is an incomplete backup or restore; recover into a fresh directory');
   const lock = path.join(data, 'server.lock');
-  writeFileSync(lock, String(process.pid), { flag: 'wx', mode: 0o600 });
+  const lease = await acquireLease(lock);
   let store: Store | undefined;
   try {
+    const privateFile = (file: string) => {
+      const s = lstatSync(file);
+      if (!s.isFile() || s.nlink !== 1 || s.uid !== process.getuid!())
+        throw Error('State files must be owned regular files with one link');
+      chmodSync(file, 0o600);
+    };
     const credential = (name: string) => {
       const f = path.join(data, name + '.token');
       if (!existsSync(f))
         writeFileSync(f, randomBytes(32).toString('hex'), { flag: 'wx', mode: 0o600 });
-      chmodSync(f, 0o600);
+      privateFile(f);
       const t = readFileSync(f, 'utf8').trim();
       if (!/^[a-f0-9]{64}$/.test(t)) throw Error('Invalid credential file');
       return t;
     };
-    store = new Store(path.join(data, 'gateway.sqlite'));
+    const databaseFile = path.join(data, 'gateway.sqlite');
+    for (const suffix of ['', '-wal', '-shm'])
+      if (lstatSync(databaseFile + suffix, { throwIfNoEntry: false }))
+        privateFile(databaseFile + suffix);
+    store = new Store(databaseFile);
+    privateFile(databaseFile);
     const db = store;
     const safePolicy = (p: Policy) => {
       if (within(p.workspace, data) || within(data, p.workspace))
@@ -65,17 +81,30 @@ export async function startServer(
     const human = credential('human'),
       agent = credential('agent');
     if (human === agent) throw Error('Credentials must differ');
-    for (const r of db.list())
-      if (['EXECUTING', 'ALLOWED', 'APPROVED', 'SUBMITTED'].includes(r.state))
-        db.transition(
-          r,
-          'FAILED',
-          'Service interrupted; execution not retried; cost remains unverified',
-        );
+    for (const r of db.states(['EXECUTING', 'ALLOWED', 'APPROVED', 'SUBMITTED']))
+      db.transition(
+        r,
+        'FAILED',
+        'Service interrupted; execution not retried; cost remains unverified',
+      );
     const app = Fastify({ logger: false, bodyLimit: 1500000, requestTimeout: 15000 });
     const controllers = new Map<string, AbortController>(),
       jobs = new Set<Promise<void>>();
     let closing = false;
+    let degraded = false;
+    let preparing = 0;
+    const storageFault = (error: unknown) => {
+      const code =
+        error && typeof error === 'object' && 'errcode' in error ? Number(error.errcode) & 255 : 0;
+      if (![5, 6, 7, 8, 10, 11, 13, 14, 26].includes(code)) return false;
+      if (!degraded)
+        console.error(
+          JSON.stringify({ event: 'storage_unavailable', sqliteCode: code, restartRequired: true }),
+        );
+      degraded = true;
+      for (const controller of controllers.values()) controller.abort();
+      return true;
+    };
     const configuredPort = options.port ?? 3741;
     let origin = `http://127.0.0.1:${configuredPort}`;
     const principal = (auth: string | undefined) => {
@@ -83,7 +112,7 @@ export async function startServer(
       if (secretEqual(t, human)) return 'human';
       if (secretEqual(t, agent)) return 'agent';
       const hash = createHash('sha256').update(t).digest('hex');
-      return db.principals().find((p) => p.hash === hash)?.id || '';
+      return db.principalByHash(hash) || '';
     };
     const present = (r: Stored, who: string) => {
       const { fingerprint: _f, principal: _p, ...record } = r;
@@ -97,7 +126,7 @@ export async function startServer(
       return r;
     };
     function expire() {
-      for (const r of db.list())
+      for (const r of db.states(['PENDING_APPROVAL']))
         if (r.state === 'PENDING_APPROVAL' && Date.parse(r.expiresAt) <= Date.now())
           db.transition(r, 'EXPIRED', 'Approval expired');
     }
@@ -105,7 +134,7 @@ export async function startServer(
       if (
         r.action.category === 'subagent' &&
         db
-          .list()
+          .states(['EXECUTING', 'APPROVED', 'ALLOWED'])
           .filter(
             (x) =>
               x.action.category === 'subagent' &&
@@ -121,6 +150,8 @@ export async function startServer(
         if (!['ALLOWED', 'APPROVED'].includes(r.state)) return;
         const current = db.policy()!;
         try {
+          lease.assertHeld();
+          if (degraded || closing) throw Error('Gateway unavailable');
           if (current.revision !== r.policyVersion) throw Error('Policy changed; resubmit');
           if (evaluate(current.policy, r.action).effect === 'deny')
             throw Error('Policy denied at execution');
@@ -164,9 +195,20 @@ export async function startServer(
         }
       })();
       jobs.add(job);
-      void job.finally(() => jobs.delete(job));
+      void job
+        .catch((error: unknown) => {
+          if (!storageFault(error)) {
+            degraded = true;
+            console.error(
+              JSON.stringify({ event: 'execution_persistence_failed', restartRequired: true }),
+            );
+            for (const controller of controllers.values()) controller.abort();
+          }
+        })
+        .finally(() => jobs.delete(job));
     }
     app.addHook('onRequest', async (req, reply) => {
+      lease.assertHeld();
       reply
         .header('X-Content-Type-Options', 'nosniff')
         .header('Referrer-Policy', 'no-referrer')
@@ -196,22 +238,58 @@ export async function startServer(
           req.headers['x-aag-intent'] !== 'agent'
         )
           return reply.code(403).send({ error: 'Explicit intent header required' });
-        if (closing) return reply.code(503).send({ error: 'Gateway shutting down' });
+        if ((closing || degraded) && req.url !== '/v1/health')
+          return reply.code(503).send({
+            error:
+              'Gateway unavailable; stop, check storage, then restart. Inspect accepted request IDs before retrying.',
+          });
       }
     });
     const requireHuman = (auth: string | undefined) => {
       if (principal(auth) !== 'human') throw Error('Human authorization required');
     };
-    app.setErrorHandler((error, _req, reply) =>
-      reply.code(400).send({ error: error instanceof Error ? error.message : 'Request rejected' }),
-    );
-    app.get('/v1/requests', async (req) => {
+    app.get('/v1/health', async (req, reply) => {
+      requireHuman(req.headers.authorization);
+      return reply.code(closing || degraded ? 503 : 200).send({
+        status: closing ? 'closing' : degraded ? 'storage-recovery-required' : 'ready',
+        preparing,
+        executing: jobs.size,
+        uptimeSeconds: Math.floor(process.uptime()),
+      });
+    });
+    app.setErrorHandler((error, _req, reply) => {
+      if (storageFault(error))
+        return reply.code(503).send({
+          error:
+            'Storage unavailable; restart after recovery. Inspect the request ID before retrying.',
+        });
+      return reply
+        .code(400)
+        .send({ error: error instanceof Error ? error.message : 'Request rejected' });
+    });
+    const pageQuery = z
+      .object({
+        view: z.enum(['summary', 'full']).default('full'),
+        limit: z.coerce.number().int().min(1).max(100).default(100),
+        before: z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional(),
+        after: z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional(),
+        scope: z.enum(['active', 'all']).optional(),
+      })
+      .strict();
+    app.get('/v1/requests', async (req, reply) => {
       expire();
+      const q = pageQuery.parse(req.query);
+      if (q.after !== undefined) throw Error('Requests use the before cursor');
       const who = principal(req.headers.authorization);
-      return db
-        .list()
-        .filter((r) => visible(r, who))
-        .map((r) => present(r, who));
+      const page = db.requestPage({
+        limit: q.limit,
+        cursor: q.before,
+        summary: q.view === 'summary',
+        active: q.scope === 'active',
+        principal: who === 'human' ? undefined : who,
+      });
+      if (page.next !== undefined) reply.header('X-AAG-Next-Cursor', page.next);
+      return page.items.map((r) => present(r, who));
     });
     app.get<{ Params: { id: string } }>('/v1/requests/:id', async (req) => {
       expire();
@@ -231,8 +309,18 @@ export async function startServer(
         )
           throw Error('Agent or session identity denied');
       }
+      expire();
+      if (preparing >= 8 || jobs.size >= 8)
+        return reply.code(429).send({
+          error: 'Gateway busy; no request accepted. Try later with the same request ID.',
+        });
+      if (db.activeCount() >= 100)
+        return reply
+          .code(429)
+          .send({ error: 'Active request limit reached; finish or cancel an existing request' });
       const policy = db.policy()!;
       const r = db.insert(a, policy.revision, policy.policy.limits.approvalTtlMs, who);
+      preparing++;
       try {
         const decision = evaluate(policy.policy, a);
         if (decision.effect === 'deny') throw Error(decision.reason);
@@ -256,11 +344,17 @@ export async function startServer(
         const latest = db.get(a.id)!;
         if (latest.state === 'SUBMITTED')
           db.transition(latest, 'DENIED', e instanceof Error ? e.message : String(e));
+      } finally {
+        preparing--;
       }
       return reply.code(201).send(present(db.get(a.id)!, who));
     });
-    app.post<{ Params: { id: string } }>('/v1/requests/:id/approve', async (req) => {
+    app.post<{ Params: { id: string } }>('/v1/requests/:id/approve', async (req, reply) => {
       requireHuman(req.headers.authorization);
+      if (jobs.size >= 8)
+        return reply
+          .code(429)
+          .send({ error: 'Gateway busy; approval remains pending. Try later.' });
       const { token } = z
         .object({ token: z.string().length(64) })
         .strict()
@@ -357,9 +451,27 @@ export async function startServer(
       db.settle(req.params.id, body.amount, body.evidence);
       return { ok: true };
     });
-    app.get('/v1/audit', async (req) => {
+    app.get('/v1/audit', async (req, reply) => {
       requireHuman(req.headers.authorization);
-      return db.audits();
+      const q = pageQuery.parse(req.query);
+      const summary = q.view === 'summary';
+      if (q.scope || (summary ? q.after !== undefined : q.before !== undefined))
+        throw Error('Audit summary uses before; full audit uses after');
+      const page = db.auditPage({ limit: q.limit, cursor: summary ? q.before : q.after, summary });
+      if (page.next !== undefined) reply.header('X-AAG-Next-Cursor', page.next);
+      return page.items;
+    });
+    app.get<{ Params: { sequence: string } }>('/v1/audit/:sequence', async (req) => {
+      requireHuman(req.headers.authorization);
+      const sequence = z.coerce
+        .number()
+        .int()
+        .positive()
+        .max(Number.MAX_SAFE_INTEGER)
+        .parse(req.params.sequence);
+      const row = db.auditRecord(sequence);
+      if (!row) throw Error('Audit record not found');
+      return row;
     });
     const web = fileURLToPath(new URL('./web', import.meta.url));
     for (const entry of readdirSync(web, { recursive: true, withFileTypes: true })) {
@@ -380,7 +492,17 @@ export async function startServer(
     await app.listen({ host: '127.0.0.1', port: configuredPort });
     const address = app.server.address();
     if (address && typeof address === 'object') origin = `http://127.0.0.1:${address.port}`;
-    const timer = setInterval(expire, 100);
+    const timer = setInterval(() => {
+      if (degraded || closing) return;
+      try {
+        expire();
+      } catch (error) {
+        if (!storageFault(error)) {
+          degraded = true;
+          console.error(JSON.stringify({ event: 'expiry_failed', restartRequired: true }));
+        }
+      }
+    }, 1000);
     timer.unref();
     console.log(
       JSON.stringify({
@@ -398,9 +520,15 @@ export async function startServer(
         for (const c of controllers.values()) c.abort();
         await Promise.allSettled([...jobs]);
         await app.close();
-        db.close();
-        unlinkSync(lock);
+        try {
+          db.close();
+        } finally {
+          await lease.release();
+        }
       })());
+    lease.onLost(() => {
+      void close().catch(() => process.exit(1));
+    });
     const shutdown = () => {
       void close().then(() => process.exit(0));
     };
@@ -408,8 +536,11 @@ export async function startServer(
     process.once('SIGTERM', shutdown);
     return { close };
   } catch (e) {
-    store?.close();
-    unlinkSync(lock);
+    try {
+      store?.close();
+    } finally {
+      await lease.release();
+    }
     throw e;
   }
 }

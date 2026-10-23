@@ -1,0 +1,38 @@
+
+> agent-approval-gate@2.0.0 test:core
+> node --test tests/core/*.test.mjs
+
+✔ summary, detail and health routes preserve principal boundaries (304.469458ms)
+✔ active request cap rejects before persistence and cancellation restores capacity (764.314708ms)
+✔ CLI lists and exports every page, and reads a valid escaped result (848.515625ms)
+✔ summary pages bound payloads and preserve every row plus older pending work (665.467625ms)
+✔ summary pages include the whole active admission limit despite large private metadata (131.363083ms)
+✔ CLI cold backup and restore preserve pending approval through a useful write (751.973167ms)
+✔ CLI refuses to start from an INCOMPLETE state directory (96.828792ms)
+✔ cold backup restores pending state and can approve a useful result (607.339667ms)
+✔ backup refuses a live gateway and an existing destination without changing it (173.766ms)
+✔ restore rejects a tampered backup before creating a destination (208.78675ms)
+✔ backup rejects symlink and hardlinked credentials and leaves marked partial output (191.31125ms)
+✔ backup rejects missing and malformed credentials and keeps partial output marked (235.887375ms)
+✔ generated reservation, release, and settlement sequences match an independent ledger (56.367208ms)
+✔ generated over-budget transactions roll back earlier reservations completely (18.191167ms)
+✔ generated filesystem path spellings canonicalize idempotently in parsed policies (36.621ms)
+✔ generated equivalent filesystem paths cannot bypass a matching deny entry (2.407458ms)
+✔ SIGKILL restart preserves pending requests without stale lock obstruction (491.167542ms)
+✔ second server cannot take a live lease and loss of lease stops the first server (466.951ms)
+✔ credential symlink is rejected without changing its target (106.31525ms)
+✔ repeated empty lease marker refusal can be recovered offline without deleting it (702.732708ms)
+✔ stale legacy numeric lease marker is reclaimed by the native helper (141.5745ms)
+✔ live numeric and malformed legacy lease markers fail closed without changing them (283.142041ms)
+✔ full database rolls back request plus audit, preserving committed budget and readable state (12.24425ms)
+✔ corrupt database fails startup without replacing the file (163.593958ms)
+✔ write lock fault puts the service in fail-closed recovery mode (5559.982083ms)
+✔ actual v1.0.1 crash state upgrades with pending work and unsettled cost intact (837.92ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5792.574416

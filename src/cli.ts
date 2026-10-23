@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { supportedNode, requireRuntime } from './runtime.js';
+import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,12 +12,12 @@ import { parsePolicy } from './policy.js';
 
 const DEFAULT_URL = 'http://127.0.0.1:3741';
 const REQUEST_TIMEOUT_MS = 10_000;
-const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
+const MAX_RESPONSE_BYTES = 16 * 1024 * 1024;
 
 type Options = { data?: string; port?: number; policy?: string };
 
 function usage(): string {
-  return `Agent Approval Gate\n\nUsage:\n  aag serve [--data DIR] [--port N] [--policy PATH]\n  aag policy validate PATH\n  aag policy list\n  aag policy apply PATH\n  aag submit --file ACTION.json\n  aag requests\n  aag inspect REQUEST_ID\n  aag approve REQUEST_ID\n  aag deny REQUEST_ID\n  aag cancel REQUEST_ID\n  aag audit export\n  aag doctor\n  aag mcp\n`;
+  return `Agent Approval Gate\n\nUsage:\n  aag serve [--data DIR] [--port N] [--policy PATH]\n  aag policy validate PATH\n  aag policy list\n  aag policy apply PATH\n  aag submit --file ACTION.json\n  aag requests\n  aag inspect REQUEST_ID\n  aag approve REQUEST_ID\n  aag deny REQUEST_ID\n  aag cancel REQUEST_ID\n  aag audit export\n  aag backup --data DIR --out NEW_DIR\n  aag restore --from BACKUP_DIR --data NEW_DIR\n  aag doctor\n  aag mcp\n`;
 }
 
 function fail(message: string): never {
@@ -50,7 +52,12 @@ function getBaseUrl(): URL {
 
 async function api(
   path: string,
-  options: { method?: string; body?: unknown; human?: boolean } = {},
+  options: {
+    method?: string;
+    body?: unknown;
+    human?: boolean;
+    cursor?: (value: string | null) => void;
+  } = {},
 ): Promise<unknown> {
   const token = process.env.AAG_TOKEN;
   if (!token) return fail('AAG_TOKEN is required for gateway API calls.');
@@ -79,7 +86,7 @@ async function api(
       totalBytes += value.byteLength;
       if (totalBytes > MAX_RESPONSE_BYTES) {
         await reader.cancel();
-        return fail('Gateway response exceeded the 2 MiB limit.');
+        return fail('Gateway response exceeded the 16 MiB limit.');
       }
       chunks.push(value);
     }
@@ -108,7 +115,34 @@ async function api(
           : JSON.stringify(payload);
     return fail(`Gateway returned HTTP ${response.status}: ${detail}`);
   }
+  options.cursor?.(response.headers.get('x-aag-next-cursor'));
   return payload;
+}
+
+// Stream complete JSON arrays while holding only one bounded page in memory.
+async function exportPages(endpoint: string, cursorName: 'before' | 'after') {
+  const write = async (text: string) => {
+    if (!process.stdout.write(text)) await once(process.stdout, 'drain');
+  };
+  let cursor: string | null = null;
+  let first = true;
+  await write('[\n');
+  do {
+    const previous = cursor;
+    const page = await api(endpoint + (cursor ? `?${cursorName}=${cursor}` : ''), {
+      cursor: (value) => {
+        cursor = value;
+      },
+    });
+    if (!Array.isArray(page)) throw Error('Gateway returned an invalid list');
+    if (cursor && (!/^[0-9]+$/.test(cursor) || cursor === previous))
+      throw Error('Gateway returned an invalid cursor');
+    for (const record of page) {
+      await write((first ? '' : ',\n') + JSON.stringify(record, null, 2));
+      first = false;
+    }
+  } while (cursor);
+  await write('\n]\n');
 }
 
 function parseOptions(args: string[]): Options {
@@ -163,6 +197,20 @@ async function run(argv: string[]): Promise<void> {
     process.once('SIGTERM', stop);
     return;
   }
+  if (command === 'backup' || command === 'restore') {
+    requireRuntime();
+    const sourceFlag = command === 'backup' ? '--data' : '--from';
+    const targetFlag = command === 'backup' ? '--out' : '--data';
+    if (args.length !== 4 || args[0] !== sourceFlag || args[2] !== targetFlag)
+      return fail(`Use: aag ${command} ${sourceFlag} DIR ${targetFlag} NEW_DIR`);
+    const { backupState, restoreState } = await import('./maintenance.js');
+    return json(
+      await (command === 'backup' ? backupState : restoreState)(
+        resolve(args[1]!),
+        resolve(args[3]!),
+      ),
+    );
+  }
   if (command === 'policy') {
     const [subcommand, ...rest] = args;
     if (subcommand === 'validate' && rest.length === 1) return policyValidate(rest[0]!);
@@ -180,7 +228,7 @@ async function run(argv: string[]): Promise<void> {
     const action: unknown = JSON.parse(await readFile(args[1]!, 'utf8'));
     return json(await api('/v1/requests', { method: 'POST', body: action }));
   }
-  if (command === 'requests' && args.length === 0) return json(await api('/v1/requests'));
+  if (command === 'requests' && args.length === 0) return exportPages('/v1/requests', 'before');
   if (command === 'inspect' && args.length === 1)
     return json(await api(`/v1/requests/${encodeURIComponent(args[0]!)}`));
   if (command === 'approve' && args.length === 1) {
@@ -207,14 +255,14 @@ async function run(argv: string[]): Promise<void> {
     );
   }
   if (command === 'audit' && args.length === 1 && args[0] === 'export')
-    return json(await api('/v1/audit'));
+    return exportPages('/v1/audit', 'after');
   if (command === 'doctor' && args.length === 0) {
     const nativeCandidates = ['dist/safe-fs'];
     const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
     const native = nativeCandidates.find((path) => existsSync(resolve(packageRoot, path)));
     json({
       node: process.version,
-      supportedNode: Number(process.versions.node.split('.')[0]) >= 22,
+      supportedNode: supportedNode(),
       platform: platform(),
       release: release(),
       nativeExecutor: native ?? 'not found',

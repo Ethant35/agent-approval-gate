@@ -1,0 +1,32 @@
+{
+  "author": "Ethan",
+  "engine": "Semgrep Community 1.182.1",
+  "mode": "run-all",
+  "mergedFindings": 332,
+  "levels": {
+    "warning": 332
+  },
+  "rules": {
+    "raptor-bad-words": 276,
+    "raptor-signed-unsigned-conversion": 3,
+    "raptor-interesting-api-calls": 28,
+    "raptor-write-into-stack-buffer": 2,
+    "raptor-typos": 2,
+    "raptor-integer-truncation": 1,
+    "raptor-argv-envp-access": 13,
+    "raptor-integer-wraparound": 2,
+    "generic-one-liners": 4,
+    "exec": 1
+  },
+  "failed": 0,
+  "skipped": 0,
+  "coveredNothing": 0,
+  "oversized": 0,
+  "partialRulesets": [
+    "elttam/semgrep-rules",
+    "apiiro/malicious-code-ruleset"
+  ],
+  "sourceFilesCovered": 10,
+  "confirmedExploitableFindings": 0,
+  "snapshot": "Final behavioral source, including bounded summaries and valid UTC timestamp projection"
+}
