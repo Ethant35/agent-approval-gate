@@ -1,0 +1,9 @@
+{
+  "author": "Ethan",
+  "chromeVersion": "155.0.8059.85",
+  "playwright": "1.64.1",
+  "control": "standalone Chrome with data:text/html page; no gateway or native Codex",
+  "observedDisconnectMs": 31392,
+  "connectedAfter35516Ms": false,
+  "mitigation": "independent gateway and operator-ui Playwright projects; all52 tests/no retries"
+}

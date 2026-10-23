@@ -16,6 +16,8 @@ Base URL: `http://127.0.0.1:3741/v1`. All API calls require `Authorization: Bear
 | GET | `/policy` | Human; returns `{revision, policy}` |
 | POST | `/policy` | Human; `{ "yaml": "version: 1\n..." }` |
 | GET | `/budgets` | Human; maximum/reserved/settled/remaining per session/currency |
+| GET | `/audit/:sequence` | Human; complete audit detail |
+| GET | `/health` | Human; availability, preparations, executions, uptime |
 | GET | `/audit` | Human; ordered transitions, policy decisions, results and settlements |
 | POST | `/agents` | Human; `{ "agentId": "reviewer", "sessionIds": ["demo"] }`; returns scoped credential once |
 
@@ -61,3 +63,13 @@ This adapter supports local, cooperative runners under the same restricted proce
 Start `node /absolute/package/dist/cli.js mcp` with `AAG_URL` and an agent `AAG_TOKEN`. It implements standard newline-delimited stdio MCP using the official TypeScript SDK. Tools: `aag_submit({action})`, `aag_inspect({id})`, `aag_cancel({id})`, `aag_wait({id,state?,timeoutMs?})`. Waiting is bounded to 60 seconds; terminal results return immediately. Tool failures set `isError`, and real records are returned as both text JSON and structured content.
 
 The bootstrap `agent.token` represents agent ID `agent` and may select any configured session. For independent agents, issue a distinct `/agents` credential with an explicit agent ID and session list. Scoped tokens cannot inspect or cancel other principals' requests, spoof another agent/session, create credentials, or approve themselves. Rotate credentials by stopping the gateway, backing up state, and replacing bootstrap token files; scoped credential revocation is not exposed in v1, so use a fresh state directory or operator-managed database migration if one is compromised.
+
+## Version 2 list and failure contract
+
+Both list endpoints return arrays with `limit` from 1 to 100 (default 100). Follow the `X-AAG-Next-Cursor` response header until absent. Requests are newest first, using `before=cursor`; full audit is chronological, using `after=cursor`. Full pages also have a roughly 1.25 MB budget, except one large record may occupy a page. Individual details remain complete. CLI exports follow every page and stream a single JSON array; an interrupted export is incomplete and exits nonzero. Use a temporary output file and rename it only after exit 0.
+
+`view=summary` omits request parameters/results/approval capabilities and audit details, with reasons capped at 500 characters. Request summaries omit private fingerprints and cap timestamps at 64 characters while preserving UTC `Z`; only excess fractional-second precision is removed. Stored values and full details remain unchanged. Summary pages use the 100-row cap and bounded fields instead of the full-page byte budget, so all 100 admitted active requests fit on one page. Summary audit is newest first and uses `before=cursor`. `scope=active` is available on request lists; UI merges active and recent summaries so old pending approvals stay visible. Agents are filtered in SQL before pagination. A summary has `payloadOmitted: true`; fetch `/requests/:id` for complete data and a fresh human approval capability. Unknown query fields and invalid cursors are rejected. Concurrent new rows do not shift older cursors; exports are ordered traversals rather than transactional snapshots.
+
+`429` means admission or execution capacity is busy; a rejected submission has not been persisted, and a busy approval remains pending. `503` means shutdown or storage recovery is required. Do not assume a transport timeout or `503` proves an action had no effect. Inspect the original ID after recovery, reconcile the external effect, then choose whether to resubmit. No client retries side-effecting operations automatically. The client response limit is 16 MiB to cover escaped output, while native execution data remains bounded to 1 MiB.
+
+`GET /health` returns `{status, preparing, executing, uptimeSeconds}`; degraded state returns HTTP503. It contains no request IDs, tokens, parameters or URLs. Diagnostic stderr uses fixed event names and SQLite primary error codes only. Audit exports intentionally include action data, results and settlement evidence; keep them private.

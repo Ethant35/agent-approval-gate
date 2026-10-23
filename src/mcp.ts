@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { actionSchema, type RequestRecord } from './contracts.js';
 
 const DEFAULT_URL = 'http://127.0.0.1:3741';
-const RESPONSE_LIMIT = 2 * 1024 * 1024;
+const RESPONSE_LIMIT = 16 * 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 10_000;
 
 function gatewayUrl(path: string): URL {
@@ -60,7 +60,7 @@ async function callGateway(
       length += value.byteLength;
       if (length > RESPONSE_LIMIT) {
         await reader.cancel();
-        throw new Error('Gateway response exceeded the 2 MiB limit.');
+        throw new Error('Gateway response exceeded the 16 MiB limit.');
       }
       chunks.push(value);
     }
@@ -111,7 +111,7 @@ function errorResult(error: unknown): { content: [{ type: 'text'; text: string }
 }
 
 export async function runMcpServer(): Promise<void> {
-  const server = new McpServer({ name: 'agent-approval-gate', version: '1.0.0' });
+  const server = new McpServer({ name: 'agent-approval-gate', version: '2.0.0' });
   server.registerTool(
     'aag_submit',
     {

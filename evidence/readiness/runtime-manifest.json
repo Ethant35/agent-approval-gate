@@ -1,0 +1,63 @@
+{
+  "author": "Ethan",
+  "version": "2.0.0",
+  "sourceFilesCompared": 28,
+  "runtimeFiles": [
+    {
+      "path": "dist/cli.js",
+      "sha256": "8e07399f974306e9846a9637b0bc800f53d0221279993816c741c2292445d379"
+    },
+    {
+      "path": "dist/contracts.js",
+      "sha256": "ad45e1cbe4760460fb45babaff83540baeca567d370e4c292b5afe4d26ed4397"
+    },
+    {
+      "path": "dist/executor.js",
+      "sha256": "a2a877f25ab7b2a7e01ce9741dc8185dbe21d3308e04845283ecd1bd49962705"
+    },
+    {
+      "path": "dist/lease.js",
+      "sha256": "a6ad4d25e80e155d5cc4c4ce72278e454b64add820afa944a449154d3fba2f1c"
+    },
+    {
+      "path": "dist/maintenance.js",
+      "sha256": "e0ddce667295f2a59433da5c6c92e55e4f9701f3f51abca3fa24a4c441f0934e"
+    },
+    {
+      "path": "dist/mcp.js",
+      "sha256": "b2ef12f99e7209a0fd0b6150d07ded20ada2ea5aa5004e88990badd96a94a736"
+    },
+    {
+      "path": "dist/policy.js",
+      "sha256": "379e692027a7b4ef1d1a7f28c01d210f46526f3cae84a07f82869f5044815c6d"
+    },
+    {
+      "path": "dist/runtime.js",
+      "sha256": "2da0d4ef952e62f719ee122bbad580924d73ab64f1e4b37f87c58e38c3bfa144"
+    },
+    {
+      "path": "dist/safe-fs",
+      "sha256": "6f57afe2ff8e9efa4ada5e6c357394e698d283ee794044bb01a30f6f9e014b87"
+    },
+    {
+      "path": "dist/server.js",
+      "sha256": "86891c8573ef86a1f06200582ae5a44ecfe5f84b47c040c5824998e9c7063cca"
+    },
+    {
+      "path": "dist/store.js",
+      "sha256": "8d4b5bd908c845bbdd489d8ced70918e807c1a48fdf0b2b1ba32fcc55facfd97"
+    },
+    {
+      "path": "dist/web/assets/index-BPVH7nYk.js",
+      "sha256": "4314166fd762887e424dd3a590abcdbb0f77c3b2e525196f5971a79bf5924fc5"
+    },
+    {
+      "path": "dist/web/assets/index-BUz_xSvb.css",
+      "sha256": "086fc67804d43e44a93b409a1ab4a41586a20acd0bd13ce87edbe6a9170423be"
+    },
+    {
+      "path": "dist/web/index.html",
+      "sha256": "551d91eca1d4d1ea001c70e4822466945009726da9cd10087cccf007dd942035"
+    }
+  ]
+}

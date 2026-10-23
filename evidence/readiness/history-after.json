@@ -1,0 +1,19 @@
+{
+  "author": "Ethan",
+  "at": "2026-10-22T20:32:07.105Z",
+  "node": "v22.13.1",
+  "workload": {
+    "history": 2500,
+    "contentBytes": 4096,
+    "requests": 15
+  },
+  "latencyMs": {
+    "p50": 1.24087499999996,
+    "p95": 15.452457999999979
+  },
+  "responseBytes": {
+    "min": 53001,
+    "max": 53001
+  },
+  "rssKiB": 86592
+}

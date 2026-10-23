@@ -38,6 +38,6 @@ for (const pid of [...selected].reverse())
   } catch {}
 appendFileSync(
   root + 'HANDOFF.md',
-  `\n## Usage-stop shutdown ${new Date().toISOString()}\nAuthoritative account checker detected exhaustion. Project work stopped. Sent TERM then KILL to these checkout-specific process IDs and descendants: ${[...selected].join(', ') || 'none'}. Goal remains unfinished unless previously released. Verify with git status and process inspection before resuming. No new tests or releases may run until account usage is available again.\n`,
+  `\n## Usage-stop shutdown ${new Date().toISOString()}\nAuthoritative account checker reached the 10%-remaining floor. Project work stopped. Sent TERM then KILL to these checkout-specific process IDs and descendants: ${[...selected].join(', ') || 'none'}. Goal remains unfinished unless previously released. Verify with git status and process inspection before resuming. No new tests or releases may run until Ethan explicitly resumes work and account usage is above the floor.\n`,
 );
 console.log(JSON.stringify({ stoppedPids: [...selected], handoffUpdated: true }));

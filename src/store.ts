@@ -2,11 +2,25 @@ import { DatabaseSync } from 'node:sqlite';
 import { randomBytes } from 'node:crypto';
 import type { Action, Policy, RequestRecord, State } from './contracts.js';
 export type Stored = RequestRecord & { fingerprint: string; principal: string };
+export type PageOptions = {
+  limit: number;
+  cursor?: number;
+  summary: boolean;
+  active?: boolean;
+  principal?: string;
+};
+const activeStates = ['SUBMITTED', 'PENDING_APPROVAL', 'ALLOWED', 'APPROVED', 'EXECUTING'];
 export class Store {
   db: DatabaseSync;
   private inTransaction = false;
-  constructor(file: string) {
+  constructor(file: string, maxBytes = 1024 * 1024 * 1024) {
     this.db = new DatabaseSync(file);
+    const pageSize = Number(this.db.prepare('PRAGMA page_size').get()!.page_size);
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < pageSize)
+      throw Error('Invalid storage limit');
+    this.db.exec(
+      `PRAGMA max_page_count=${Math.floor(maxBytes / pageSize)}; PRAGMA journal_size_limit=16777216;`,
+    );
     this.db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON;
  CREATE TABLE IF NOT EXISTS policies(revision INTEGER PRIMARY KEY AUTOINCREMENT,json TEXT NOT NULL,at TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS requests(id TEXT PRIMARY KEY,json TEXT NOT NULL);
@@ -21,6 +35,9 @@ export class Store {
       )
     )
       this.db.exec('ALTER TABLE audit ADD COLUMN details TEXT');
+    this.db
+      .exec(`CREATE INDEX IF NOT EXISTS requests_state ON requests(json_extract(json,'$.state'));
+      CREATE INDEX IF NOT EXISTS requests_principal ON requests(json_extract(json,'$.principal'));`);
   }
   transaction<T>(fn: () => T): T {
     if (this.inTransaction) return fn();
@@ -31,7 +48,12 @@ export class Store {
       this.db.exec('COMMIT');
       return v;
     } catch (e) {
-      this.db.exec('ROLLBACK');
+      // SQLITE_FULL may already roll back the transaction. Preserve the original failure.
+      try {
+        this.db.exec('ROLLBACK');
+      } catch {
+        /* No transaction remains. */
+      }
       throw e;
     } finally {
       this.inTransaction = false;
@@ -88,6 +110,94 @@ export class Store {
       .prepare('SELECT * FROM audit ORDER BY sequence')
       .all()
       .map((r) => ({ ...r, details: r.details ? JSON.parse(r.details as string) : null }));
+  }
+  auditRecord(sequence: number) {
+    const r = this.db.prepare('SELECT * FROM audit WHERE sequence=?').get(sequence);
+    return r ? { ...r, details: r.details ? JSON.parse(r.details as string) : null } : undefined;
+  }
+  auditPage(o: PageOptions) {
+    const direction = o.summary ? 'DESC' : 'ASC';
+    const columns = o.summary ? 'sequence,requestId,state,substr(reason,1,500) AS reason,at' : '*';
+    const rows = this.db
+      .prepare(
+        `SELECT ${columns} FROM audit ${o.cursor === undefined ? '' : `WHERE sequence ${o.summary ? '<' : '>'} ?`} ORDER BY sequence ${direction} LIMIT ?`,
+      )
+      .iterate(...(o.cursor === undefined ? [] : [o.cursor]), o.limit + 1);
+    const items: Record<string, unknown>[] = [];
+    let bytes = 0,
+      next: number | undefined;
+    for (const r of rows) {
+      const size = Buffer.byteLength(JSON.stringify(r));
+      if (items.length && (items.length >= o.limit || (!o.summary && bytes + size > 1_250_000))) {
+        next = items.at(-1)!.sequence as number;
+        break;
+      }
+      bytes += size;
+      items.push(
+        o.summary ? r : { ...r, details: r.details ? JSON.parse(r.details as string) : null },
+      );
+    }
+    return { items, next };
+  }
+  requestPage(o: PageOptions) {
+    const where: string[] = [],
+      args: (number | string)[] = [];
+    if (o.cursor !== undefined) {
+      where.push('rowid < ?');
+      args.push(o.cursor);
+    }
+    if (o.principal !== undefined) {
+      where.push("json_extract(json,'$.principal')=?");
+      args.push(o.principal);
+    }
+    if (o.active) {
+      where.push(`json_extract(json,'$.state') IN (${activeStates.map(() => '?').join(',')})`);
+      args.push(...activeStates);
+    }
+    const projection = o.summary
+      ? `json_set(json_remove(json,'$.action.parameters','$.result','$.approvalToken','$.fingerprint'), '$.action.parameters',json('{}'),'$.action.timestamp',CASE WHEN length(json_extract(json,'$.action.timestamp')) > 64 THEN substr(json_extract(json,'$.action.timestamp'),1,63) || 'Z' ELSE json_extract(json,'$.action.timestamp') END,'$.reason',substr(json_extract(json,'$.reason'),1,500),'$.payloadOmitted',json('true'))`
+      : 'json';
+    const rows = this.db
+      .prepare(
+        `SELECT rowid,${projection} AS json FROM requests ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY rowid DESC LIMIT ?`,
+      )
+      .iterate(...args, o.limit + 1);
+    const items: Stored[] = [];
+    let bytes = 0,
+      last = 0,
+      next: number | undefined;
+    for (const row of rows) {
+      const size = Buffer.byteLength(row.json as string);
+      if (items.length && (items.length >= o.limit || (!o.summary && bytes + size > 1_250_000))) {
+        next = last;
+        break;
+      }
+      items.push(JSON.parse(row.json as string));
+      bytes += size;
+      last = row.rowid as number;
+    }
+    return { items, next };
+  }
+  states(states: string[]): Stored[] {
+    return this.db
+      .prepare(
+        `SELECT json FROM requests WHERE json_extract(json,'$.state') IN (${states.map(() => '?').join(',')})`,
+      )
+      .all(...states)
+      .map((r) => JSON.parse(r.json as string));
+  }
+  activeCount() {
+    return (
+      this.db
+        .prepare(
+          `SELECT count(*) AS n FROM requests WHERE json_extract(json,'$.state') IN (${activeStates.map(() => '?').join(',')})`,
+        )
+        .get(...activeStates) as { n: number }
+    ).n;
+  }
+  principalByHash(hash: string) {
+    return this.db.prepare('SELECT id FROM principals WHERE hash=?').get(hash)?.id as
+      string | undefined;
   }
   get(id: string): Stored | undefined {
     const r = this.db.prepare('SELECT json FROM requests WHERE id=?').get(id) as

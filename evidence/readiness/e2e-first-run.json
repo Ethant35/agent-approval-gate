@@ -1,0 +1,1926 @@
+{
+  "config": {
+    "argv": [
+      "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/runtime/node-v24.22.1-darwin-arm64/bin/node",
+      "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/node_modules/.bin/playwright",
+      "test"
+    ],
+    "configFile": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/playwright.config.ts",
+    "rootDir": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests",
+        "snapshotDir": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/tests",
+        "testIgnore": [],
+        "testMatch": "**/*.spec.ts",
+        "timeout": 45000,
+        "use": {
+          "channel": "chrome",
+          "headless": true,
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "gateway.spec.ts",
+      "file": "gateway.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "AG-01 installation and real CLI startup",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 465,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:05:56.634Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-57300addacb3877730c7",
+          "file": "gateway.spec.ts",
+          "line": 178,
+          "column": 1
+        },
+        {
+          "title": "AG-02 dashboard policies, history, keyboard and theme",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1167,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:05:57.114Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-8a535db6f25a2620b09c",
+          "file": "gateway.spec.ts",
+          "line": 187,
+          "column": 1
+        },
+        {
+          "title": "AG-03 automatic allowed read and CLI submission",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 442,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "(node:45813) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:02.566Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-5c42350d680b75af1f64",
+          "file": "gateway.spec.ts",
+          "line": 198,
+          "column": 1
+        },
+        {
+          "title": "AG-04 forbidden write does not execute",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 373,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:03.013Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-4d5e2f34b087d9d4580d",
+          "file": "gateway.spec.ts",
+          "line": 210,
+          "column": 1
+        },
+        {
+          "title": "AG-05 pending approval blocks execution",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 373,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:03.393Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-c2118d201ab131da4942",
+          "file": "gateway.spec.ts",
+          "line": 215,
+          "column": 1
+        },
+        {
+          "title": "AG-06 real browser approval executes exactly once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 913,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:03.772Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-84d54860117faabcce63",
+          "file": "gateway.spec.ts",
+          "line": 220,
+          "column": 1
+        },
+        {
+          "title": "AG-07 browser rejection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 709,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:04.693Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-654c18a92e5dc4bf52e2",
+          "file": "gateway.spec.ts",
+          "line": 236,
+          "column": 1
+        },
+        {
+          "title": "AG-08 expired approval rejected",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 729,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:05.408Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-f012d7829b2d2df4779e",
+          "file": "gateway.spec.ts",
+          "line": 244,
+          "column": 1
+        },
+        {
+          "title": "AG-09 approval token replay rejected",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 481,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:06.142Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-0c67a0add42d9ed06e62",
+          "file": "gateway.spec.ts",
+          "line": 253,
+          "column": 1
+        },
+        {
+          "title": "AG-10 immutable parameters and exact file identity",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 493,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:06.628Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-c8f24af6b52d486043cd",
+          "file": "gateway.spec.ts",
+          "line": 260,
+          "column": 1
+        },
+        {
+          "title": "AG-11 traversal, symlink and parent replacement",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 482,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:07.128Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-641303ed94c539b2d568",
+          "file": "gateway.spec.ts",
+          "line": 286,
+          "column": 1
+        },
+        {
+          "title": "AG-12 blocked command has no side effect",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 364,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:07.616Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-841a51c25ac5cb25db8e",
+          "file": "gateway.spec.ts",
+          "line": 305,
+          "column": 1
+        },
+        {
+          "title": "AG-13 unauthorized network and alternate IP never arrive",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 481,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:07.985Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-8cda7afef0d5c5d801e9",
+          "file": "gateway.spec.ts",
+          "line": 309,
+          "column": 1
+        },
+        {
+          "title": "AG-14 budgets retain unknown costs and settle recorded actuals",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 376,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:08.470Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-c561083709c9ab538293",
+          "file": "gateway.spec.ts",
+          "line": 344,
+          "column": 1
+        },
+        {
+          "title": "AG-15 concurrent approvals cannot oversubscribe",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 381,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:08.850Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-42f5e55cd12c638befa2",
+          "file": "gateway.spec.ts",
+          "line": 364,
+          "column": 1
+        },
+        {
+          "title": "AG-16 restart preserves policy pending requests audit budgets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 840,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:09.236Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-78fe7771f372d49a221d",
+          "file": "gateway.spec.ts",
+          "line": 377,
+          "column": 1
+        },
+        {
+          "title": "AG-17 authentication CSRF origins and self approval",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 374,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:10.080Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-da08e475be836d5eb472",
+          "file": "gateway.spec.ts",
+          "line": 388,
+          "column": 1
+        },
+        {
+          "title": "AG-18 dashboard disconnect keeps pending blocked",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 639,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:10.458Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-c4067b3a122d756a400e",
+          "file": "gateway.spec.ts",
+          "line": 408,
+          "column": 1
+        },
+        {
+          "title": "AG-19 native Codex MCP proposal approval execution result",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11567,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:11.102Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "native-codex-sanitized",
+                      "contentType": "text/plain",
+                      "body": "UmVhZGluZyBhZGRpdGlvbmFsIGlucHV0IGZyb20gc3RkaW4uLi4KeyJ0eXBlIjoidGhyZWFkLnN0YXJ0ZWQiLCJ0aHJlYWRfaWQiOiIwMWExNjcyNy0wMGU2LTc2ODEtYTVhOS02MjE0NDQzMmU1OTAifQp7InR5cGUiOiJ0dXJuLnN0YXJ0ZWQifQp7InR5cGUiOiJpdGVtLmNvbXBsZXRlZCIsIml0ZW0iOnsiaWQiOiJpdGVtXzAiLCJ0eXBlIjoiYWdlbnRfbWVzc2FnZSIsInRleHQiOiJJ4oCZbGwgc3VibWl0IHRoZSByZXF1ZXN0ZWQgYWN0aW9uIGFuZCB3YWl0IGZvciB0aGUgZ2F0ZXdheeKAmXMgY29tcGxldGlvbiByZXN1bHQuIn19CnsidHlwZSI6Iml0ZW0uc3RhcnRlZCIsIml0ZW0iOnsiaWQiOiJpdGVtXzEiLCJ0eXBlIjoibWNwX3Rvb2xfY2FsbCIsInNlcnZlciI6ImFhZyIsInRvb2wiOiJhYWdfc3VibWl0IiwiYXJndW1lbnRzIjp7ImFjdGlvbiI6eyJpZCI6Im5hdGl2ZS1jb2RleCIsImFnZW50SWQiOiJhZ2VudCIsInNlc3Npb25JZCI6InRlc3Qtc2Vzc2lvbiIsImNhdGVnb3J5IjoiZmlsZXN5c3RlbSIsIm9wZXJhdGlvbiI6IndyaXRlIiwicGFyYW1ldGVycyI6eyJwYXRoIjoiL3ByaXZhdGUvdmFyL2ZvbGRlcnMval8vbDg3NHZ5dGQxOWo1aGtobDA1eW1mZmJjMDAwMGduL1QvYWFnLWUyZS0xZ3VVSlovd29ya3NwYWNlL3RhcmdldC50eHQiLCJjb250ZW50IjoibmF0aXZlLWNvZGV4LWUyZSJ9LCJyZXNvdXJjZVNjb3BlIjoiL3ByaXZhdGUvdmFyL2ZvbGRlcnMval8vbDg3NHZ5dGQxOWo1aGtobDA1eW1mZmJjMDAwMGduL1QvYWFnLWUyZS0xZ3VVSlovd29ya3NwYWNlL3RhcmdldC50eHQiLCJ0aW1lc3RhbXAiOiIyMDI2LTEwLTIzVDA1OjA2OjExLjU1MVoiLCJyZXF1ZXN0ZWRQZXJtaXNzaW9ucyI6WyJmaWxlc3lzdGVtOndyaXRlIl0sImV4cGVjdGVkUmVzdWx0Rm9ybWF0IjoianNvbiJ9fSwicmVzdWx0IjpudWxsLCJlcnJvciI6bnVsbCwic3RhdHVzIjoiaW5fcHJvZ3Jlc3MifX0KeyJ0eXBlIjoiaXRlbS5jb21wbGV0ZWQiLCJpdGVtIjp7ImlkIjoiaXRlbV8xIiwidHlwZSI6Im1jcF90b29sX2NhbGwiLCJzZXJ2ZXIiOiJhYWciLCJ0b29sIjoiYWFnX3N1Ym1pdCIsImFyZ3VtZW50cyI6eyJhY3Rpb24iOnsiaWQiOiJuYXRpdmUtY29kZXgiLCJhZ2VudElkIjoiYWdlbnQiLCJzZXNzaW9uSWQiOiJ0ZXN0LXNlc3Npb24iLCJjYXRlZ29yeSI6ImZpbGVzeXN0ZW0iLCJvcGVyYXRpb24iOiJ3cml0ZSIsInBhcmFtZXRlcnMiOnsicGF0aCI6Ii9wcml2YXRlL3Zhci9mb2xkZXJzL2pfL2w4NzR2eXRkMTlqNWhraGwwNXltZmZiYzAwMDBnbi9UL2FhZy1lMmUtMWd1VUpaL3dvcmtzcGFjZS90YXJnZXQudHh0IiwiY29udGVudCI6Im5hdGl2ZS1jb2RleC1lMmUifSwicmVzb3VyY2VTY29wZSI6Ii9wcml2YXRlL3Zhci9mb2xkZXJzL2pfL2w4NzR2eXRkMTlqNWhraGwwNXltZmZiYzAwMDBnbi9UL2FhZy1lMmUtMWd1VUpaL3dvcmtzcGFjZS90YXJnZXQudHh0IiwidGltZXN0YW1wIjoiMjAyNi0xMC0yM1QwNTowNjoxMS41NTFaIiwicmVxdWVzdGVkUGVybWlzc2lvbnMiOlsiZmlsZXN5c3RlbTp3cml0ZSJdLCJleHBlY3RlZFJlc3VsdEZvcm1hdCI6Impzb24ifX0sInJlc3VsdCI6eyJjb250ZW50IjpbeyJ0eXBlIjoidGV4dCIsInRleHQiOiJ7XCJhY3Rpb25cIjp7XCJpZFwiOlwibmF0aXZlLWNvZGV4XCIsXCJhZ2VudElkXCI6XCJhZ2VudFwiLFwic2Vzc2lvbklkXCI6XCJ0ZXN0LXNlc3Npb25cIixcImNhdGVnb3J5XCI6XCJmaWxlc3lzdGVtXCIsXCJvcGVyYXRpb25cIjpcIndyaXRlXCIsXCJwYXJhbWV0ZXJzXCI6e1wicGF0aFwiOlwiL3ByaXZhdGUvdmFyL2ZvbGRlcnMval8vbDg3NHZ5dGQxOWo1aGtobDA1eW1mZmJjMDAwMGduL1QvYWFnLWUyZS0xZ3VVSlovd29ya3NwYWNlL3RhcmdldC50eHRcIixcImNvbnRlbnRcIjpcIm5hdGl2ZS1jb2RleC1lMmVcIn0sXCJyZXNvdXJjZVNjb3BlXCI6XCIvcHJpdmF0ZS92YXIvZm9sZGVycy9qXy9sODc0dnl0ZDE5ajVoa2hsMDV5bWZmYmMwMDAwZ24vVC9hYWctZTJlLTFndVVKWi93b3Jrc3BhY2UvdGFyZ2V0LnR4dFwiLFwidGltZXN0YW1wXCI6XCIyMDI2LTEwLTIzVDA1OjA2OjExLjU1MVpcIixcInJlcXVlc3RlZFBlcm1pc3Npb25zXCI6W1wiZmlsZXN5c3RlbTp3cml0ZVwiXSxcImV4cGVjdGVkUmVzdWx0Rm9ybWF0XCI6XCJqc29uXCJ9LFwic3RhdGVcIjpcIlBFTkRJTkdfQVBQUk9WQUxcIixcInJlYXNvblwiOlwiRGVmYXVsdCBwb2xpY3lcIixcInBvbGljeVZlcnNpb25cIjoxLFwiY3JlYXRlZEF0XCI6XCIyMDI2LTEwLTIzVDA1OjA2OjE4LjgzNlpcIixcImV4cGlyZXNBdFwiOlwiMjAyNi0xMC0yM1QwNTowNzoxOC44MzZaXCJ9In1dLCJzdHJ1Y3R1cmVkX2NvbnRlbnQiOnsiYWN0aW9uIjp7ImlkIjoibmF0aXZlLWNvZGV4IiwiYWdlbnRJZCI6ImFnZW50Iiwic2Vzc2lvbklkIjoidGVzdC1zZXNzaW9uIiwiY2F0ZWdvcnkiOiJmaWxlc3lzdGVtIiwib3BlcmF0aW9uIjoid3JpdGUiLCJwYXJhbWV0ZXJzIjp7InBhdGgiOiIvcHJpdmF0ZS92YXIvZm9sZGVycy9qXy9sODc0dnl0ZDE5ajVoa2hsMDV5bWZmYmMwMDAwZ24vVC9hYWctZTJlLTFndVVKWi93b3Jrc3BhY2UvdGFyZ2V0LnR4dCIsImNvbnRlbnQiOiJuYXRpdmUtY29kZXgtZTJlIn0sInJlc291cmNlU2NvcGUiOiIvcHJpdmF0ZS92YXIvZm9sZGVycy9qXy9sODc0dnl0ZDE5ajVoa2hsMDV5bWZmYmMwMDAwZ24vVC9hYWctZTJlLTFndVVKWi93b3Jrc3BhY2UvdGFyZ2V0LnR4dCIsInRpbWVzdGFtcCI6IjIwMjYtMTAtMjNUMDU6MDY6MTEuNTUxWiIsInJlcXVlc3RlZFBlcm1pc3Npb25zIjpbImZpbGVzeXN0ZW06d3JpdGUiXSwiZXhwZWN0ZWRSZXN1bHRGb3JtYXQiOiJqc29uIn0sInN0YXRlIjoiUEVORElOR19BUFBST1ZBTCIsInJlYXNvbiI6IkRlZmF1bHQgcG9saWN5IiwicG9saWN5VmVyc2lvbiI6MSwiY3JlYXRlZEF0IjoiMjAyNi0xMC0yM1QwNTowNjoxOC44MzZaIiwiZXhwaXJlc0F0IjoiMjAyNi0xMC0yM1QwNTowNzoxOC44MzZaIn19LCJlcnJvciI6bnVsbCwic3RhdHVzIjoiY29tcGxldGVkIn19CnsidHlwZSI6Iml0ZW0uc3RhcnRlZCIsIml0ZW0iOnsiaWQiOiJpdGVtXzIiLCJ0eXBlIjoibWNwX3Rvb2xfY2FsbCIsInNlcnZlciI6ImFhZyIsInRvb2wiOiJhYWdfd2FpdCIsImFyZ3VtZW50cyI6eyJpZCI6Im5hdGl2ZS1jb2RleCIsInRpbWVvdXRNcyI6MzAwMDB9LCJyZXN1bHQiOm51bGwsImVycm9yIjpudWxsLCJzdGF0dXMiOiJpbl9wcm9ncmVzcyJ9fQp7InR5cGUiOiJpdGVtLmNvbXBsZXRlZCIsIml0ZW0iOnsiaWQiOiJpdGVtXzIiLCJ0eXBlIjoibWNwX3Rvb2xfY2FsbCIsInNlcnZlciI6ImFhZyIsInRvb2wiOiJhYWdfd2FpdCIsImFyZ3VtZW50cyI6eyJpZCI6Im5hdGl2ZS1jb2RleCIsInRpbWVvdXRNcyI6MzAwMDB9LCJyZXN1bHQiOnsiY29udGVudCI6W3sidHlwZSI6InRleHQiLCJ0ZXh0Ijoie1wiYWN0aW9uXCI6e1wiaWRcIjpcIm5hdGl2ZS1jb2RleFwiLFwiYWdlbnRJZFwiOlwiYWdlbnRcIixcInNlc3Npb25JZFwiOlwidGVzdC1zZXNzaW9uXCIsXCJjYXRlZ29yeVwiOlwiZmlsZXN5c3RlbVwiLFwib3BlcmF0aW9uXCI6XCJ3cml0ZVwiLFwicGFyYW1ldGVyc1wiOntcInBhdGhcIjpcIi9wcml2YXRlL3Zhci9mb2xkZXJzL2pfL2w4NzR2eXRkMTlqNWhraGwwNXltZmZiYzAwMDBnbi9UL2FhZy1lMmUtMWd1VUpaL3dvcmtzcGFjZS90YXJnZXQudHh0XCIsXCJjb250ZW50XCI6XCJuYXRpdmUtY29kZXgtZTJlXCJ9LFwicmVzb3VyY2VTY29wZVwiOlwiL3ByaXZhdGUvdmFyL2ZvbGRlcnMval8vbDg3NHZ5dGQxOWo1aGtobDA1eW1mZmJjMDAwMGduL1QvYWFnLWUyZS0xZ3VVSlovd29ya3NwYWNlL3RhcmdldC50eHRcIixcInRpbWVzdGFtcFwiOlwiMjAyNi0xMC0yM1QwNTowNjoxMS41NTFaXCIsXCJyZXF1ZXN0ZWRQZXJtaXNzaW9uc1wiOltcImZpbGVzeXN0ZW06d3JpdGVcIl0sXCJleHBlY3RlZFJlc3VsdEZvcm1hdFwiOlwianNvblwifSxcInN0YXRlXCI6XCJDT01QTEVURURcIixcInJlYXNvblwiOlwiRXhlY3V0aW9uIGNvbXBsZXRlZDsgZGVjbGFyZWQgY29zdCByZW1haW5zIHJlc2VydmVkIHVudGlsIGF1dGhvcml0YXRpdmUgc2V0dGxlbWVudFwiLFwicG9saWN5VmVyc2lvblwiOjEsXCJjcmVhdGVkQXRcIjpcIjIwMjYtMTAtMjNUMDU6MDY6MTguODM2WlwiLFwiZXhwaXJlc0F0XCI6XCIyMDI2LTEwLTIzVDA1OjA3OjE4LjgzNlpcIixcInJlc3VsdFwiOntcImJ5dGVzV3JpdHRlblwiOjE2fX0ifV0sInN0cnVjdHVyZWRfY29udGVudCI6eyJhY3Rpb24iOnsiaWQiOiJuYXRpdmUtY29kZXgiLCJhZ2VudElkIjoiYWdlbnQiLCJzZXNzaW9uSWQiOiJ0ZXN0LXNlc3Npb24iLCJjYXRlZ29yeSI6ImZpbGVzeXN0ZW0iLCJvcGVyYXRpb24iOiJ3cml0ZSIsInBhcmFtZXRlcnMiOnsicGF0aCI6Ii9wcml2YXRlL3Zhci9mb2xkZXJzL2pfL2w4NzR2eXRkMTlqNWhraGwwNXltZmZiYzAwMDBnbi9UL2FhZy1lMmUtMWd1VUpaL3dvcmtzcGFjZS90YXJnZXQudHh0IiwiY29udGVudCI6Im5hdGl2ZS1jb2RleC1lMmUifSwicmVzb3VyY2VTY29wZSI6Ii9wcml2YXRlL3Zhci9mb2xkZXJzL2pfL2w4NzR2eXRkMTlqNWhraGwwNXltZmZiYzAwMDBnbi9UL2FhZy1lMmUtMWd1VUpaL3dvcmtzcGFjZS90YXJnZXQudHh0IiwidGltZXN0YW1wIjoiMjAyNi0xMC0yM1QwNTowNjoxMS41NTFaIiwicmVxdWVzdGVkUGVybWlzc2lvbnMiOlsiZmlsZXN5c3RlbTp3cml0ZSJdLCJleHBlY3RlZFJlc3VsdEZvcm1hdCI6Impzb24ifSwic3RhdGUiOiJDT01QTEVURUQiLCJyZWFzb24iOiJFeGVjdXRpb24gY29tcGxldGVkOyBkZWNsYXJlZCBjb3N0IHJlbWFpbnMgcmVzZXJ2ZWQgdW50aWwgYXV0aG9yaXRhdGl2ZSBzZXR0bGVtZW50IiwicG9saWN5VmVyc2lvbiI6MSwiY3JlYXRlZEF0IjoiMjAyNi0xMC0yM1QwNTowNjoxOC44MzZaIiwiZXhwaXJlc0F0IjoiMjAyNi0xMC0yM1QwNTowNzoxOC44MzZaIiwicmVzdWx0Ijp7ImJ5dGVzV3JpdHRlbiI6MTZ9fX0sImVycm9yIjpudWxsLCJzdGF0dXMiOiJjb21wbGV0ZWQifX0KeyJ0eXBlIjoiaXRlbS5jb21wbGV0ZWQiLCJpdGVtIjp7ImlkIjoiaXRlbV8zIiwidHlwZSI6ImFnZW50X21lc3NhZ2UiLCJ0ZXh0IjoiUmVxdWVzdCBJRDogYG5hdGl2ZS1jb2RleGAgIFxuU3RhdGU6IGBDT01QTEVURURgICBcbkFjdHVhbCByZXN1bHQ6IGB7XCJieXRlc1dyaXR0ZW5cIjoxNn1gIn19CnsidHlwZSI6InR1cm4uY29tcGxldGVkIiwidXNhZ2UiOnsiaW5wdXRfdG9rZW5zIjo2NDY3MSwiY2FjaGVkX2lucHV0X3Rva2VucyI6NDY5NzYsImNhY2hlX3dyaXRlX2lucHV0X3Rva2VucyI6MCwib3V0cHV0X3Rva2VucyI6NTI2LCJyZWFzb25pbmdfb3V0cHV0X3Rva2VucyI6MjAxfX0K"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-f645f6ef1b5b7a5e84dc",
+          "file": "gateway.spec.ts",
+          "line": 416,
+          "column": 1
+        },
+        {
+          "title": "AG-20 CLI audit export matches actual transitions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 432,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "(node:47558) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:22.674Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-2c56a08d8e78105f174b",
+          "file": "gateway.spec.ts",
+          "line": 487,
+          "column": 1
+        },
+        {
+          "title": "AG-21 real executor failure records FAILED",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 480,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:23.111Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-979217fd5bc4bad61b16",
+          "file": "gateway.spec.ts",
+          "line": 498,
+          "column": 1
+        },
+        {
+          "title": "AG-22 cancellation kills subprocess and child",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 479,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:23.596Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-b2d80ffd8f9b3151fc61",
+          "file": "gateway.spec.ts",
+          "line": 507,
+          "column": 1
+        },
+        {
+          "title": "security: sandbox denies outside write, network and secret read",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 475,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:24.080Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-d779355d9f2eb4fdde2d",
+          "file": "gateway.spec.ts",
+          "line": 529,
+          "column": 1
+        },
+        {
+          "title": "security: invalid policy fails closed and policy revision revokes approval",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 372,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:24.559Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-2ba66222f9444c3e2842",
+          "file": "gateway.spec.ts",
+          "line": 540,
+          "column": 1
+        },
+        {
+          "title": "subagent real adapter and concurrency enforcement",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2236,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:24.936Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-19e8e2ce34a441dcd639",
+          "file": "gateway.spec.ts",
+          "line": 548,
+          "column": 1
+        },
+        {
+          "title": "security: scoped credentials enforce agent/session identity and ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 738,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:27.176Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-40ab99c08b3019a74c33",
+          "file": "gateway.spec.ts",
+          "line": 560,
+          "column": 1
+        },
+        {
+          "title": "security: redirect never reaches a second destination",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 223,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:27.918Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-797a5f8d277117154689",
+          "file": "gateway.spec.ts",
+          "line": 587,
+          "column": 1
+        },
+        {
+          "title": "security: OS sandbox blocks actual HTTP connection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 733,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:28.145Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-a53cfb7c327d44a8ddc0",
+          "file": "gateway.spec.ts",
+          "line": 622,
+          "column": 1
+        },
+        {
+          "title": "security: timeout terminates running command",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 738,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:28.884Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-106d66fbf3d29b814c28",
+          "file": "gateway.spec.ts",
+          "line": 650,
+          "column": 1
+        },
+        {
+          "title": "security: hardlink and case-alias denied paths",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 367,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:29.626Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-bf59856ad4ded3d408ed",
+          "file": "gateway.spec.ts",
+          "line": 661,
+          "column": 1
+        },
+        {
+          "title": "security: canonical routing cannot bypass API authentication",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 370,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:29.997Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-a1803ad36b08656bc052",
+          "file": "gateway.spec.ts",
+          "line": 667,
+          "column": 1
+        },
+        {
+          "title": "filesystem create and text result format",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 592,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:30.372Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-c7bbe292822f38ed3e8a",
+          "file": "gateway.spec.ts",
+          "line": 682,
+          "column": 1
+        },
+        {
+          "title": "depth: equivalent deny path suffix /",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 373,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:30.970Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-8eca0b2f4eb5ec977162",
+          "file": "gateway.spec.ts",
+          "line": 694,
+          "column": 3
+        },
+        {
+          "title": "depth: equivalent deny path suffix /.",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 367,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:31.349Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-ed187592654073e540ad",
+          "file": "gateway.spec.ts",
+          "line": 694,
+          "column": 3
+        },
+        {
+          "title": "depth: equivalent deny path suffix //",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 367,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:31.721Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-43761ce44fec73dd64ec",
+          "file": "gateway.spec.ts",
+          "line": 694,
+          "column": 3
+        },
+        {
+          "title": "depth: equivalent allowed paths still permit an ordinary read",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 474,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:32.091Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-4fcb4a766e61a05d2e16",
+          "file": "gateway.spec.ts",
+          "line": 709,
+          "column": 1
+        },
+        {
+          "title": "depth: WORKSPACE cannot hide private state inside workspace",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 462,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:32.570Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-69a124e500bc8162bda4",
+          "file": "gateway.spec.ts",
+          "line": 717,
+          "column": 3
+        },
+        {
+          "title": "depth: workspace cannot hide private state inside workspace",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 720,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:33.036Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-2091caad155187a6813f",
+          "file": "gateway.spec.ts",
+          "line": 717,
+          "column": 3
+        },
+        {
+          "title": "depth: replaced directory workspace invalidates shell approval",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 502,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:33.760Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-fc8c13e17794e523f6e0",
+          "file": "gateway.spec.ts",
+          "line": 750,
+          "column": 5
+        },
+        {
+          "title": "depth: replaced symlink workspace invalidates shell approval",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 493,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:34.267Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-faa48ba12c82d0cd9609",
+          "file": "gateway.spec.ts",
+          "line": 750,
+          "column": 5
+        },
+        {
+          "title": "depth: replaced directory workspace invalidates subagent approval",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 489,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:34.764Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-b0487a75773a28d0c169",
+          "file": "gateway.spec.ts",
+          "line": 750,
+          "column": 5
+        },
+        {
+          "title": "depth: replaced symlink workspace invalidates subagent approval",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 476,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:35.257Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-0f54bbcf2344b43a2d60",
+          "file": "gateway.spec.ts",
+          "line": 750,
+          "column": 5
+        },
+        {
+          "title": "depth: persisted legacy policy is normalized and old approval revoked on restart",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 843,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:35.738Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-36de1c99bd915f43acbf",
+          "file": "gateway.spec.ts",
+          "line": 774,
+          "column": 1
+        },
+        {
+          "title": "depth: normalized deny reaches OS sandbox while approved working directory still executes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 588,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:36.585Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-bb3f41981a797abe642e",
+          "file": "gateway.spec.ts",
+          "line": 799,
+          "column": 1
+        },
+        {
+          "title": "depth: legacy process approval without workspace identity fails closed after upgrade",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1624,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:37.176Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4ae4b39ffcff1988a83e-767bcbecbb9c5020ca71",
+          "file": "gateway.spec.ts",
+          "line": 823,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "ui-readiness.spec.ts",
+      "file": "ui-readiness.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "fresh users can skip, reconnect later, and replay the setup guide",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1039,
+                  "error": {
+                    "message": "Error: browser.newContext: Target page, context or browser has been closed",
+                    "stack": "Error: browser.newContext: Target page, context or browser has been closed"
+                  },
+                  "errors": [
+                    {
+                      "message": "Error: browser.newContext: Target page, context or browser has been closed"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:38.875Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/test-results/ui-readiness-fresh-users-c-36be9--and-replay-the-setup-guide/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/test-results/ui-readiness-fresh-users-c-36be9--and-replay-the-setup-guide/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2f6d1126f23d960f204a-353215b580fe651dfa02",
+          "file": "ui-readiness.spec.ts",
+          "line": 135,
+          "column": 1
+        },
+        {
+          "title": "bad credentials show a recoverable error and never persist the token",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 859,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:40.525Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2f6d1126f23d960f204a-fa9fac85a78a331c2b91",
+          "file": "ui-readiness.spec.ts",
+          "line": 154,
+          "column": 1
+        },
+        {
+          "title": "connected dashboard is usable at narrow width and 200 percent zoom",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 851,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:41.711Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2f6d1126f23d960f204a-5cf69a584fb36ad0b552",
+          "file": "ui-readiness.spec.ts",
+          "line": 175,
+          "column": 1
+        },
+        {
+          "title": "approval dialog contains keyboard focus, confirms exact action, and restores trigger focus",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2049,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:42.569Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2f6d1126f23d960f204a-a8ebc8c72ac2db7bc56f",
+          "file": "ui-readiness.spec.ts",
+          "line": 208,
+          "column": 1
+        },
+        {
+          "title": "human approval creates a new file only after confirmation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 877,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:44.626Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2f6d1126f23d960f204a-b14d5a5bd505fea2f73c",
+          "file": "ui-readiness.spec.ts",
+          "line": 258,
+          "column": 1
+        },
+        {
+          "title": "audit summary rows load the full record only when opened",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 709,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:45.511Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2f6d1126f23d960f204a-b24075430e9aa4844dd3",
+          "file": "ui-readiness.spec.ts",
+          "line": 276,
+          "column": 1
+        },
+        {
+          "title": "operator screens pass axe checks in light, dark, and approval states",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2678,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-23T05:06:46.226Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2f6d1126f23d960f204a-9ea495c77766108aedb5",
+          "file": "ui-readiness.spec.ts",
+          "line": 287,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-23T05:05:56.336Z",
+    "duration": 52813.394,
+    "expected": 51,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "author": "Ethan"
+}

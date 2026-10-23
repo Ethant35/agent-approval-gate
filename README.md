@@ -2,9 +2,9 @@
 
 A local permission gateway for agent tools. It evaluates versioned policies, records requests in SQLite, and executes allowed or human-approved actions. The dashboard and CLI use the same authenticated API and database.
 
-**Supported release platform: macOS arm64, Node.js 22.13 or later.** A C compiler is required when building from source. Process execution requires macOS Seatbelt (`sandbox-exec`); other platforms fail closed for shell and subagent actions and are not release-qualified. No cloud service is required for the gateway. The optional native Codex integration uses your existing Codex account.
+**Supported release platform: macOS arm64, Node.js 24.22.1 or newer in the Node 24 LTS line.** A C compiler is required when building from source. Process execution requires macOS Seatbelt (`sandbox-exec`); the server refuses to start on other platforms. No cloud service is required for the gateway. The optional native Codex integration uses your existing Codex account.
 
-[Acceptance evidence](ACCEPTANCE.md) · [Policy format](POLICY.md) · [Security boundaries](SECURITY.md) · [API and integrations](docs/API.md)
+[Version 2 qualification](READINESS.md) · [Policy format](POLICY.md) · [Security boundaries](SECURITY.md) · [API and integrations](docs/API.md)
 
 ## Install and start
 
@@ -26,7 +26,7 @@ The default policy requires human approval for filesystem operations in the dire
 aag serve --data /absolute/private/state --port 3741 --policy /absolute/policy.yaml
 ```
 
-The data path must be canonical (no symlink components). Server startup prints its URL and state path, never credentials. Only one server may own a state directory. Stop with Ctrl+C; active process groups are killed, pending approvals persist. After an abrupt crash, verify the PID in `server.lock` is no longer running before removing that lock and restarting. Interrupted executions are marked FAILED and never automatically retried.
+The data path must be canonical (no symlink components). Server startup prints its URL and state path, never credentials. Only one server may own a state directory. Stop with Ctrl+C; active process groups are killed, pending approvals persist. After an abrupt crash, restart normally. The OS releases the held lock; never delete a live `server.lock` inode. An empty or malformed legacy marker requires the recovery checks in [backup and recovery](docs/backup-recovery.md). Interrupted executions are marked FAILED and never automatically retried.
 
 ## CLI
 
@@ -71,7 +71,7 @@ Codex's built-in tools are outside this gateway's scope. Prompts alone cannot fo
 
 ## Other agent frameworks
 
-Use the versioned JSON API or the stdio MCP adapter. Provision an agent/session-scoped credential through the human-only `/v1/agents` API. The generic subagent adapter executes an exact allowlisted executable/argument array in the approved workspace under Seatbelt. It supports local subprocess runners independently of any other project. Subprocess networking is denied; cloud-provider SDK runners are not supported inside that adapter in v1.
+Use the versioned JSON API or the stdio MCP adapter. Provision an agent/session-scoped credential through the human-only `/v1/agents` API. The generic subagent adapter executes an exact allowlisted executable/argument array in the approved workspace under Seatbelt. It supports local subprocess runners independently of any other project. Subprocess networking is denied; cloud-provider SDK runners are not supported inside that adapter.
 
 ## Verify locally
 
@@ -80,10 +80,26 @@ Install Google Chrome for browser tests. `npm run test:e2e` uses Playwright's Ch
 ```sh
 npm ci
 npm run build
+npm run check
+npm run test:core
+npm run test:native
 npm run test:e2e
 npm audit --audit-level=high
 ```
 
-To diagnose offline/non-Codex behavior separately: `npm run test:e2e -- --grep-invert AG-19`. That partial run is **not** full release acceptance. See ACCEPTANCE.md for clean-install and release evidence. GitHub Actions are intentionally omitted and disabled for this repository at Ethan's request. All release checks run locally.
+To diagnose offline/non-Codex behavior separately: `npm run test:e2e -- --grep-invert AG-19`. That partial run is **not** full release acceptance. See READINESS.md for current clean-install evidence and the historical-archive setup required by the core upgrade test. ACCEPTANCE.md retains earlier release evidence. GitHub Actions are intentionally omitted and disabled for this repository at Ethan's request. All release checks run locally.
+
+## Upgrade, capacity and recovery
+
+Version 2 requires the qualified Node 24 runtime. Stop the old gateway, make a cold backup with the new CLI, then start version 2 on the original data directory. Existing records and balances remain; old pending filesystem/process fingerprints may require explicit resubmission. Inspect any interrupted action and reconcile its external effects before retrying. See [the migration and support decision](docs/decisions/0001-production-target.md).
+
+```sh
+aag backup --data /absolute/private/state --out /absolute/private/new-backup
+aag restore --from /absolute/private/new-backup --data /absolute/private/new-state
+```
+
+Backups include credentials. Restore only to a new directory and keep backups private. The gateway retains history until the operator archives/removes it; the main database has a 1 GiB cap. Full or unavailable storage stops new work and prints a fixed diagnostic event. Keep the original state, recover storage space, then restart. Never delete only a live SQLite WAL file. [Recovery instructions](docs/backup-recovery.md) describe partial outputs and rollback.
+
+The gateway admits 100 active requests and at most 8 concurrent preparations and 8 executions. A `429` admission response has not accepted the new request; wait and retry its same ID. After any timeout or lost response, inspect that ID first. Lists use cursor pages; the dashboard loads history on demand, and CLI `requests` / `audit export` stream all pages. The human-only `/v1/health` endpoint reports availability and in-flight counts without payloads.
 
 Author: Ethan. MIT license preserved.

@@ -1,0 +1,14 @@
+{
+  "author": "Ethan",
+  "version": "2.0.0",
+  "archive": "agent-approval-gate-2.0.0.tgz",
+  "sha256": "8dc896056611b8034d99d876ec5603df4cc74f200ee5d64e8ea17c1714d0fea2",
+  "files": 67,
+  "runtimeFilesMatched": 14,
+  "manifestAuthor": "Ethan",
+  "license": "MIT, LICENSE preserved",
+  "cliExecutable": true,
+  "cleanBuildAndInstalledRuntimeMatch": true,
+  "archiveSealedBeforeFinalInstallEvidence": true,
+  "postPackEvidenceExcluded": true
+}
