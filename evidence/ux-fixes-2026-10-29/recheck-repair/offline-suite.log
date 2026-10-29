@@ -1,0 +1,119 @@
+
+Running 59 tests using 1 worker
+
+(node:48360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [gateway] › tests/gateway.spec.ts:178:1 › AG-01 installation and real CLI startup (520ms)
+  ✓   2 [gateway] › tests/gateway.spec.ts:187:1 › AG-02 dashboard policies, history, keyboard and theme (965ms)
+(node:48417) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   3 [gateway] › tests/gateway.spec.ts:198:1 › AG-03 automatic allowed read and CLI submission (459ms)
+  ✓   4 [gateway] › tests/gateway.spec.ts:210:1 › AG-04 forbidden write does not execute (368ms)
+  ✓   5 [gateway] › tests/gateway.spec.ts:215:1 › AG-05 pending approval blocks execution (374ms)
+  ✘   6 [gateway] › tests/gateway.spec.ts:220:1 › AG-06 real browser approval executes exactly once (10.9s)
+(node:48859) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   7 [gateway] › tests/gateway.spec.ts:236:1 › AG-07 browser rejection (843ms)
+  ✓   8 [gateway] › tests/gateway.spec.ts:244:1 › AG-08 expired approval rejected (739ms)
+  ✓   9 [gateway] › tests/gateway.spec.ts:253:1 › AG-09 approval token replay rejected (480ms)
+  ✓  10 [gateway] › tests/gateway.spec.ts:260:1 › AG-10 immutable parameters and exact file identity (492ms)
+  ✓  11 [gateway] › tests/gateway.spec.ts:286:1 › AG-11 traversal, symlink and parent replacement (484ms)
+  ✓  12 [gateway] › tests/gateway.spec.ts:305:1 › AG-12 blocked command has no side effect (366ms)
+  ✓  13 [gateway] › tests/gateway.spec.ts:309:1 › AG-13 unauthorized network and alternate IP never arrive (489ms)
+  ✓  14 [gateway] › tests/gateway.spec.ts:344:1 › AG-14 budgets retain unknown costs and settle recorded actuals (378ms)
+  ✓  15 [gateway] › tests/gateway.spec.ts:364:1 › AG-15 concurrent approvals cannot oversubscribe (395ms)
+  ✓  16 [gateway] › tests/gateway.spec.ts:377:1 › AG-16 restart preserves policy pending requests audit budgets (848ms)
+  ✓  17 [gateway] › tests/gateway.spec.ts:388:1 › AG-17 authentication CSRF origins and self approval (373ms)
+  ✓  18 [gateway] › tests/gateway.spec.ts:408:1 › AG-18 dashboard disconnect keeps pending blocked (656ms)
+(node:49254) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  19 [gateway] › tests/gateway.spec.ts:499:1 › AG-20 CLI audit export matches actual transitions (461ms)
+  ✓  20 [gateway] › tests/gateway.spec.ts:510:1 › AG-21 real executor failure records FAILED (477ms)
+  ✓  21 [gateway] › tests/gateway.spec.ts:519:1 › AG-22 cancellation kills subprocess and child (485ms)
+  ✓  22 [gateway] › tests/gateway.spec.ts:541:1 › security: sandbox denies outside write, network and secret read (478ms)
+  ✓  23 [gateway] › tests/gateway.spec.ts:552:1 › security: invalid policy fails closed and policy revision revokes approval (379ms)
+  ✓  24 [gateway] › tests/gateway.spec.ts:560:1 › subagent real adapter and concurrency enforcement (2.2s)
+  ✓  25 [gateway] › tests/gateway.spec.ts:572:1 › security: scoped credentials enforce agent/session identity and ownership (737ms)
+  ✓  26 [gateway] › tests/gateway.spec.ts:599:1 › security: redirect never reaches a second destination (476ms)
+
+  ✓  27 [gateway] › tests/gateway.spec.ts:634:1 › security: OS sandbox blocks actual HTTP connection (887ms)
+  ✓  28 [gateway] › tests/gateway.spec.ts:662:1 › security: timeout terminates running command (758ms)
+  ✓  29 [gateway] › tests/gateway.spec.ts:673:1 › security: hardlink and case-alias denied paths (372ms)
+  ✓  30 [gateway] › tests/gateway.spec.ts:679:1 › security: canonical routing cannot bypass API authentication (369ms)
+  ✓  31 [gateway] › tests/gateway.spec.ts:694:1 › filesystem create and text result format (589ms)
+  ✓  32 [gateway] › tests/gateway.spec.ts:706:3 › depth: equivalent deny path suffix / (370ms)
+  ✓  33 [gateway] › tests/gateway.spec.ts:706:3 › depth: equivalent deny path suffix /. (369ms)
+  ✓  34 [gateway] › tests/gateway.spec.ts:706:3 › depth: equivalent deny path suffix // (369ms)
+  ✓  35 [gateway] › tests/gateway.spec.ts:721:1 › depth: equivalent allowed paths still permit an ordinary read (476ms)
+  ✓  36 [gateway] › tests/gateway.spec.ts:729:3 › depth: WORKSPACE cannot hide private state inside workspace (712ms)
+  ✓  37 [gateway] › tests/gateway.spec.ts:729:3 › depth: workspace cannot hide private state inside workspace (712ms)
+  ✓  38 [gateway] › tests/gateway.spec.ts:762:5 › depth: replaced directory workspace invalidates shell approval (482ms)
+  ✓  39 [gateway] › tests/gateway.spec.ts:762:5 › depth: replaced symlink workspace invalidates shell approval (477ms)
+  ✓  40 [gateway] › tests/gateway.spec.ts:762:5 › depth: replaced directory workspace invalidates subagent approval (481ms)
+  ✓  41 [gateway] › tests/gateway.spec.ts:762:5 › depth: replaced symlink workspace invalidates subagent approval (487ms)
+  ✓  42 [gateway] › tests/gateway.spec.ts:786:1 › depth: persisted legacy policy is normalized and old approval revoked on restart (861ms)
+  ✓  43 [gateway] › tests/gateway.spec.ts:811:1 › depth: normalized deny reaches OS sandbox while approved working directory still executes (596ms)
+  ✓  44 [gateway] › tests/gateway.spec.ts:835:1 › depth: legacy process approval without workspace identity fails closed after upgrade (960ms)
+(node:49963) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  45 [operator-ui] › tests/ui-readiness.spec.ts:135:1 › fresh users can skip, reconnect later, and replay the setup guide (753ms)
+  ✓  46 [operator-ui] › tests/ui-readiness.spec.ts:154:1 › bad credentials show a recoverable error and never persist the token (694ms)
+  ✓  47 [operator-ui] › tests/ui-readiness.spec.ts:175:1 › connected dashboard is usable at narrow width and 200 percent zoom (716ms)
+  ✓  48 [operator-ui] › tests/ui-readiness.spec.ts:208:1 › approval dialog contains keyboard focus, confirms exact action, and restores trigger focus (1.2s)
+  ✓  49 [operator-ui] › tests/ui-readiness.spec.ts:258:1 › human approval creates a new file only after confirmation (752ms)
+  ✓  50 [operator-ui] › tests/ui-readiness.spec.ts:276:1 › audit summary rows load the full record only when opened (665ms)
+  ✓  51 [operator-ui] › tests/ui-readiness.spec.ts:287:1 › operator screens pass axe checks in light, dark, and approval states (8.1s)
+(node:50079) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  52 [desktop-ui] › tests/ui-desktop.spec.ts:161:1 › desktop tutorial approval executes its isolated real write and shows the result (4.0s)
+  ✓  53 [desktop-ui] › tests/ui-desktop.spec.ts:223:1 › desktop tutorial denial preserves the seeded file and explains the result (543ms)
+  ✓  54 [desktop-ui] › tests/ui-desktop.spec.ts:241:1 › desktop workspace mode shows exact command and HTTP request fields (666ms)
+  ✓  55 [desktop-ui] › tests/ui-desktop.spec.ts:299:1 › desktop disconnect gives launcher recovery steps without exposing manual token setup (1.8s)
+  ✓  56 [desktop-ui] › tests/ui-desktop.spec.ts:317:1 › basic policy editing preserves advanced fields and detects concurrent edits (3.5s)
+  ✓  57 [desktop-ui] › tests/ui-desktop.spec.ts:374:1 › connection UI distinguishes launch from handshake and offers retry and disconnect (8.7s)
+  ✓  58 [desktop-ui] › tests/ui-desktop.spec.ts:436:1 › policy rehearsal previews saved requests and samples without saving or executing (1.8s)
+  ✓  59 [desktop-ui] › tests/ui-desktop.spec.ts:503:1 › approval dialog stays inside the viewport after scrolling with a long path (641ms)
+
+
+  1) [gateway] › tests/gateway.spec.ts:220:1 › AG-06 real browser approval executes exactly once ───
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('button', { name: 'Go back' })
+    Expected: focused
+    Received: inactive
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: 'Go back' }) with timeout 10000ms
+      - waiting for getByRole('button', { name: 'Go back' })
+        23 × locator resolved to <button type="button" class="button button-quiet">Go back</button>
+           - unexpected value "inactive"
+
+
+      223 |   await page.screenshot({ path: test.info().outputPath('dashboard.png'), fullPage: true });
+      224 |   await page.getByRole('button', { name: 'Approve', exact: true }).click();
+    > 225 |   await expect(page.getByRole('button', { name: 'Go back' })).toBeFocused();
+          |                                                               ^
+      226 |   await expect(page.getByRole('dialog')).toContainText('approved content');
+      227 |   expect(readFileSync(path.join(workspace, 'target.txt'), 'utf8')).toBe('before');
+      228 |   await page.getByRole('button', { name: 'Confirm approval', exact: true }).click();
+        at /Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/ux-fixes-2026-10-29/validation/tests/gateway.spec.ts:225:63
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/gateway-AG-06-real-browser-approval-executes-exactly-once-gateway/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/gateway-AG-06-real-browser-approval-executes-exactly-once-gateway/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/gateway-AG-06-real-browser-approval-executes-exactly-once-gateway/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/gateway-AG-06-real-browser-approval-executes-exactly-once-gateway/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [gateway] › tests/gateway.spec.ts:220:1 › AG-06 real browser approval executes exactly once ────
+  58 passed (1.6m)

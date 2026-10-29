@@ -1,0 +1,30 @@
+{
+  "author": "Ethan",
+  "finalUiStats": {
+    "startTime": "2026-10-29T17:38:46.761Z",
+    "duration": 27842.641,
+    "expected": 15,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "nativeLifecycle": "both scenarios passed",
+  "build": "passed",
+  "typescript": "passed",
+  "format": "passed",
+  "offlineGateway": "43 passed in full run; AG-06 focus expectation updated and focused rerun passed",
+  "auditVulnerabilities": 0,
+  "installedPackage": "passed before final native-only and audit-count fixes",
+  "nativeChooser": "isolated root, revision 2 and pending request retained; normal profile not created",
+  "manualAppExited": true,
+  "portClosed": true,
+  "sha256": {
+    "Contents/MacOS/AgentApprovalGate": "e279367839eb70fbd9c2e910bf152600f8035b421f3057a11651397684c7d119",
+    "Contents/Resources/gateway/dist/web/index.html": "83651d6f10b6252475411274326318c48bd4c3b57c43d01fd90d680fc4e2b8f8",
+    "Contents/Resources/gateway/dist/web/assets/index-DPVKRJgE.js": "76fa8069602d07b8739725313aefa5bf3cd893b8f8ec6d84f8d89155427ea6fd",
+    "Contents/Resources/gateway/dist/web/assets/index-D3pwHfwt.css": "c372a1723cd7ea7325b8b6b4c20aabb49bb4f19e05071dbcea06eb646f92b780"
+  },
+  "reviewerStopped": true,
+  "liveSessions": 0,
+  "publication": "source PR only; no binary release"
+}

@@ -1,0 +1,38 @@
+{
+  "author": "Ethan",
+  "date": "2026-10-29",
+  "build": "passed",
+  "typescript": "passed",
+  "formatting": "passed",
+  "uiSuites": {
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 43088.381
+  },
+  "finalGeometryAssertionRerun": "1 passed",
+  "nativeLifecycle": [
+    "command-q passed",
+    "window-close passed"
+  ],
+  "manualNative": [
+    "scrolled long path readable",
+    "close focus and Escape restore",
+    "approved exact write",
+    "revision 2 blocked-path rehearsal deny",
+    "distinct gateway/Codex labels",
+    "Command-Q exit"
+  ],
+  "portClosed": true,
+  "app": "/Users/ethantarnarider/Documents/ChatGPT/Open source/agent-approval-gate/.acceptance/ux-fixes-2026-10-29/native-final/Agent Approval Gate.app",
+  "published": false,
+  "releaseSigning": false,
+  "liveModelSessions": 0,
+  "sha256": {
+    "Contents/MacOS/AgentApprovalGate": "6f2296df8c853e80171b7dc9b2204736c312a9fb465871d061636dad16442966",
+    "Contents/Resources/gateway/dist/web/index.html": "ac639ab0e8598b48f86f389884e3d5e46eb636da2a22b58f0ff067a2c2e4cd02",
+    "Contents/Resources/gateway/dist/web/assets/index-D3pwHfwt.css": "c372a1723cd7ea7325b8b6b4c20aabb49bb4f19e05071dbcea06eb646f92b780",
+    "Contents/Resources/gateway/dist/web/assets/index-CE2bisR2.js": "173fe393e7b32724b415f803dba1bf4540b86ef1dbd2cd1816934f6c479553d9"
+  },
+  "metadata": "PNG Author and JPEG EXIF Artist Ethan; Finder indexing unverified"
+}

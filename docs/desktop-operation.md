@@ -1,6 +1,6 @@
 # Desktop operation and recovery
 
-Author: Ethan. Current development checkout. The guided Codex connection and policy controls described here are not in the published 2.1.0 app. See READINESS.md for build-specific evidence.
+Author: Ethan. Applies to Agent Approval Gate 2.2.0, including its guided Codex connection, policy editor and policy rehearsal. See the [2.2.0 release](https://github.com/Ethant35/agent-approval-gate/releases/tag/v2.2.0) for downloads and READINESS.md for build-specific evidence. Later source changes may refine labels and layout without changing these workflows.
 
 ## Start and return
 

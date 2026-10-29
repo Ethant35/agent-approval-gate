@@ -396,20 +396,20 @@ test('connection UI distinguishes launch from handshake and offers retry and dis
   });
   await connectDesktop(page);
   const region = page.getByRole('region', { name: 'Codex', exact: true });
-  await expect(region).toContainText('Not connected');
+  await expect(region).toContainText('Codex not connected');
   await region.getByRole('button', { name: 'Start Codex' }).click();
   await expect(region).toContainText('Waiting for Codex');
   expect(starts).toBe(1);
   status = 'connected';
-  await expect(region.getByRole('status')).toHaveText('Connected');
+  await expect(region.getByRole('status')).toHaveText('Codex connected');
   await expect(region).toContainText('Other Codex tools are outside this boundary.');
   status = 'disconnecting';
-  await expect(region.getByRole('status')).toHaveText('Disconnecting');
+  await expect(region.getByRole('status')).toHaveText('Codex disconnecting');
   await expect(region.getByRole('button', { name: 'Please wait…' })).toBeDisabled();
   status = 'connected';
-  await expect(region.getByRole('status')).toHaveText('Connected');
+  await expect(region.getByRole('status')).toHaveText('Codex connected');
   await region.getByRole('button', { name: 'Disconnect Codex' }).click();
-  await expect(region).toContainText('Disconnected');
+  await expect(region).toContainText('Codex disconnected');
   await expect(region.getByRole('button', { name: 'Start Codex' })).toBeEnabled();
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
@@ -497,4 +497,46 @@ test('policy rehearsal previews saved requests and samples without saving or exe
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Edit basic policy' })).toBeFocused();
   expect(existsSync(target)).toBe(false);
+});
+
+// Keep the decision and exact path readable after scrolling, including short webview heights.
+test('approval dialog stays inside the viewport after scrolling with a long path', async ({
+  page,
+}) => {
+  await startDesktop('workspace');
+  const target = path.join(workspace, 'long-path-segment-'.repeat(10) + '.txt');
+  await submitAction({
+    ...baseAction('scrolled-dialog'),
+    category: 'filesystem',
+    operation: 'write',
+    parameters: { path: target, content: 'layout check' },
+    resourceScope: target,
+  });
+  await connectDesktop(page);
+  for (const height of [616, 320]) {
+    await page.setViewportSize({ width: 760, height });
+    await page
+      .locator('.request-card')
+      .filter({ hasText: 'scrolled-dialog' })
+      .getByRole('button', { name: 'Approve', exact: true })
+      .click();
+    const dialog = page.getByRole('dialog', { name: 'Confirm approval' });
+    const bounds = await dialog.boundingBox();
+    expect(bounds!.y).toBeGreaterThanOrEqual(0);
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(height);
+    const close = dialog.getByRole('button', { name: 'Close confirmation' });
+    await expect(close).toBeInViewport();
+    const pathBox = dialog.locator('.action-preview code').first();
+    await expect(pathBox).toHaveText(target);
+    expect(
+      await pathBox.evaluate(
+        (el) =>
+          el.clientHeight > 40 &&
+          el.scrollWidth <= el.clientWidth &&
+          el.scrollHeight <= el.clientHeight,
+      ),
+    ).toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  }
 });

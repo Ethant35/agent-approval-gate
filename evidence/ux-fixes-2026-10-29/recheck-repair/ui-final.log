@@ -1,0 +1,24 @@
+
+Running 15 tests using 1 worker
+
+(node:58502) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [operator-ui] › tests/ui-readiness.spec.ts:135:1 › fresh users can skip, reconnect later, and replay the setup guide (894ms)
+  ✓   2 [operator-ui] › tests/ui-readiness.spec.ts:154:1 › bad credentials show a recoverable error and never persist the token (730ms)
+  ✓   3 [operator-ui] › tests/ui-readiness.spec.ts:175:1 › connected dashboard is usable at narrow width and 200 percent zoom (713ms)
+  ✓   4 [operator-ui] › tests/ui-readiness.spec.ts:208:1 › approval dialog contains keyboard focus, confirms exact action, and restores trigger focus (1.2s)
+  ✓   5 [operator-ui] › tests/ui-readiness.spec.ts:258:1 › human approval creates a new file only after confirmation (745ms)
+  ✓   6 [operator-ui] › tests/ui-readiness.spec.ts:276:1 › audit summary rows load the full record only when opened (691ms)
+  ✓   7 [operator-ui] › tests/ui-readiness.spec.ts:287:1 › operator screens pass axe checks in light, dark, and approval states (3.3s)
+(node:59073) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   8 [desktop-ui] › tests/ui-desktop.spec.ts:161:1 › desktop tutorial approval executes its isolated real write and shows the result (1.2s)
+  ✓   9 [desktop-ui] › tests/ui-desktop.spec.ts:223:1 › desktop tutorial denial preserves the seeded file and explains the result (588ms)
+  ✓  10 [desktop-ui] › tests/ui-desktop.spec.ts:241:1 › desktop workspace mode shows exact command and HTTP request fields (669ms)
+  ✓  11 [desktop-ui] › tests/ui-desktop.spec.ts:299:1 › desktop disconnect gives launcher recovery steps without exposing manual token setup (1.8s)
+  ✓  12 [desktop-ui] › tests/ui-desktop.spec.ts:317:1 › basic policy editing preserves advanced fields and detects concurrent edits (1.8s)
+  ✓  13 [desktop-ui] › tests/ui-desktop.spec.ts:374:1 › connection UI distinguishes launch from handshake and offers retry and disconnect (8.8s)
+  ✓  14 [desktop-ui] › tests/ui-desktop.spec.ts:436:1 › policy rehearsal previews saved requests and samples without saving or executing (1.8s)
+  ✓  15 [desktop-ui] › tests/ui-desktop.spec.ts:503:1 › approval dialog stays inside the viewport after scrolling with a long path (656ms)
+
+  15 passed (27.8s)

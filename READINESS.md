@@ -1,3 +1,21 @@
+# Independent recheck and native isolation repair — October 29, 2026
+
+Author: Ethan. Fresh Terra review confirmed the original UI repairs within its coverage and found an isolated test-root escape through Choose Workspace. Central native startup now preserves that root. Actual folder-picker selection retained policy revision 2 and a pending request, with no normal profile created. Fixed singular audit count and API guide heading too. Final build/type/format, 15 browser UI tests and both native lifecycle scenarios pass. Broader offline results and exact limits: evidence/ux-fixes-2026-10-29/recheck-repair/VERIFICATION.md. Source PR only; published binaries unchanged.
+
+---
+
+# Four UX fixes qualified locally — October 29, 2026
+
+Author: Ethan. Dialog position/path wrapping/focus, policy wording, dashboard/Codex labels and the 2.2.0 guide are fixed. Clean build/type/format checks, 15 UI tests, a final geometry assertion rerun and both final native lifecycle scenarios pass. Actual WKWebView verified scrolled long-path confirmation, an exact approved write, saved blocked-path rehearsal and labels. Evidence: evidence/ux-fixes-2026-10-29/VERIFICATION.md. Local, uncommitted changes only; no replacement release. Usage guards are disabled by the latest instruction.
+
+---
+
+# Version 2.2.0 published; final verification paused — October 28, 2026
+
+Author: Ethan. Saved `evidence/rehearsal/release.json` reports publication at 2026-10-29T00:21:17Z; the saved tag record resolves to `f13bcbddbbd22f66976c0b8aa0bd2365d3869f44`. Authenticated draft-download bytes and quarantine-preserving native installation checks passed. The final unauthenticated public-download check remains unfinished. The production goal is paused at Ethan's request, not complete. No further tests or release operations were run during handoff. HANDOFF.md contains the exact continuation steps and exhausted live-session allowance. Earlier pending-publication statements below are historical.
+
+---
+
 # Version 2.2.0 local distribution qualified — October 28, 2026
 
 Author: Ethan. The final layout candidate is signed, notarized and stapled. App submission `33622455-bddf-4fc2-bfe6-abfa32e0a0dc` and DMG submission `3af25eb7-fbbd-478c-bd24-e39d63e51791` were Accepted. The final DMG was mounted read-only; its copied app retained an explicit test quarantine and passed strict signature, Gatekeeper, staple, syspolicy and both native lifecycle checks. Installed npm archive checks passed, including no-effect rehearsal. Native helper file-backed sections and all JS/web runtime files match the independent clean build.

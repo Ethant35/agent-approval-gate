@@ -230,7 +230,7 @@ test('approval dialog contains keyboard focus, confirms exact action, and restor
   await expect(card.getByRole('button', { name: 'Loading…' })).toBeDisabled();
   await expect(dialog).toBeVisible();
   await page.unroute(`${url}/v1/requests/ui-approval`, delayedDetail);
-  await expect(page.getByRole('button', { name: 'Go back' })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Close confirmation' })).toBeFocused();
   for (let index = 0; index < 8; index++) {
     await page.keyboard.press('Tab');
     await expect(dialog.locator(':focus')).toBeVisible();

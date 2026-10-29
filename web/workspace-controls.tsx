@@ -25,12 +25,12 @@ type Connection = {
   error?: string;
 };
 const connectionLabels = {
-  idle: 'Not connected',
+  idle: 'Codex not connected',
   starting: 'Waiting for Codex',
-  connected: 'Connected',
-  disconnecting: 'Disconnecting',
-  disconnected: 'Disconnected',
-  error: 'Connection failed',
+  connected: 'Codex connected',
+  disconnecting: 'Codex disconnecting',
+  disconnected: 'Codex disconnected',
+  error: 'Codex connection failed',
 };
 
 export function AgentConnection({ api, requests }: { api: Api; requests: RequestRecord[] }) {
@@ -99,7 +99,7 @@ export function AgentConnection({ api, requests }: { api: Api; requests: Request
       <div className="panel-heading">
         <h2 id="agent-connection-title">Codex</h2>
         <span role="status">
-          {known ? connectionLabels[connection.status] : 'Checking connection'}
+          {known ? connectionLabels[connection.status] : 'Checking Codex connection'}
         </span>
         <button
           type="button"
@@ -115,8 +115,8 @@ export function AgentConnection({ api, requests }: { api: Api; requests: Request
         </button>
       </div>
       <p>
-        Only actions sent through Approval Gate are mediated. Other Codex tools are outside this
-        boundary.
+        The dashboard connection does not connect Codex. Only actions sent through Approval Gate are
+        mediated. Other Codex tools are outside this boundary.
       </p>
       {connection.status === 'starting' && (
         <p>
