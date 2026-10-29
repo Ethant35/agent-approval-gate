@@ -13,7 +13,7 @@ import {
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomBytes, timingSafeEqual, createHash } from 'node:crypto';
+import { randomBytes, randomUUID, timingSafeEqual, createHash } from 'node:crypto';
 import { stringify } from 'yaml';
 import { z } from 'zod';
 import { actionSchema, type Action, type Policy } from './contracts.js';
@@ -21,6 +21,14 @@ import { parsePolicy, defaultPolicy, evaluate, within } from './policy.js';
 import { Store, type Stored } from './store.js';
 import { execute, snapshot, processSupported } from './executor.js';
 import { acquireLease } from './lease.js';
+import {
+  CodexSessionStartError,
+  cleanupOrphanedCodexSessions,
+  startCodexSession,
+  type CodexSession,
+  type CodexSessionOptions,
+} from './codex-session.js';
+type DesktopConnectionOptions = CodexSessionOptions & { workspace?: string };
 const secretEqual = (a: string, b: string) => {
   const left = Buffer.from(a),
     right = Buffer.from(b);
@@ -34,6 +42,7 @@ export async function startServer(
     policyFile?: string;
     startupLog?: boolean;
     operatorToken?: string;
+    desktopConnection?: boolean | DesktopConnectionOptions;
   } = {},
 ) {
   requireRuntime();
@@ -73,6 +82,7 @@ export async function startServer(
     store = new Store(databaseFile);
     privateFile(databaseFile);
     const db = store;
+    if (options.desktopConnection) await cleanupOrphanedCodexSessions(data);
     const safePolicy = (p: Policy) => {
       if (within(p.workspace, data) || within(data, p.workspace))
         throw Error('Workspace and credential/database directory must be disjoint');
@@ -91,6 +101,21 @@ export async function startServer(
     if (human === agent) throw Error('Credentials must differ');
     if (options.operatorToken === agent || options.operatorToken === human)
       throw Error('In-memory operator credential must differ from persistent credentials');
+    for (const principal of db.principals())
+      if (principal.id.startsWith('desktop-codex-')) {
+        for (const request of db.requestsForPrincipal(principal.id)) {
+          if (done.has(request.state)) continue;
+          db.transaction(() => {
+            if (request.state !== 'EXECUTING') db.release(request);
+            db.transition(
+              request,
+              'CANCELLED',
+              'Managed Codex connection ended with gateway restart',
+            );
+          });
+        }
+        db.revokePrincipal(principal.id);
+      }
     for (const r of db.states(['EXECUTING', 'ALLOWED', 'APPROVED', 'SUBMITTED']))
       db.transition(
         r,
@@ -100,6 +125,28 @@ export async function startServer(
     const app = Fastify({ logger: false, bodyLimit: 1500000, requestTimeout: 15000 });
     const controllers = new Map<string, AbortController>(),
       jobs = new Set<Promise<void>>();
+    type DesktopConnection = {
+      status: 'starting' | 'connected' | 'disconnecting' | 'disconnected' | 'error';
+      id: string;
+      principalId: string;
+      agentId: string;
+      sessionId: string;
+      startedAt: number;
+      connectedAt?: string;
+      lastSeenAt?: string;
+      error?: string;
+      launcher?: CodexSession;
+    };
+    let desktopConnection: DesktopConnection | undefined;
+    let desktopQueue = Promise.resolve();
+    const serializeDesktop = <T>(operation: () => Promise<T>): Promise<T> => {
+      const result = desktopQueue.then(operation, operation);
+      desktopQueue = result.then(
+        () => undefined,
+        () => undefined,
+      );
+      return result;
+    };
     let closing = false;
     let degraded = false;
     let preparing = 0;
@@ -133,6 +180,78 @@ export async function startServer(
       if (who !== 'human') delete record.approvalToken;
       return record;
     };
+    const connectionView = () => {
+      if (!desktopConnection) return { status: 'idle' as const };
+      const c = desktopConnection;
+      const status =
+        c.status === 'starting' && Date.now() - c.startedAt > 60_000
+          ? 'error'
+          : c.status === 'connected' &&
+              c.lastSeenAt &&
+              Date.now() - Date.parse(c.lastSeenAt) > 30_000
+            ? 'disconnected'
+            : c.status;
+      return {
+        status,
+        ...(status === 'starting' || status === 'connected'
+          ? { agentId: c.agentId, sessionId: c.sessionId }
+          : {}),
+        ...(c.connectedAt ? { connectedAt: c.connectedAt } : {}),
+        ...(c.lastSeenAt ? { lastSeenAt: c.lastSeenAt } : {}),
+        ...(c.error ? { error: c.error } : {}),
+      };
+    };
+    const cancelPrincipalWork = (principalId: string, reason: string) => {
+      for (const request of db.requestsForPrincipal(principalId)) {
+        const current = db.get(request.action.id);
+        if (!current || done.has(current.state)) continue;
+        db.transaction(() => {
+          if (current.state !== 'EXECUTING') db.release(current);
+          db.transition(current, 'CANCELLED', reason);
+        });
+        controllers.get(current.action.id)?.abort();
+      }
+    };
+    const revokePrincipal = (id: string, reason: string) => {
+      cancelPrincipalWork(id, reason);
+      return db.revokePrincipal(id);
+    };
+    const stopDesktopConnection = async (revoke: boolean) => {
+      const c = desktopConnection;
+      if (!c) return true;
+      if (revoke) revokePrincipal(c.principalId, 'Managed Codex connection revoked by operator');
+      c.status = 'disconnecting';
+      try {
+        await c.launcher?.stop();
+        c.launcher = undefined;
+        c.status = 'disconnected';
+        return true;
+      } catch {
+        c.error =
+          'The Codex Terminal process could not be stopped. Check Terminal before reconnecting.';
+        c.status = 'error';
+        return false;
+      }
+    };
+    const expireDesktopConnection = () =>
+      serializeDesktop(async () => {
+        const c = desktopConnection;
+        if (!c) return;
+        if (c.status === 'starting' && Date.now() - c.startedAt > 60_000) {
+          c.status = 'error';
+          c.error = 'Codex did not complete MCP setup. Close its Terminal session and try again.';
+          await stopDesktopConnection(true);
+          c.status = 'error';
+          return;
+        }
+        if (
+          c.status === 'connected' &&
+          c.lastSeenAt &&
+          Date.now() - Date.parse(c.lastSeenAt) > 30_000
+        ) {
+          await stopDesktopConnection(true);
+        }
+      });
     const visible = (r: Stored, who: string) => who === 'human' || r.principal === who;
     const find = (id: string, who: string) => {
       const r = db.get(id);
@@ -196,7 +315,9 @@ export async function startServer(
             db.transition(
               latest,
               'COMPLETED',
-              'Execution completed; declared cost remains reserved until authoritative settlement',
+              r.action.maxCost && r.action.maxCost.amount > 0
+                ? 'Execution completed; declared cost remains reserved until authoritative settlement'
+                : 'Execution completed successfully',
             );
           }
         } catch (e) {
@@ -244,8 +365,25 @@ export async function startServer(
       if (req.headers['sec-fetch-site'] === 'cross-site')
         return reply.code(403).send({ error: 'Cross-site request rejected' });
       if (req.url.startsWith('/v1/')) {
-        if (!principal(req.headers.authorization))
-          return reply.code(401).send({ error: 'Authorization required' });
+        const who = principal(req.headers.authorization);
+        if (!who) return reply.code(401).send({ error: 'Authorization required' });
+        if (who.startsWith('desktop-codex-')) {
+          const c = desktopConnection;
+          const route = req.url.split('?')[0];
+          const startupRoute =
+            route === '/v1/desktop/connection/initialized' ||
+            route === '/v1/desktop/connection/launch-check' ||
+            route === '/v1/desktop/connection/ended';
+          if (
+            !c ||
+            c.principalId !== who ||
+            (c.status !== 'connected' && !(c.status === 'starting' && startupRoute)) ||
+            (c.status === 'connected' &&
+              c.lastSeenAt &&
+              Date.now() - Date.parse(c.lastSeenAt) > 30_000)
+          )
+            return reply.code(401).send({ error: 'Managed Codex connection is unavailable' });
+        }
         if (
           req.method !== 'GET' &&
           req.headers['x-aag-intent'] !== 'human' &&
@@ -262,6 +400,129 @@ export async function startServer(
     const requireHuman = (auth: string | undefined) => {
       if (principal(auth) !== 'human') throw Error('Human authorization required');
     };
+    if (options.desktopConnection) {
+      const launcherOptions: DesktopConnectionOptions =
+        options.desktopConnection === true ? {} : options.desktopConnection;
+      const managedConnection = (auth: string | undefined) => {
+        const who = principal(auth);
+        const c = desktopConnection;
+        if (!c || !who.startsWith('desktop-codex-') || who !== c.principalId)
+          throw Error('Managed Codex credential is unavailable or revoked');
+        return c;
+      };
+      app.get('/v1/desktop/connection', async (req) => {
+        requireHuman(req.headers.authorization);
+        return connectionView();
+      });
+      app.post('/v1/desktop/connection/start', async (req, reply) => {
+        requireHuman(req.headers.authorization);
+        z.object({}).strict().parse(req.body);
+        return serializeDesktop(async () => {
+          if (desktopConnection && ['starting', 'connected'].includes(desktopConnection.status)) {
+            reply.code(409);
+            return connectionView();
+          }
+          if (desktopConnection && !(await stopDesktopConnection(true))) return connectionView();
+          const policy = db.policy();
+          if (!policy) throw Error('A workspace policy is required before connecting Codex.');
+          const workspace = launcherOptions.workspace ?? policy.policy.workspace;
+          if (policy.policy.workspace !== workspace)
+            throw Error(
+              'Policy workspace changed. Restore the selected workspace before connecting.',
+            );
+          const connectionId = randomUUID();
+          const sessionId = `codex-${randomUUID()}`;
+          const agentId = 'codex-cli';
+          const principalId = `desktop-codex-${connectionId}`;
+          const token = randomBytes(32).toString('hex');
+          db.addPrincipal(
+            principalId,
+            agentId,
+            [sessionId],
+            createHash('sha256').update(token).digest('hex'),
+          );
+          const c: DesktopConnection = {
+            id: connectionId,
+            principalId,
+            agentId,
+            sessionId,
+            status: 'starting',
+            startedAt: Date.now(),
+          };
+          desktopConnection = c;
+          try {
+            const launcher = await startCodexSession(
+              {
+                dataDir: data,
+                workspace,
+                url: origin,
+                token,
+                agentId,
+                sessionId,
+                connectionId,
+              },
+              launcherOptions,
+            );
+            if (desktopConnection !== c || (c.status !== 'starting' && c.status !== 'connected'))
+              await launcher.stop();
+            else c.launcher = launcher;
+          } catch (error) {
+            if (error instanceof CodexSessionStartError) c.launcher = error.session;
+            revokePrincipal(principalId, 'Managed Codex connection launch failed');
+            if (desktopConnection === c) {
+              c.status = 'error';
+              c.error = 'Codex could not start. Check the CLI installation and try again.';
+            }
+          }
+          return connectionView();
+        });
+      });
+      app.post('/v1/desktop/connection/disconnect', async (req) => {
+        requireHuman(req.headers.authorization);
+        z.object({}).strict().parse(req.body);
+        return serializeDesktop(async () => {
+          await stopDesktopConnection(true);
+          return connectionView();
+        });
+      });
+      app.post('/v1/desktop/connection/initialized', async (req) => {
+        z.object({}).strict().parse(req.body);
+        const c = managedConnection(req.headers.authorization);
+        if (c.status !== 'starting' && c.status !== 'connected')
+          throw Error('Managed Codex connection is not starting.');
+        const now = new Date().toISOString();
+        c.status = 'connected';
+        c.connectedAt ??= now;
+        c.lastSeenAt = now;
+        return { ok: true };
+      });
+      app.post('/v1/desktop/connection/launch-check', async (req) => {
+        z.object({}).strict().parse(req.body);
+        const c = managedConnection(req.headers.authorization);
+        if (c.status !== 'starting' && c.status !== 'connected')
+          throw Error('Managed Codex launch is no longer active.');
+        return { ok: true };
+      });
+      app.post('/v1/desktop/connection/heartbeat', async (req) => {
+        z.object({}).strict().parse(req.body);
+        const c = managedConnection(req.headers.authorization);
+        if (c.status !== 'connected') throw Error('Managed Codex connection is not active.');
+        c.lastSeenAt = new Date().toISOString();
+        return { ok: true };
+      });
+      app.post('/v1/desktop/connection/ended', async (req) => {
+        z.object({}).strict().parse(req.body);
+        return serializeDesktop(async () => {
+          const c = managedConnection(req.headers.authorization);
+          await stopDesktopConnection(true);
+          if (c.status === 'disconnected' && !c.connectedAt) {
+            c.status = 'error';
+            c.error = 'Codex ended before its MCP connection was confirmed.';
+          }
+          return { ok: true, status: connectionView().status };
+        });
+      });
+    }
     app.get('/v1/health', async (req, reply) => {
       requireHuman(req.headers.authorization);
       return reply.code(closing || degraded ? 503 : 200).send({
@@ -422,12 +683,73 @@ export async function startServer(
       requireHuman(req.headers.authorization);
       return db.policy();
     });
-    app.post('/v1/policy', async (req) => {
+    app.post('/v1/policy/preview', async (req, reply) => {
       requireHuman(req.headers.authorization);
-      const { yaml } = z
-        .object({ yaml: z.string().max(100000) })
+      const input = z
+        .object({
+          yaml: z.string().max(100000),
+          expectedRevision: z.number().int().positive(),
+          requestIds: z.array(actionSchema.shape.id).max(20).default([]),
+          actions: z.array(actionSchema).max(20).default([]),
+        })
         .strict()
         .parse(req.body);
+      if (
+        input.requestIds.length + input.actions.length < 1 ||
+        input.requestIds.length + input.actions.length > 20
+      )
+        throw Error('Rehearse between 1 and 20 requests.');
+      const current = db.policy()!;
+      if (input.expectedRevision !== current.revision)
+        return reply.code(409).send({ error: 'Policy changed. Reload it before rehearsal.' });
+      const draft = safePolicy(parsePolicy(input.yaml));
+      const samples = [
+        ...input.requestIds.map((id) => {
+          const record = db.get(id);
+          if (!record) throw Error('Rehearsal request not found.');
+          return { action: record.action, source: 'history' as const };
+        }),
+        ...input.actions.map((action) => ({ action, source: 'sample' as const })),
+      ];
+      const decision = (policy: Policy, action: Action) => {
+        try {
+          return evaluate(policy, action);
+        } catch (error) {
+          return {
+            effect: 'deny',
+            reason: error instanceof Error ? error.message : 'Invalid action',
+          };
+        }
+      };
+      // Policy evaluation only. Do not insert, snapshot, reserve, approve or execute here.
+      return {
+        revision: current.revision,
+        results: samples.map(({ action, source }) => ({
+          id: action.id,
+          source,
+          category: action.category,
+          operation: action.operation,
+          resourceScope: action.resourceScope,
+          current: decision(current.policy, action),
+          draft: decision(draft, action),
+        })),
+        limits: { current: current.policy.limits, draft: draft.limits },
+        budgetsChanged: JSON.stringify(current.policy.budgets) !== JSON.stringify(draft.budgets),
+        notice:
+          'Policy decisions only. No actions executed, approvals granted, or changes saved. File state, DNS, credentials, available budgets and runtime limits are checked when a real request runs.',
+      };
+    });
+    app.post('/v1/policy', async (req, reply) => {
+      requireHuman(req.headers.authorization);
+      const { yaml, expectedRevision } = z
+        .object({
+          yaml: z.string().max(100000),
+          expectedRevision: z.number().int().positive().optional(),
+        })
+        .strict()
+        .parse(req.body);
+      if (expectedRevision !== undefined && expectedRevision !== db.policy()?.revision)
+        return reply.code(409).send({ error: 'Policy changed. Reload it before saving.' });
       return db.apply(safePolicy(parsePolicy(yaml)));
     });
     app.post('/v1/agents', async (req) => {
@@ -448,6 +770,16 @@ export async function startServer(
         createHash('sha256').update(token).digest('hex'),
       );
       return { id, agentId: input.agentId, sessionIds: input.sessionIds, token };
+    });
+    app.post<{ Params: { id: string } }>('/v1/agents/:id/revoke', async (req) => {
+      requireHuman(req.headers.authorization);
+      z.object({}).strict().parse(req.body);
+      const id = z.string().min(1).max(128).parse(req.params.id);
+      return serializeDesktop(async () => {
+        if (desktopConnection?.principalId === id) await stopDesktopConnection(true);
+        else revokePrincipal(id, 'Agent credential revoked by operator');
+        return { ok: true };
+      });
     });
     app.get('/v1/budgets', async (req) => {
       requireHuman(req.headers.authorization);
@@ -510,6 +842,7 @@ export async function startServer(
       if (degraded || closing) return;
       try {
         expire();
+        if (desktopConnection) void expireDesktopConnection().catch(() => undefined);
       } catch (error) {
         if (!storageFault(error)) {
           degraded = true;
@@ -532,20 +865,47 @@ export async function startServer(
       (closePromise ??= (async () => {
         closing = true;
         clearInterval(timer);
+        let shutdownError: Error | undefined;
+        try {
+          if (!(await serializeDesktop(() => stopDesktopConnection(true))))
+            shutdownError = new Error(
+              'The managed Codex Terminal process could not be stopped. Check Terminal before closing Agent Approval Gate.',
+            );
+        } catch {
+          shutdownError = new Error(
+            'Agent Approval Gate could not stop its managed Codex session.',
+          );
+        }
         for (const c of controllers.values()) c.abort();
         await Promise.allSettled([...jobs]);
-        await app.close();
         try {
-          db.close();
+          await app.close();
+        } catch {
+          shutdownError ??= new Error('Agent Approval Gate could not close its local server.');
         } finally {
-          await lease.release();
+          try {
+            db.close();
+          } finally {
+            await lease.release();
+          }
         }
+        if (shutdownError) throw shutdownError;
       })());
     lease.onLost(() => {
       void close().catch(() => process.exit(1));
     });
     const shutdown = () => {
-      void close().then(() => process.exit(0));
+      void close().then(
+        () => process.exit(0),
+        (error: unknown) => {
+          const reason =
+            error instanceof Error
+              ? error.message
+              : 'Agent Approval Gate could not complete shutdown.';
+          console.error(`Agent Approval Gate shutdown incomplete: ${reason}`);
+          process.exit(1);
+        },
+      );
     };
     process.once('SIGINT', shutdown);
     process.once('SIGTERM', shutdown);

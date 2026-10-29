@@ -1,0 +1,37 @@
+{
+  "logFormatVersion": 1,
+  "jobId": "07975fa1-d79b-4d9c-bfa9-db7a1fc08c6d",
+  "status": "Accepted",
+  "statusSummary": "Ready for distribution",
+  "statusCode": 0,
+  "archiveFilename": "app-notary.zip",
+  "uploadDate": "2026-10-28T23:51:15.964Z",
+  "sha256": "fbb7dacd4e99c852dc64db67d0a8d202ae44aa7810ff97a153708d0764e56dc2",
+  "ticketContents": [
+    {
+      "path": "app-notary.zip/Agent Approval Gate.app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "8da5419d83ad95fa2ca04662481e2212cc87e606",
+      "arch": "arm64"
+    },
+    {
+      "path": "app-notary.zip/Agent Approval Gate.app/Contents/MacOS/AgentApprovalGate",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "8da5419d83ad95fa2ca04662481e2212cc87e606",
+      "arch": "arm64"
+    },
+    {
+      "path": "app-notary.zip/Agent Approval Gate.app/Contents/Resources/runtime/bin/node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "ab607b67dbcc79da0f8cbfa3172590985697a0b9",
+      "arch": "arm64"
+    },
+    {
+      "path": "app-notary.zip/Agent Approval Gate.app/Contents/Resources/gateway/dist/safe-fs",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "f3a4c2ef8db5a48e40e8cc8f286d6cbf6ccb57b6",
+      "arch": "arm64"
+    }
+  ],
+  "issues": null
+}

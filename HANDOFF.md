@@ -1,3 +1,210 @@
+# Native policy path verified — October 28, 2026
+
+Author: Ethan. The release hold below is resolved for the layout candidate. After title-bar activation and coordinate scrolling, CUA typed the blocked sample path and clicked Preview decisions in actual WKWebView. Visible result was current approval / draft deny. Direct authenticated read-back confirmed revision 1, no saved deny path, no requests and no sample file. Native Command-Q closed the app. Earlier off-screen/background AX errors do not establish a precise product root cause; retain their evidence and do not claim an OS defect was fixed.
+
+The simpler fieldset layout passes all 14 browser UI checks, strict checks and formatting. Backend and connection runtime are unchanged from the 38-core pass and authorized 18.253-second live pass. Current app `/private/tmp/aag-2.2.0-20261028-layout/Agent Approval Gate.app` now proceeds to fresh signing/notarization/installation. Previous candidate/tickets stay historical. No more live calls authorized. Usage checker cell 43 remains active, stopping at 50% remaining or active-work reset.
+
+---
+
+# Current release hold — October 28, 2026
+
+Author: Ethan. Native manual accessibility inspection of the signed rehearsal candidate stalled after opening the policy editor. A WebContent sample shows the main thread in accessibility label-text handling. No production cause is yet confirmed. The same candidate initially showed a blank capture, then a refreshed accessibility tree showed the full dashboard. Publication is on hold until the visible/native policy path is resolved.
+
+A source-only layout candidate now keeps CSS grid inside the draft fieldset and uses fixed responsive columns instead of percentage-dependent auto-fit. Root and clean validation sources contain this change. It is not yet signed or qualified; `/private/tmp/aag-2.2.0-20261028-layout/Agent Approval Gate.app` is the current unsigned native candidate. Earlier signed app and DMG remain preserved; they do not contain the layout change. The prior signed app and DMG notarization were Accepted. No PR, tag or release yet. Latest usage guard remains 50% REMAINING and checker cell 43 is active.
+
+---
+
+# Active checkpoint — October 28, 2026
+
+Author: Ethan. Latest usage guard: stop at **50% REMAINING (50% consumed)** in any applicable window, or an observed reset to 100% remaining during active work. This supersedes all older 5%/10% thresholds below and in the goal text. Checker cell 43 polls every 45 seconds. No assistants were dispatched.
+
+Current clean checks: 38 core, 58 offline browser and 1,243 native helper checks pass; strict/format/build/audit pass. Policy rehearsal and the additional launch-artifact cleanup repair are implemented. One newly authorized Luna High live session passed in 18.253 seconds using the signed app's bundled runtime and actual Terminal, with a browser-supplied desktop bootstrap. Handshake, pending-before-approval, exact write, disconnect and launch-artifact removal passed. This consumes the entire additional authorization. All three live sessions across both approvals are now used; ask before any further one.
+
+Current signed candidate: `/private/tmp/aag-2.2.0-20261028-rehearsal/Agent Approval Gate.app`. Apple app submission `07975fa1-d79b-4d9c-bfa9-db7a1fc08c6d` is Accepted. New evidence: `evidence/rehearsal` and `.acceptance/alignment-2026-10-28`; clean validation copy is under that acceptance directory. Final packaging/installed/download gates and GitHub release are still in progress. The older October 27 candidate is preserved and superseded by this build. Preserve unrelated duplicates.
+
+---
+
+# Resumed — October 28, 2026
+
+Author: Ethan. The user resumed the existing production goal; actual status is active. Fresh usage baseline is 6% used, reset 1793774143. This idle-period reset is a fresh baseline. Monitoring runs every 45 seconds. The resumed goal text says stop at 10% remaining; use that stricter limit unless Ethan resolves it against the earlier 5% instruction. No automatic resume or usage bypass.
+
+First qualify the existing 2.2.0 connection and cleanup work. Then add policy rehearsal without execution, trim redundant UI copy, preserve human-only controls and explain the protection boundary. Both previously authorized live sessions are consumed; ask before any further live session. No paid calls, GitHub Actions or global config changes. No assistants dispatched in this resumed run. New evidence goes under `.acceptance/alignment-2026-10-28`.
+
+---
+
+# PAUSED at Ethan's request — October 27, 2026
+
+Author: Ethan. Ethan instructed: “Let's stop here for now and make handoff.” This section supersedes every resume instruction and stale status below. Stop implementation, tests, signing, publication, monitoring and worker dispatch. Resume only after a fresh explicit user instruction. No automatic resume. The full production goal is unfinished; the actual goal tool confirms status `paused`.
+
+## Saved state
+
+Branch: `codex/guided-codex-release`, based on `187167725701b2a931bb134a79924b3bbef99ccb`. Version is 2.2.0. Source, documentation and new sanitized evidence remain saved but uncommitted. No new PR, tag or release was created. Preserve all unrelated untracked “ 2” duplicates and malformed duplicate Git refs; exclude them from staging and packaging. Do not modify the shared `.agents/skills` symlink. Intended local verification skill is under `.agents/verification/verify-agent-approval-gate`.
+
+Implemented: managed Codex CLI launch with invocation-only settings, scoped credentials, handshake/heartbeat and revocation; separate workspace policy/history and basic controls; connection and cleanup states; native menus, Quit, Stop/Restart and shutdown failure recovery; compact tutorial/workspace UI. Existing API/MCP behavior is retained. No global config changes or GitHub Actions. Zod updated to 4.6.7 after an advisory.
+
+Evidence: `evidence/connection/`, `docs/connection-readiness.md`, and `.acceptance/alignment-2026-10-27/`. Clean validation copy: `.acceptance/alignment-2026-10-27/validation`. Development Node: `.acceptance/alignment-2026-10-25/runtime/node-v24.22.1-darwin-arm64/bin`.
+
+## Completed verification and limits
+
+Before this pause: clean install/build, strict TypeScript and formatting passed; 35/35 core tests passed with serial execution; 57/57 offline E2E tests passed. Native helper checks passed: 1,243 checks including 1,200 mutations, with ASAN/UBSAN. Native lifecycle scenarios and real native keyboard Quit passed. Shutdown failure UI was separately exercised using a fault-injected development bundle. Actual legacy 1.0.1, 2.0.0 and 2.1.0 upgrade/restore checks passed. Package installation and signed app runtime checks passed. Audit reported zero vulnerabilities. Semgrep completed all 11 approved packs; 625 candidates were triaged, with partial parsing limits retained in the evidence. These are bounded checks, not a claim of complete security or long-duration qualification.
+
+Both authorized live GPT-6 Luna High sessions are consumed. Do not make another live call without fresh authorization. Session 1 passed the actual MCP request, human approval, exact write and returned result in 11.7 seconds. Session 2 passed real Terminal/CLI launch, handshake, approval and a 22-byte write, but its final cleanup assertion ran before cleanup completed. Product state was then fixed to remain `disconnecting` until cleanup finishes, and offline regression passed. The final repair was NOT live-retested. Session 2 used an isolated credential/config adapter and browser native bootstrap, not a complete packaged WKWebView-to-Terminal verification. Terminal UI access was denied by computer-use approval; no bypass occurred. No live sessions remain running.
+
+Independent review identified bounded opener timeout, swallowed shutdown errors and a partial-start cleanup-handle gap. Parent repaired these, including a typed retryable `CodexSessionStartError` handle, and completed local regression. The last independent review file still describes the partial-start gap as open because it predates the final parent repair. Reconcile that report with final source/evidence on resume; do not represent it as a fresh independent sign-off.
+
+## Distribution checkpoint
+
+Signed candidate: `/private/tmp/aag-2.2.0-20261027-candidate/Agent Approval Gate.app`. Signed inside out with Developer ID Application Ethan Tarnarider, Team Z2SL92S4B6, using the intended Node JIT entitlements. Strict deep signature verification passed before pause. Preserve sealed candidate bytes.
+
+Apple app notarization submission `a0697d3c-1f95-404f-af62-bb9d2a22e221` is **Accepted** in the already saved `evidence/connection/notary-app-status.json`, read during handoff. Archive: `/private/tmp/aag-2.2.0-20261027-candidate/app-notary.zip`; profile `ethan-notary`. No new Apple request was made during this pause. App stapling, final Gatekeeper assessment and signed isolated native acceptance remain unfinished. No DMG was built for this release.
+
+Npm candidate: `.acceptance/alignment-2026-10-27/validation/agent-approval-gate-2.2.0.tgz`. Package install/runtime evidence is saved. Last pre-pause operation generated package-manifest and native-identity evidence; inspect their saved contents on resume before relying on them. Documentation still records distribution as in progress. Do not claim 2.2.0 is published or fully qualified.
+
+## Shutdown and guard
+
+Usage checker exec cell 6 was explicitly terminated. Both current child agents, `connection_finish` and `native_finish`, were interrupted without dispatching new work. The shutdown-only process inventory found no matching owned app, gateway, guided session, test, Semgrep, Playwright or notarization process; only the inventory itself matched. Existing scratch directories and artifacts were retained for resume rather than launching cleanup work. No implementation, testing or release action occurred after the stop request.
+
+Latest pre-pause usage reading was 80% used with reset timestamp 1793599137; it was not refreshed during this stop. On an explicit resume, establish a fresh baseline and monitor at least every 60 seconds. Latest explicit user guard is >=95% used (<=5% remaining) in any applicable window, or an in-work reset to 100% remaining. This overrides the older 10%-remaining wording still present in the actual goal. Missing readings require retry then stop. No credits, reset redemption, provider bypass or automatic resume.
+
+## Next steps — only after explicit resume
+
+1. Inspect current diff, final evidence and preserved candidate; reconcile the independent review closure and source/live verification map. No further live-session authorization remains.
+2. Retrieve accepted notarization log if needed, staple and validate the app, then finish signed isolated native/Gatekeeper acceptance. Build/sign/notarize/staple the DMG; preserve sealed assets and keep precise limits for the guided live path.
+3. Finish documentation and package identity checks. If final archive docs change, repack and verify the resulting archive. Do not mutate the signed app bundle.
+4. Stage only intended source/docs/evidence, create a normal PR, attach it to this chat, review/merge, tag and prepare release assets. No GitHub Actions. Verify downloaded bytes, quarantine-preserving install, signatures, Gatekeeper and supported user paths before publishing a verified release. Any unresolved release gate must stay explicit.
+5. Preserve evidence, clean only owned temporary state when safe, and mark the production goal complete only after its full requirements are met.
+
+---
+
+# Resumed — October 27, 2026
+
+Author: Ethan. Fresh explicit resume received. Actual production goal is active; no goal created or changed by this chat. Updated usage guard overrides old thresholds below and in CONSTRAINTS: stop at >=95% used (<=5% remaining) in any applicable window or an in-work reset to100% remaining. Fresh baseline49% used, reset1793599137. Checker runs every45 seconds; missing readings require retry then stop. No automatic resume or allowance bypass.
+
+Continuing unfinished backend/native connection and shutdown qualification, then clean regression, bounded authorized live sessions and signed verified release. Two Luna High assistants maximum. Live sessions used: TWO of TWO. Session1 AG-19 passed in11.7s. Session2 real guided Terminal/CLI handshake, approval and22-byte write passed; early cleanup assertion failed after polling disconnected before cleanup finished. Shutdown succeeded and no owned test processes remained. See .acceptance/alignment-2026-10-27/live-sessions.json. No more live calls authorized. Existing duplicate files preserved. New evidence and clean validation copy: .acceptance/alignment-2026-10-27. Historical pause and milestone directions below are superseded; do not create duplicate goals.
+
+---
+
+# Pause-only status audit — October 25, 2026
+
+Author: Ethan. Ethan manually replaced the actual goal with the full production-readiness objective. `get_goal` now confirms that objective and status `paused`; no status change was needed. The earlier instructions below to complete the narrow goal and create a broader replacement are superseded. Do not create another goal. Both assistants remain interrupted. The process inventory found no owned work/test processes. The usage checker had already ended and was not restarted. No matching auto-resume automation was found in the local automation inventory. This audit performed no product work, tests, worker dispatch, monitoring or release operation. Stay paused until Ethan explicitly resumes.
+
+---
+
+# PAUSED — usage reset stop — October 25, 2026
+
+Author: Ethan. The active usage checker observed a reset from 22% used / reset timestamp1793514805 to 0% used / reset timestamp1793599137. This triggers Ethan's reset-to-100% stop rule. No further product work, investigation, checks or publication occurred after the trigger. Only shutdown, evidence preservation and handoff bookkeeping followed. Do not automatically resume or consume the refreshed allowance. A fresh explicit resume instruction and baseline are required. The broader production goal is NOT achieved.
+
+## Actual goal and user authorization
+
+The existing goal was active at the last read, with exact objective: "Complete the bounded Agent Approval Gate evidence review and pstack-informed verification draft; interview Ethan using grill-me, obtain explicit agreement on scope, then implement and verify only the confirmed follow-up. Preserve security and existing behavior, no paid provider calls or GitHub Actions, and stop at 90% used or an observed reset to 100% remaining." Goal tools expose only create/get/status-update; they cannot edit an unfinished objective. It must now be paused, not falsely completed. No duplicate was created. When the milestone is actually complete, create Ethan's requested actual broader goal: "Make Agent Approval Gate production-ready for its stated supported users and platform: publish a verified downloadable release with reliable installation, onboarding, first useful result, core workflows, error recovery, data persistence and update compatibility, appropriate accessibility and security, and truthful documentation and support limits."
+
+Ethan confirmed the whole implementation scope, then expanded it to production/distribution, with routine judgment delegated. Do not repeat the interview or ask phase approvals. Codex CLI first; app Start Codex opens a configured terminal session; separate workspace policies/history; safe basic controls; existing API/MCP retained. No Actions, hooks or global config changes. Production work including normal repository/release operations and signing/notarization using ethan-notary/Team Z2SL92S4B6 is authorized once qualified. Old sealed assets must stay unchanged.
+
+Ethan separately approved up to TWO live Codex CLI GPT-6 Luna High sessions using existing ChatGPT login, <=180 seconds each, only isolated temporary paths and short synthetic text. No API keys, paid credits, purchases or account changes. ZERO sessions were used. Current login was read-only verified as ChatGPT. This allowance is retained but cannot override the stop; a resume is still required. Assistant workers remain offline.
+
+## Saved implementation (unfinished, uncommitted)
+
+Branch remains main, base187167725701b2a931bb134a79924b3bbef99ccb. No commit/PR/release/version bump. Preserve all pre-existing untracked " 2" duplicate files; they are untouched and must not enter source/test/package validation. node_modules was restored via locked npm ci. Original .acceptance/runtime no longer exists; official Node24.22.1 dev runtime is at .acceptance/alignment-2026-10-25/runtime/node-v24.22.1-darwin-arm64. Archive SHA25689c682593d76cd44233fa53b1563264e7de9cbb189cad169135c5b4fadfbc0a7 matches official SHASUMS. The signed published app's Node cannot load Rollup due hardened-library Team ID validation; do not modify that sealed runtime.
+
+- Parent: web/workspace-controls.tsx adds authenticated managed connection status/start/disconnect and basic policy editor; web/main.tsx integrates controls, compact desktop sections and direct tutorial review buttons; web/style.css layout; tests/ui-desktop.spec.ts preserves real approval/denial and adds policy concurrency/preservation and connection UI contract tests. docs/API.md and docs/desktop-operation.md describe development behavior, not a published release.
+- Backend worker: src/server.ts/store.ts/desktop.ts/mcp.ts plus src/codex-session.ts and src/codex-session-launcher.ts; opt-in normal-workspace endpoints, scoped credentials, initialize/heartbeat status, revoke/cancel, private launch files, CLI invocation config, terminal wrapper, stale startup cleanup, serialized lifecycle and expectedRevision policy save. tests/core/connection.test.mjs uses real MCP SDK and an offline synthetic CLI. Latest edits were still under review/testing when interrupted.
+- Native worker: native/main.swift installs standard app/edit menus, retains selection on Stop/Restart, trims duplicated branding, and extends hidden lifecycle checks. New executable tests/native/verify_desktop_lifecycle.sh runs command-q and window-close variants.
+- Explicit local verification entry and five maps are written under .agents/verification/verify-agent-approval-gate (outside shared skills symlink). No picker discovery claim. Its full written procedure has NOT run; it remains unqualified until run end-to-end, then maintenance source/live map must be reconciled.
+
+## Actual checks and important limits
+
+Parent npm check and builds passed at intermediate states. First build failed using the sealed signed Node because Rollup native module Team IDs differed; verified upstream project-local runtime resolved that. First desktop UI pass was5/6 due an ambiguous selector label; the product's accessible name was fixed. Latest parent UI run was6/6, including real exact tutorial bytes, denied unchanged file, stale-edit rejection, advanced policy preservation, axe checks and narrow layout. Tutorial review button was asserted inside viewport and screenshot inspected. Connection UI uses a labeled stub of the external-client boundary; it is not real Codex evidence. New current backend changes after this run need final regression.
+
+Backend worker reported an initial1/1 synthetic connection integration pass (actual MCP handshake/request/approval/useful write, revoked pending work, policy revision, stubborn fake CLI shutdown). Later race/startup/cleanup changes and additional tests were not delivered as a final verified result before stop. Parent identified asynchronous launch/disconnect global-state races, unhandled cleanup failure paths, incomplete descendant teardown and overwritten SDK close handling; worker applied repairs but final independent review remains pending. Check all of these again; do not infer correctness from the initial pass. Also verify free-action completion wording repair is actually present, credential/private-file cleanup, bounded request/close races, and no default capability widening.
+
+Native worker reports warnings-as-errors compile and both hidden lifecycle variants pass, logs in .acceptance/alignment-2026-10-25/native-lifecycle-4. LIMIT: an ordered-out window did not trigger AppKit automatic last-window termination. The test calls NSWindow.close() then explicitly NSApp.terminate(nil); this proves orderly shutdown after close, NOT that real user window close automatically quits. Validate the real visible supported user path before production. Command-Q is hidden menu event routing, not a physical keyboard test. The independent backend review requested of native worker was interrupted before completion.
+
+Read-only actual Codex0.164.0 `mcp get` accepted invocation command/args/env_vars/required overrides with /usr/bin/false and no secrets/model/server. This validates config parsing only. Actions permissions read enabled:false. No paid/model call, signing, notarization, source upload, PR, tag or publication occurred.
+
+## Shutdown and evidence
+
+readiness_maintenance and readiness_native were interrupted. Agent inventory shows only root running plus those two interrupted. Process inventory found no owned gateway, test, native lifecycle, wrapper or Codex process; only the inventory command matched. Checker cell5 ended on the reset trigger and was collected closed; no background checker remains. Native synthetic state roots were removed AFTER retaining screenshots and logs; normal app data and prior artifacts were untouched. Current UI results copied to .acceptance/alignment-2026-10-25/ui-last-pass; original failed UI evidence is ui-initial. Development app bundles/runtime remain for resume. pause.json records exact usage readings. Source and new files remain saved.
+
+## Prioritized next work — only after explicit resume
+
+1. Read this handoff/current diff and fresh usage baseline; restart <=60-second monitoring. Keep up to2 Luna High assistants, explicit ownership, no nested agents. Reuse if useful.
+2. Finish/review backend launch, handshake, heartbeat, revocation, process teardown, crash cleanup and policy concurrency; inspect latest connection tests. Check UI polling error persistence and result display. Prove real native window close, keyboard/menu and Stop/Restart behavior without conflating injected termination with automatic close behavior.
+3. Create clean validation copy from tracked plus intended new files, excluding untouched duplicates. Run strict/format/build/core/native/browser/security/update/package checks. Preserve all original meaningful assertions. Existing legacy1.0.1/2.0.0 archives and .acceptance/legacy / legacy-v2 fixtures exist; verify their dependencies. Run live AG-19 and guided-session path only within approved TWO sessions, each180s, synthetic data and ChatGPT login; record count before launching and sanitize logs. User authorization covers model calls now, but never bypass usage stop.
+4. Execute the new verification entry and maintenance map; retain evidence after cleanup. Finish READINESS.md, docs/skill-use.md, security/production acceptance map and exact supported-host/limits. Current skill and docs are not completion evidence.
+5. Once milestone truly complete, complete actual old goal then create exact broader goal above. Continue production acceptance, fresh version/sign/notary/staple exact final app/DMG, clean install/update/uninstall checks, PR/attach/merge/release and downloaded-byte/Gatekeeper verification. No GitHub Actions. Do not publish a central guided CLI path qualified only through mocks. Do not alter old sealed assets.
+
+---
+
+# Production objective expanded — October 25, 2026
+
+Author: Ethan. Fresh instruction expands the objective to production readiness and a downloadable verified release. Continue necessary implementation, meaningful local/user-path checks, docs, packaging, signing/notarization and ordinary repository/release work. Do not declare completion at the earlier narrow milestone. Preserve existing evidence and settled product choices. No GitHub Actions or global config changes. Keep both usage stops.
+
+Actual goal now reports active with the original bounded milestone objective; no tool can edit that objective. Finish it truthfully, then create the broader production goal at the first valid transition. No duplicate unfinished goal. Remaining production map: complete backend lifecycle/security review; full strict/core/native/browser regression; actual guided Codex user path; clean exact-version package/app; update/persistence/uninstall checks; source review; signed/notarized/stapled DMG; download/byte comparison/Gatekeeper/installed user-path verification; public release with correct support limits.
+
+Ethan explicitly approved up to TWO live Codex CLI sessions using existing ChatGPT login and GPT-6 Luna High, at most THREE MINUTES EACH, only isolated temporary paths and short synthetic test text. No API keys, paid credits, purchases, account changes or unrelated workspace data. Subscription usage and both usage stops apply. Sessions consumed: ZERO. Do not exceed two or renew old phase budgets. Only parent may execute the live sessions; assistants stay offline.
+
+Current usage 22% used, reset timestamp1793514805; checker active. Current implementation milestone and prior handoffs follow.
+
+---
+
+# Confirmed implementation in progress — October 25, 2026
+
+Author: Ethan. Ethan confirmed the full scope through the final interview control: "Confirm full scope — implement." This supersedes the prior stop and interview-wait sections below. Codex CLI first and an app-provided Start Codex action are settled. Routine details use delegated judgment; do not repeat the interview.
+
+Scope: terminal Codex launch with invocation-only settings and a scoped credential; handshake-backed connection status and approved-action results; disconnect/revoke; separate workspace policies/history; basic policy controls preserving advanced API/CLI rules; native menu/Quit and Stop/Restart; compact tutorial/workspace UI; explicit app-local verification skill and local regression checks. No paid/model test calls, global config changes, GitHub Actions, or release publication. Prior signed assets remain unchanged.
+
+The existing goal tool still reports paused and cannot resume; no duplicate goal was created. Fresh usage baseline was 8% used with reset timestamp 1793514805. A session checker runs every 45 seconds during active work. Stop at >=90% used in any window or a newly observed reset to 0% used; an idle-period reset is not an in-work reset. Stop workers/processes, save handoff, and pause at either guard.
+
+Two bounded Luna High assistants: readiness_maintenance owns backend/MCP/credential/terminal connection and core connection tests; readiness_native owns native menus/lifecycle and hidden native checks. Parent owns web/policy controls, UI checks, docs and integration. No nested agents. Existing untracked duplicate files with " 2" names remain untouched. npm ci restored locked local dependencies. Node24.22.1 is available from the independently installed published app under /private/tmp/ethan-app-review-20261024/installed/Agent Approval Gate.app/Contents/Resources/runtime/bin/node; the old .acceptance/runtime path is absent.
+
+Implementation and validation are unfinished. The previous review evidence remains in .acceptance/alignment-2026-10-24. New evidence goes in .acceptance/alignment-2026-10-25. Do not treat historical release checks below as checks of this change.
+
+---
+
+# Stopped at Ethan's request: handoff only
+
+Author: Ethan. October 24, 2026. This section supersedes the active/interview-wait instructions below. Ethan instructed: "Just use best judgment to answer a question don’t do any more work just make handoff." Do not resume investigation, implementation, testing or publication without a fresh instruction.
+
+## Decision and unfinished scope
+
+Q1 is resolved by delegated judgment: use Codex CLI as the first guided real agent integration. It has an existing invocation-level MCP route and a historical end-to-end request, human approval, file-change and result test. Keep the existing generic API/MCP interfaces. This is the assistant's selection under Ethan's delegation, not a claim that Ethan independently specified that preference.
+
+No final implementation scope was confirmed. The launch/connect workflow, connection proof, scoped credential revocation/rotation, returning-session behavior and initial policy controls remain undecided. Do not treat this handoff as permission to implement those decisions. If Ethan later resumes, use the existing evidence and this Q1 decision; do not repeat the completed investigation or ask Q1 again. Present a concise proposed scope and acceptance criteria before implementation, as required by the prepared prompt.
+
+## Saved evidence and findings
+
+The bounded review and draft verification map are saved in `.acceptance/alignment-2026-10-24/verification-draft.md`. The same directory holds pinned-source hash checks, sanitized reproduction logs, the native menu diagnostic source/log and a screenshot. No verification skill was installed. The proposed future app-only skill directory remains `.agents/verification/verify-agent-approval-gate`, outside the shared `.agents/skills` symlink.
+
+Existing published-app desktop tests passed 3/3, and its hidden native self-test passed. A temporary native diagnostic found an unhandled Command-Q menu event with a live gateway. It is not a physical-key test of the sealed app. Confirmed source gaps include missing agent setup, a read-only Policy panel despite an editing claim in the guide, the wrong tutorial replay label, and irrelevant cost-settlement text for free writes. The prior detailed checkpoint below retains exact boundaries and reproduction limits.
+
+Product code, dependencies, policies, configuration and release assets were not changed in this follow-up. No provider calls, new commits, PRs, publication, Actions, hooks or global changes were made. Numerous pre-existing untracked duplicate files remain untouched. The published 2.1.0 release stays complete and immutable. HANDOFF.md is the only tracked file edited during this follow-up.
+
+## Shutdown and usage guard
+
+Both assistants were already finished and interrupted. Owned reproduction processes and scratch state were already cleaned. The checker was stopped before the interview wait; no new checker or worker was started for this handoff.
+
+The handoff-only usage check observed 0% used / 100% remaining, with reset timestamp `1793514805`. The previous reading was 15% used with reset timestamp `1793385116`. This is the reset-to-100% stopping condition. No work may continue into that refreshed allowance under the prior authorization. Only the requested handoff and goal-pause bookkeeping are performed. No reset was redeemed, credits spent or account/provider switched. The goal is to be paused, not completed. A later resume requires an explicit new instruction and a fresh usage check.
+
+---
+
+# October 24 follow-up: waiting for interview answer
+
+Author: Ethan. A new bounded evidence/alignment phase is active. The prior 2.1.0 release below stays complete and immutable. No product implementation or publication is authorized before Ethan confirms shared understanding after the grill-me interview.
+
+Read the full prepared prompt in this chat. Pinned pstack index: ../.agents/review-followup-prompts/pstack-sources.json. All seven files were read and their SHA256 hashes matched. Explicit grill-me/grilling files were loaded unchanged using the documented Codex adapter. Only source/evidence investigation and safe synthetic reproduction occurred. Draft verification plan/map and sanitized retained evidence are in .acceptance/alignment-2026-10-24. No verification skill was installed. Proposed future location is .agents/verification/verify-agent-approval-gate/SKILL.md, outside the shared .agents/skills symlink.
+
+Source is main1871677. Numerous untracked duplicate files already existed, including source/tests; preserve them. Local dist/node_modules are absent. Reproduction used the independently installed published app at /private/tmp/ethan-app-review-20261024/installed/Agent Approval Gate.app without changing it or normal app data. Existing desktop tests passed 3/3 and hidden native self-test passed. A temporary diagnostic source copy observed one AppKit menu shell, no handled Command-Q menu event and a live gateway. It then passed the native self-test and was removed. This is not a physical keyboard test of the sealed release. The independent reviewer had observed failed Cmd+Q twice.
+
+Confirmed source gaps: no agent connection/setup UI; Policy is display-only although docs say it can be edited in dashboard; replay label says Try approval safely while native control is Try Tutorial; free write completion mentions cost settlement. Existing native tests omit Cmd+Q, window close, manual Stop and Quit with live child. Stop clears active mode and disables Restart; crash recovery keeps mode and enables Restart. Scoped agent provisioning exists via human-only API, returns token once and stores hash, but lacks revoke API. Shared bootstrap token does not isolate separate callers. Existing manual MCP plus historical AG-19 qualifies a particular Codex CLI route, not Codex desktop.
+
+First interview question: Should Codex CLI be the first fully guided real agent integration? Recommendation: yes, because an invocation-level MCP route and real request/approval/result harness already exist. Alternatives: Codex desktop first, or generic MCP client first. Do not treat this recommendation as Ethan's choice. Subsequent decisions depend on his answer: app-launched versus external host setup, connection proof and credential lifecycle, understandable initial policy editing, post-tutorial workflow. Native Quit is a defect, not a preference question. Preserve separate workspace policies/history, last-workspace recall, secure native operator token, exact approvals, safe defaults and mediated-only boundaries.
+
+Both bounded Luna High readers finished and were interrupted. All new test processes and private scratch data were cleaned; evidence remains. No provider/model calls, dependencies, config, policy or release changes, GitHub writes or Actions. No messages to other chats. The new goal remains active but work must wait for actual interview answers and later scope confirmation. Do not mark it complete or invent more investigation while waiting.
+
+Usage baseline was 8% used with primary reset timestamp1793385116. Latest checker reading was15% used, same reset timestamp, no observed reset to0%. Checker cell4 is stopped at this interview checkpoint. On active resumption check/restart at <=60-second intervals. Stop at >=90% used in any window OR an observed reset to100% remaining; stop owned workers/processes, save handoff, pause goal and end work. No credits, resets or provider/account bypass.
+
+---
+
 # Desktop 2.1.0 released and verified
 
 Author: Ethan. Version 2.1.0 is published at https://github.com/Ethant35/agent-approval-gate/releases/tag/v2.1.0. The authorized desktop phase is complete. No further implementation or release work is pending.

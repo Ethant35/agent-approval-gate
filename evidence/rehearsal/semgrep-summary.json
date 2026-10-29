@@ -1,0 +1,35 @@
+{
+  "author": "Ethan",
+  "date": "2026-10-28",
+  "engine": "Community",
+  "metrics": "off",
+  "rulesets": 11,
+  "findings": 652,
+  "failed": [],
+  "skipped": [],
+  "oversized": [],
+  "partial": [
+    {
+      "ruleset": "https://github.com/elttam/semgrep-rules",
+      "exitCode": 2
+    },
+    {
+      "ruleset": "https://github.com/apiiro/malicious-code-ruleset",
+      "exitCode": 2
+    }
+  ],
+  "rules": {
+    "0xdea-semgrep-rules.rules.noisy.generic.raptor-bad-words": 594,
+    "0xdea-semgrep-rules.rules.c.raptor-signed-unsigned-conversion": 3,
+    "0xdea-semgrep-rules.rules.c.raptor-interesting-api-calls": 28,
+    "0xdea-semgrep-rules.rules.c.raptor-write-into-stack-buffer": 2,
+    "0xdea-semgrep-rules.rules.c.raptor-typos": 2,
+    "0xdea-semgrep-rules.rules.c.raptor-integer-truncation": 1,
+    "0xdea-semgrep-rules.rules.c.raptor-argv-envp-access": 13,
+    "0xdea-semgrep-rules.rules.c.raptor-integer-wraparound": 2,
+    "apiiro-malicious-code-ruleset.generic-one-liners": 4,
+    "apiiro-malicious-code-ruleset.obfuscation.generic-obfuscation-operators": 2,
+    "elttam-semgrep-rules.rules-audit.c.lang.security.audit.exec": 1
+  },
+  "triage": "594 lexical bad-word matches; the other 58 match the prior bounded native C, CLI/SQL and process-regex audit flags. No new confirmed exploit. Two third-party packs have parse failures. No cross-file taint or Swift semantic analysis claim."
+}

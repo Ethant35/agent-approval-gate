@@ -1,0 +1,17 @@
+{
+  "author": "Ethan",
+  "date": "2026-10-28",
+  "connection_tests": 4,
+  "connection_tests_passed": 4,
+  "signed_native_scenarios": [
+    "command-q",
+    "window-close"
+  ],
+  "codesign": "passed",
+  "stapler": "validated",
+  "gatekeeper": "accepted Notarized Developer ID",
+  "review_closure": "Parent source inspection and regression confirm CodexSessionStartError retains the cleanup handle. Historical independent report predates this repair; no new independent sign-off claimed.",
+  "live_sessions_used": 2,
+  "live_sessions_authorized": 2,
+  "qualification_limit": "No live retest of final cleanup repair or single final packaged guided path."
+}

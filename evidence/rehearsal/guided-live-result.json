@@ -1,0 +1,15 @@
+{
+  "author": "Ethan",
+  "model": "gpt-6-luna",
+  "reasoning": "high",
+  "provider": "ChatGPT existing login",
+  "scope": "real Terminal and CLI; signed app bundled runtime, server and dashboard; test adapter fixes model and isolates Codex home; browser injects desktop bootstrap, not WKWebView",
+  "status": "passed",
+  "handshake": true,
+  "blockedBeforeApproval": true,
+  "completed": true,
+  "bytesWritten": 22,
+  "disconnected": true,
+  "launchArtifactsRemoved": true,
+  "elapsedSeconds": 18.253
+}

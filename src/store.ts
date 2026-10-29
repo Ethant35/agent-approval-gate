@@ -310,6 +310,21 @@ export class Store {
       hash: string;
     }[];
   }
+  revokePrincipal(id: string) {
+    return this.transaction(() => {
+      const principal = this.db.prepare('SELECT id FROM principals WHERE id=?').get(id);
+      if (!principal) return false;
+      this.db.prepare('DELETE FROM principals WHERE id=?').run(id);
+      this.audit('', 'AGENT_CREDENTIAL_REVOKED', JSON.stringify({ id }));
+      return true;
+    });
+  }
+  requestsForPrincipal(id: string) {
+    return this.db
+      .prepare("SELECT json FROM requests WHERE json_extract(json,'$.principal')=?")
+      .all(id)
+      .map((r) => JSON.parse(r.json as string) as Stored);
+  }
   addPrincipal(id: string, agentId: string, sessions: string[], hash: string) {
     this.db
       .prepare('INSERT INTO principals VALUES(?,?,?,?)')

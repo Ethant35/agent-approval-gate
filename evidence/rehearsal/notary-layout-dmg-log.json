@@ -1,0 +1,42 @@
+{
+  "logFormatVersion": 1,
+  "jobId": "3af25eb7-fbbd-478c-bd24-e39d63e51791",
+  "status": "Accepted",
+  "statusSummary": "Ready for distribution",
+  "statusCode": 0,
+  "archiveFilename": "Agent-Approval-Gate-2.2.0-arm64.dmg",
+  "uploadDate": "2026-10-29T00:12:24.332Z",
+  "sha256": "cecbcee7938058e24bc70cc1f34926d0be6d3547ffab47e8ff0193f9bb03f944",
+  "ticketContents": [
+    {
+      "path": "Agent-Approval-Gate-2.2.0-arm64.dmg/Agent Approval Gate.app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "52eab706566d9c6863fae6ec03e69437bfa735d8",
+      "arch": "arm64"
+    },
+    {
+      "path": "Agent-Approval-Gate-2.2.0-arm64.dmg/Agent Approval Gate.app/Contents/MacOS/AgentApprovalGate",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "52eab706566d9c6863fae6ec03e69437bfa735d8",
+      "arch": "arm64"
+    },
+    {
+      "path": "Agent-Approval-Gate-2.2.0-arm64.dmg/Agent Approval Gate.app/Contents/Resources/runtime/bin/node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "ab607b67dbcc79da0f8cbfa3172590985697a0b9",
+      "arch": "arm64"
+    },
+    {
+      "path": "Agent-Approval-Gate-2.2.0-arm64.dmg/Agent Approval Gate.app/Contents/Resources/gateway/dist/safe-fs",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "f3a4c2ef8db5a48e40e8cc8f286d6cbf6ccb57b6",
+      "arch": "arm64"
+    },
+    {
+      "path": "Agent-Approval-Gate-2.2.0-arm64.dmg",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "f7b0a781beefe7ab19633467b218266d354a5c15"
+    }
+  ],
+  "issues": null
+}

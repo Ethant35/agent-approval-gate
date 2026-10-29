@@ -1,0 +1,14 @@
+{
+  "author": "Ethan",
+  "date": "2026-10-28",
+  "drive": "CUA native AppKit/WKWebView; title-bar activation, coordinate scroll, actual policy form typing and Preview decisions click",
+  "observed": "Current approval; draft deny (Filesystem scope denied)",
+  "savedPolicyRevision": 1,
+  "savedDenyPaths": [],
+  "requests": 0,
+  "sampleFileCreated": false,
+  "layout": "grid inside fieldset; explicit responsive columns",
+  "limitation": "Earlier background-window AX captures were incomplete and a setValue attempt stalled WebKit accessibility. Title-bar activation and normal typing completed the native flow; no precise root-cause claim.",
+  "commandQ": "app quit",
+  "gatewayPortClosed": true
+}

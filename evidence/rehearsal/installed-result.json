@@ -1,0 +1,15 @@
+{
+  "author": "Ethan",
+  "version": "2.2.0",
+  "source": "final notarized/stapled DMG mounted read-only",
+  "quarantine": "Explicit test quarantine applied to copied app and retained after tests; no bypass/removal",
+  "strictSignature": "passed",
+  "gatekeeper": "Notarized Developer ID accepted",
+  "staple": "validated",
+  "syspolicy": "all pre-distribution checks passed",
+  "nativeScenarios": [
+    "command-q",
+    "window-close"
+  ],
+  "result": "passed"
+}

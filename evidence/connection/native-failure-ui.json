@@ -1,0 +1,10 @@
+{
+  "author": "Ethan",
+  "fault": "isolated cloned bundle, injected gateway exit1 after cleanup",
+  "stopWarningVisible": true,
+  "restartEnabled": true,
+  "quitWarningVisible": true,
+  "keepOpenPreservesApp": true,
+  "quitAnywayExited": true,
+  "normalAppDataUsed": false
+}

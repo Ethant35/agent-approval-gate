@@ -1,0 +1,14 @@
+{
+  "author": "Ethan",
+  "verifiedAt": "2026-10-29T00:11:39.636Z",
+  "version": "2.2.0",
+  "packageAuthor": "Ethan",
+  "cli": "signed bundled runtime and gateway CLI",
+  "startup": "PASS",
+  "dashboard": "PASS",
+  "normalizedDeny": "PASS",
+  "allowedRead": "PASS",
+  "pendingBeforeApproval": "PASS",
+  "approvedNativeProcess": "PASS",
+  "protectedFileUnchanged": "PASS"
+}

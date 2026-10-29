@@ -1,0 +1,23 @@
+{
+  "author": "Ethan",
+  "candidate": "layout",
+  "runtimeFiles": {
+    "dist/maintenance.js": "e0ddce667295f2a59433da5c6c92e55e4f9701f3f51abca3fa24a4c441f0934e",
+    "dist/runtime.js": "2da0d4ef952e62f719ee122bbad580924d73ab64f1e4b37f87c58e38c3bfa144",
+    "dist/policy.js": "379e692027a7b4ef1d1a7f28c01d210f46526f3cae84a07f82869f5044815c6d",
+    "dist/server.js": "5bf839ac57633bbb1c29bef906360f21d079f9897e25fc2730505394f01e2f7e",
+    "dist/store.js": "7f0e7d244f0e90f02ffc23e80f8d99da29af93c6b955fc24794ca55290960f45",
+    "dist/lease.js": "a6ad4d25e80e155d5cc4c4ce72278e454b64add820afa944a449154d3fba2f1c",
+    "dist/codex-session-launcher.js": "601886aa99fa54985293e6ca66135a7fd1e4431eba0ed4158caeea8af866d301",
+    "dist/desktop.js": "b132e78a074cbb60d39865090ea945a16b19c7ff16f091bd9eb5beaabc304ea0",
+    "dist/executor.js": "a2a877f25ab7b2a7e01ce9741dc8185dbe21d3308e04845283ecd1bd49962705",
+    "dist/mcp.js": "8a0011d5834e8107cacbd8af5aadd04c46abbaefefaeb8591b09ebc8bfa620b2",
+    "dist/cli.js": "8e07399f974306e9846a9637b0bc800f53d0221279993816c741c2292445d379",
+    "dist/contracts.js": "ad45e1cbe4760460fb45babaff83540baeca567d370e4c292b5afe4d26ed4397",
+    "dist/codex-session.js": "86143add08fac732bc0e8b3fbdecfab0907e8ca27bcd98e5e9c2219df1b09e0d",
+    "dist/web/index.html": "25cad8340a2b74e6b5b5c9a86be33007d57ede2271b2eb9cfcda42f80e77f9d8",
+    "dist/web/assets/index-PP7Os_9X.css": "1bd7db42f05b3effb0c159d24622152544087de3cb941be146f94ecebcf954c8",
+    "dist/web/assets/index-oIp77d8C.js": "904d624a94cba890b4a4bcb48e7fabc73da9b83a79b9de42e3dd0dcf22d1a478"
+  },
+  "match": true
+}

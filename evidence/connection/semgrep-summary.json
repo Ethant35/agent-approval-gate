@@ -1,0 +1,34 @@
+{
+  "author": "Ethan",
+  "engine": "Community",
+  "rulesets": 11,
+  "findings": 625,
+  "failed": [],
+  "skipped": [],
+  "coveredNothing": [],
+  "oversized": [],
+  "partial": [
+    {
+      "ruleset": "https://github.com/elttam/semgrep-rules",
+      "exitCode": 2
+    },
+    {
+      "ruleset": "https://github.com/apiiro/malicious-code-ruleset",
+      "exitCode": 2
+    }
+  ],
+  "rules": {
+    "noisy.generic.raptor-bad-words": 567,
+    "c.raptor-signed-unsigned-conversion": 3,
+    "c.raptor-interesting-api-calls": 28,
+    "c.raptor-write-into-stack-buffer": 2,
+    "c.raptor-typos": 2,
+    "c.raptor-integer-truncation": 1,
+    "c.raptor-argv-envp-access": 13,
+    "c.raptor-integer-wraparound": 2,
+    "apiiro-malicious-code-ruleset.generic-one-liners": 4,
+    "apiiro-malicious-code-ruleset.obfuscation.generic-obfuscation-operators": 2,
+    "elttam-semgrep-rules.rules-audit.c.lang.security.audit.exec": 1
+  },
+  "triage": "Existing bounded native C/CLI/SQL flags plus process identity regex operators and lexical security words; no confirmed exploit. No cross-file taint or Swift-specific semantic proof."
+}

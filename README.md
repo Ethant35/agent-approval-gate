@@ -12,7 +12,9 @@ The macOS arm64 app bundles Node and the native helper. It does not need a globa
 
 Download the arm64 DMG from [Releases](https://github.com/Ethant35/agent-approval-gate/releases), open it, and drag **Agent Approval Gate** to **Applications**. Open the app and choose **Try Tutorial** to approve a real write in a fresh isolated folder. Choose **Choose Workspace** for your project. Files require approval; commands and network access start disabled. The app supplies its operator session without token-file copying.
 
-Each workspace has its own policy and history. **Reopen Last Workspace** returns to the last selection. **Stop Gateway** stops that session; **Restart Gateway** reconnects after a failure. Interrupted work is never retried automatically. Only actions sent through the gateway are checked; other tools and local processes require their own host controls.
+Each workspace has its own policy and history. **Reopen Last Workspace** returns to the last selection. **Stop Gateway** stops that session; **Restart Gateway** starts it again after a stop or failure. Interrupted work is never retried automatically. Only actions sent through the gateway are checked; other tools and local processes require their own host controls.
+
+In version 2.2, **Start Codex** opens a managed Codex CLI session in Terminal. The CLI must be installed and signed in separately. **Connected** confirms the MCP handshake; inspect the request and result to confirm an action. **Edit basic policy** changes default decisions, time limits and blocked paths while preserving advanced rules. **Rehearse policy** compares current and draft decisions without saving, approving or executing actions. See READINESS.md for verification evidence and release limits.
 
 See [app operation and recovery](docs/desktop-operation.md) and [native security design](docs/native-launcher.md). The app's runtime and signing checks are separate from the earlier CLI release qualification.
 

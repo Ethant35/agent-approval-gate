@@ -20,6 +20,6 @@ Target: a local operator on macOS arm64, loopback-only server, trusted exact com
 
 ## Execution and privacy
 
-No GitHub Actions, hooks, global tools/settings, ~/.codex/config.toml edits, source uploads or default telemetry. Exact repository only. Keep Actions disabled before external writes. Ethan is personal author; preserve upstream notices. Credentials/payloads remain out of diagnostics. Account checker every <=60 seconds; stop work, workers and project processes at >=90% used (<=10% remaining) in any applicable account window; no credits/resets/provider bypass.
+No GitHub Actions, hooks, global tools/settings, ~/.codex/config.toml edits, source uploads or default telemetry. Exact repository only. Keep Actions disabled before external writes. Ethan is personal author; preserve upstream notices. Credentials/payloads remain out of diagnostics. Account checker every <=60 seconds; stop work, workers and project processes at >=50% used (<=50% remaining) in any applicable account window; no credits/resets/provider bypass.
 
 Commands and results are tracked in READINESS.md. Commands marked planned are not passes. Existing `npm run check`, `npm run build`, `npm run format:check`, `npm run test:e2e`, `npm audit --audit-level=high`, and `node scripts/verify-package.mjs` remain required. New focused checks will be wired to package scripts when implemented. Do not weaken this file to make a change pass.

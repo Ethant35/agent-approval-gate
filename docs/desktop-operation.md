@@ -1,14 +1,30 @@
 # Desktop operation and recovery
 
-Author: Ethan. Version 2.1. See READINESS.md for the tested host and installation evidence.
+Author: Ethan. Current development checkout. The guided Codex connection and policy controls described here are not in the published 2.1.0 app. See READINESS.md for build-specific evidence.
 
 ## Start and return
 
 Install the app in Applications from the release DMG. Open it, choose Try Tutorial, inspect the exact path and proposed content, then approve or deny. The tutorial uses a fresh private folder for each run. It does not change your selected project. Choose Choose Workspace to use a dedicated project folder. Do not select your home folder, filesystem root, or app data directory.
 
-The initial policy requires file approval and disables commands and network calls. Review and edit policy in the dashboard before adding exact commands or network destinations. Each canonical workspace has separate policy and history. Reopen Last Workspace remembers only the path; the new session uses the existing policy, not a reset default.
+The initial policy requires file approval and disables commands and network calls. Edit basic policy changes the default decision, approval expiry, execution timeout and blocked file paths. Explicit rules take priority over the default. The editor preserves advanced fields and rejects stale saves if another client changed the policy. Save invalidates previous approvals. Add exact commands, network destinations, budgets or advanced rules through the existing API/CLI. Each canonical workspace has separate policy and history. Reopen Last Workspace remembers only the path; the new session uses the existing policy, not a reset default.
 
 The app keeps state below `~/Library/Application Support/Agent Approval Gate/workspaces/<workspace-hash>/state`. The private profile next to state records the canonical workspace and last app version. Tutorial state is separate under `tutorials/`. The native window shows the selected workspace; the dashboard uses the same policy and request store as API/CLI/MCP. Human credentials must never be sent to an agent. Advanced integrations use an agent credential and the current loopback URL, as described in README.
+
+## Rehearse a policy
+
+Open Edit basic policy, change the draft, then choose Rehearse policy. Preview a sample file action or up to 20 recent requests. The sample uses `sample-agent` and `sample-session`; choose real requests to check identity-specific rules. Current and draft decisions show the matching rule or scope reason. Rehearsal runs no action, grants no approval and saves no changes. Save policy remains a separate action.
+
+Changing the draft hides its old preview. If another client saves a policy, reload before previewing or saving. Previews cover policy decisions and configured limits; they do not simulate available budgets, file state, DNS or runtime failures. Only actions submitted through the gateway receive these checks.
+
+## Connect Codex
+
+Install Codex CLI separately and sign in using its normal setup. Choose a workspace, then Start Codex. The app opens Terminal with invocation-only MCP settings and a credential scoped to this agent/session. It does not write global Codex configuration or install Codex. Codex CLI 0.164.0 is the qualified client. The managed session uses --no-daemon so its MCP server and processes belong to that session. The app checks standard local executable locations and its inherited PATH. If it cannot find the CLI, check the local installation and retry.
+
+Waiting for Codex means Terminal launch was requested. Connected means the managed MCP transport completed initialization. Complete any CLI sign-in or trust prompt in Terminal. Ask Codex to submit a file action through Approval Gate; review the exact request in the app, confirm approval, then inspect the execution result. The connection indicator alone does not prove a file change.
+
+Disconnecting means credential revocation and process cleanup are in progress. Disconnected appears only after cleanup succeeds. Disconnect Codex revokes the credential, cancels that principal's active requests and stops the owned session. It cannot undo an already completed effect. Start Codex again creates a fresh credential and session; saved workspace history remains. Gateway stop or restart also ends managed credentials. Never copy the operator token into a prompt. Codex's other tools are outside this gateway: this flow does not intercept arbitrary CLI actions.
+
+Stop Gateway retains the selected workspace and enables Restart Gateway. Quit through the standard application menu, Command-Q, or window close stops the owned gateway. If shutdown fails, the app warns that Codex may still be running and offers Keep Open or Quit Anyway. Close that session in Terminal before retrying. CLI terminal windows may remain open after their managed process exits; the app does not close unrelated Terminal windows.
 
 ## Update and rollback
 

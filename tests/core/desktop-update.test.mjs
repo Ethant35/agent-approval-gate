@@ -8,12 +8,10 @@ import net from 'node:net';
 import { fixture, until } from './fixture.mjs';
 import { backupState, restoreState } from '../../dist/maintenance.js';
 
-async function openDesktop(root, workspace) {
-  const child = spawn(
-    process.execPath,
-    [path.resolve('dist/desktop.js'), '--root', root, '--workspace', workspace],
-    { stdio: ['pipe', 'pipe', 'pipe'] },
-  );
+async function openDesktop(root, workspace, cli = path.resolve('dist/desktop.js')) {
+  const child = spawn(process.execPath, [cli, '--root', root, '--workspace', workspace], {
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
   let out = '',
     err = '';
   child.stdout.on('data', (b) => (out += b));
@@ -29,6 +27,65 @@ async function openDesktop(root, workspace) {
   };
   return { child, ready, stop };
 }
+
+test('actual 2.1.0 desktop profile upgrades with its policy, pending request and useful result', async () => {
+  const f = await fixture();
+  const root = path.join(f.root, 'desktop');
+  const oldCli = path.resolve('.acceptance/legacy-desktop/package/dist/desktop.js');
+  assert.ok(fs.existsSync(oldCli), 'Prepare the verified actual 2.1.0 archive');
+  let desktop;
+  try {
+    desktop = await openDesktop(root, f.workspace, oldCli);
+    const agent = fs.readFileSync(path.join(desktop.ready.dataDir, 'agent.token'), 'utf8').trim();
+    const submit = await fetch(desktop.ready.url + '/v1/requests', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${agent}`,
+        'content-type': 'application/json',
+        'x-aag-intent': 'agent',
+      },
+      body: JSON.stringify(f.action('desktop-update')),
+    });
+    assert.equal(submit.status, 201);
+    assert.equal((await submit.json()).state, 'PENDING_APPROVAL');
+    const oldPolicy = await (
+      await fetch(desktop.ready.url + '/v1/policy', {
+        headers: { authorization: `Bearer ${desktop.ready.operatorToken}` },
+      })
+    ).json();
+    await desktop.stop();
+    desktop = await openDesktop(root, f.workspace);
+    assert.ok(desktop.ready.backupDir);
+    assert.ok(fs.existsSync(path.join(desktop.ready.backupDir, 'manifest.json')));
+    const headers = {
+      authorization: `Bearer ${desktop.ready.operatorToken}`,
+      'content-type': 'application/json',
+      'x-aag-intent': 'human',
+    };
+    const url = desktop.ready.url + '/v1/requests/desktop-update';
+    assert.deepEqual(
+      await (await fetch(desktop.ready.url + '/v1/policy', { headers })).json(),
+      oldPolicy,
+    );
+    const pending = await (await fetch(url, { headers })).json();
+    assert.equal(pending.state, 'PENDING_APPROVAL');
+    assert.equal(
+      (
+        await fetch(url + '/approve', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ token: pending.approvalToken }),
+        })
+      ).status,
+      200,
+    );
+    await until(async () => (await (await fetch(url, { headers })).json()).state === 'COMPLETED');
+    assert.equal(fs.readFileSync(path.join(f.workspace, 'target'), 'utf8'), 'approved');
+  } finally {
+    if (desktop) await f.stop(desktop.child);
+    await f.cleanup();
+  }
+});
 
 test('actual 2.0.0 state gets a pre-update backup and remains useful after restore into old CLI', async () => {
   const f = await fixture();

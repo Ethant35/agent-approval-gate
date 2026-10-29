@@ -1,6 +1,6 @@
 {
   "name": "agent-approval-gate",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Local policy and human approval gateway for agent actions",
   "author": "Ethan",
   "license": "MIT",
@@ -35,7 +35,7 @@
     "prepare": "npm run build",
     "check": "tsc --noEmit && tsc --noEmit --jsx react-jsx --target ES2023 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck --types vite/client web/main.tsx",
     "format:check": "prettier --check src web tests scripts *.json *.ts",
-    "test:core": "node --test tests/core/*.test.mjs",
+    "test:core": "node --test --test-concurrency=1 tests/core/*.test.mjs",
     "test:native": "sh scripts/verify-native.sh"
   },
   "dependencies": {
@@ -45,7 +45,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "yaml": "^2.8.0",
-    "zod": "^3.25.0"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
