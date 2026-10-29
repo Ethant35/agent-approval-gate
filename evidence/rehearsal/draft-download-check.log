@@ -16,9 +16,9 @@ Checksumming GPT Header (Backup GPT Header : 7)…
   GPT Header (Backup GPT Header : 7): verified   CRC32 $F6E98B93
 verified   CRC32 $12FC7C41
 hdiutil: WARNING: 'hdiutil attach -readonly -nobrowse -mountpoint ...' is deprecated. Please use 'diskutil image attach --readOnly --mountOptions nobrowse --mountPoint ...' instead.
-/dev/disk4          	GUID_partition_scheme          	
-/dev/disk4s1        	Apple_APFS                     	
-/dev/disk5          	EF57347C-0000-11AA-AA11-0030654	
+/dev/disk4          	GUID_partition_scheme
+/dev/disk4s1        	Apple_APFS
+/dev/disk5          	EF57347C-0000-11AA-AA11-0030654
 /dev/disk5s1        	41504653-0000-11AA-AA11-0030654	/private/tmp/aag-draft-install-zvdt9gsb/mount
 hdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead.
 "disk4" ejected.

@@ -51,7 +51,7 @@ Window: "Agent Approval Gate", App: Agent Approval Gate.
 				48 container Policy
 					49 heading Policy, Value: 2
 						50 text Policy
-					51 text Revision 2 Default decision 
+					51 text Revision 2 Default decision
 					52 text APPROVAL
 					53 text Workspace /private/tmp/aag-ux-fixes-20261029-final-02/workspace
 					54 text 0 explicit rules

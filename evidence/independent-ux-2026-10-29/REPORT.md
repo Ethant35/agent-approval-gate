@@ -1,7 +1,7 @@
 # Independent UX/UI review: Agent Approval Gate 2.2.0
 
-Author: Ethan  
-Date: October 29, 2026  
+Author: Ethan
+Date: October 29, 2026
 Scope: manual review of the published macOS arm64 DMG, using isolated data and offline requests. No live agent or model was started.
 
 ## Assessment

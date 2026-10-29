@@ -1,7 +1,7 @@
 # Independent UX review: Agent Approval Gate
 
-Author: Ethan  
-Reviewed: 2026-10-29  
+Author: Ethan
+Reviewed: 2026-10-29
 Build: local `native-final/Agent Approval Gate.app`, bundle version 2.2.0. This is a local build review, not a release-signing or public-download qualification.
 
 ## Finding
