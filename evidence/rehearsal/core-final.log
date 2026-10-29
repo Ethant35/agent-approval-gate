@@ -1,0 +1,50 @@
+
+> agent-approval-gate@2.2.0 test:core
+> node --test --test-concurrency=1 tests/core/*.test.mjs
+
+✔ summary, detail and health routes preserve principal boundaries (454.836959ms)
+✔ active request cap rejects before persistence and cancellation restores capacity (695.175875ms)
+✔ CLI lists and exports every page, and reads a valid escaped result (862.907667ms)
+✔ managed Codex connection waits for MCP initialize, scopes requests, and revokes on disconnect (3634.423125ms)
+✔ gateway restart revokes persisted desktop credentials and cancels their pending work (16.769875ms)
+✔ launch artifact removal failure retains a retryable cleanup handle (2561.115041ms)
+✔ partial launch cleanup failure keeps a handle and makes gateway shutdown report failure (136.237334ms)
+✔ managed launcher rejects exposed config and honors stop during its launch check (143.334792ms)
+✔ actual 2.1.0 desktop profile upgrades with its policy, pending request and useful result (643.849041ms)
+✔ actual 2.0.0 state gets a pre-update backup and remains useful after restore into old CLI (1084.3285ms)
+✔ desktop tutorial uses a real isolated pending action and keeps operator access off HTTP (299.158208ms)
+✔ desktop remembers workspace policies and isolates histories without reapplying defaults (638.841541ms)
+✔ denied tutorial leaves its file unchanged and replay uses a fresh isolated session (456.120125ms)
+✔ summary pages bound payloads and preserve every row plus older pending work (475.819666ms)
+✔ summary pages include the whole active admission limit despite large private metadata (104.053ms)
+✔ CLI cold backup and restore preserve pending approval through a useful write (732.63475ms)
+✔ CLI refuses to start from an INCOMPLETE state directory (117.537958ms)
+✔ cold backup restores pending state and can approve a useful result (479.921042ms)
+✔ backup refuses a live gateway and an existing destination without changing it (195.131041ms)
+✔ restore rejects a tampered backup before creating a destination (236.609333ms)
+✔ backup rejects symlink and hardlinked credentials and leaves marked partial output (243.206166ms)
+✔ backup rejects missing and malformed credentials and keeps partial output marked (283.164292ms)
+✔ human policy rehearsal compares rules and scope without changing requests, policy, budgets or files (207.557833ms)
+✔ allow previews for file, process, subagent and HTTP actions cause no execution (172.846959ms)
+✔ generated reservation, release, and settlement sequences match an independent ledger (58.524875ms)
+✔ generated over-budget transactions roll back earlier reservations completely (18.74675ms)
+✔ generated filesystem path spellings canonicalize idempotently in parsed policies (37.42175ms)
+✔ generated equivalent filesystem paths cannot bypass a matching deny entry (1.635042ms)
+✔ SIGKILL restart preserves pending requests without stale lock obstruction (397.17725ms)
+✔ second server cannot take a live lease and loss of lease stops the first server (499.715417ms)
+✔ credential symlink is rejected without changing its target (132.196334ms)
+✔ repeated empty lease marker refusal can be recovered offline without deleting it (796.927ms)
+✔ stale legacy numeric lease marker is reclaimed by the native helper (167.148083ms)
+✔ live numeric and malformed legacy lease markers fail closed without changing them (329.416875ms)
+✔ full database rolls back request plus audit, preserving committed budget and readable state (9.005291ms)
+✔ corrupt database fails startup without replacing the file (138.729417ms)
+✔ write lock fault puts the service in fail-closed recovery mode (5510.666708ms)
+✔ actual v1.0.1 crash state upgrades with pending work and unsettled cost intact (767.776375ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24556.268417

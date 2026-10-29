@@ -1,0 +1,71 @@
+{
+  "author": "Ethan",
+  "files": [
+    {
+      "path": "maintenance.js",
+      "sha256": "e0ddce667295f2a59433da5c6c92e55e4f9701f3f51abca3fa24a4c441f0934e"
+    },
+    {
+      "path": "runtime.js",
+      "sha256": "2da0d4ef952e62f719ee122bbad580924d73ab64f1e4b37f87c58e38c3bfa144"
+    },
+    {
+      "path": "policy.js",
+      "sha256": "379e692027a7b4ef1d1a7f28c01d210f46526f3cae84a07f82869f5044815c6d"
+    },
+    {
+      "path": "server.js",
+      "sha256": "65e541ff326811ea2e18513f945f9ff434d602edb758a4219e8feca3783a87de"
+    },
+    {
+      "path": "store.js",
+      "sha256": "7f0e7d244f0e90f02ffc23e80f8d99da29af93c6b955fc24794ca55290960f45"
+    },
+    {
+      "path": "lease.js",
+      "sha256": "a6ad4d25e80e155d5cc4c4ce72278e454b64add820afa944a449154d3fba2f1c"
+    },
+    {
+      "path": "codex-session-launcher.js",
+      "sha256": "601886aa99fa54985293e6ca66135a7fd1e4431eba0ed4158caeea8af866d301"
+    },
+    {
+      "path": "desktop.js",
+      "sha256": "b132e78a074cbb60d39865090ea945a16b19c7ff16f091bd9eb5beaabc304ea0"
+    },
+    {
+      "path": "executor.js",
+      "sha256": "a2a877f25ab7b2a7e01ce9741dc8185dbe21d3308e04845283ecd1bd49962705"
+    },
+    {
+      "path": "mcp.js",
+      "sha256": "8a0011d5834e8107cacbd8af5aadd04c46abbaefefaeb8591b09ebc8bfa620b2"
+    },
+    {
+      "path": "cli.js",
+      "sha256": "8e07399f974306e9846a9637b0bc800f53d0221279993816c741c2292445d379"
+    },
+    {
+      "path": "contracts.js",
+      "sha256": "ad45e1cbe4760460fb45babaff83540baeca567d370e4c292b5afe4d26ed4397"
+    },
+    {
+      "path": "codex-session.js",
+      "sha256": "c74766a2a33c44e3645a7217650cfbf47b38247ab09ac493db82193182adc6ac"
+    },
+    {
+      "path": "web/index.html",
+      "sha256": "6ad417d12ed0310a39522ff69f99ed1a0e475e9d5611bae87a5526f8d2c8f76e"
+    },
+    {
+      "path": "web/assets/index-WSwmy9GS.js",
+      "sha256": "4fc19229750047c86a7bc4bee8f40af92026a7963ae618bd60aec2fbd71462fb"
+    },
+    {
+      "path": "web/assets/index-CwABFcFw.css",
+      "sha256": "9e57f09b477572ceac04cb8e9480212fffd9856aa5c3105a72776508da795b8e"
+    }
+  ],
+  "allMatch": true,
+  "duplicatesAbsent": true
+}

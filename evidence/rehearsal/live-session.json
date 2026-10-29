@@ -1,0 +1,19 @@
+{
+  "author": "Ethan",
+  "authorization": "User approved one additional bounded session on October 28, 2026",
+  "authorizedSessions": 1,
+  "used": 1,
+  "remaining": 0,
+  "model": "gpt-6-luna",
+  "reasoning": "high",
+  "provider": "existing ChatGPT login",
+  "maxSeconds": 180,
+  "cliKillDeadlineSeconds": 175,
+  "status": "passed",
+  "startedAt": "2026-10-28T23:52:19.780401+00:00",
+  "elapsedSeconds": 18.253,
+  "handshake": true,
+  "completed": true,
+  "disconnected": true,
+  "launchArtifactsRemoved": true
+}

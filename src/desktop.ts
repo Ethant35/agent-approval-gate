@@ -119,12 +119,41 @@ async function main() {
   let closing: Promise<void> | undefined;
   const close = () =>
     (closing ??= (async () => {
-      await server?.close();
-      await lease.release();
+      let failure: Error | undefined;
+      try {
+        await server?.close();
+      } catch (error) {
+        failure =
+          error instanceof Error
+            ? new Error(`Agent Approval Gate shutdown incomplete: ${error.message}`)
+            : new Error('Agent Approval Gate shutdown incomplete.');
+      } finally {
+        try {
+          await lease.release();
+        } catch {
+          failure ??= new Error('Agent Approval Gate could not release its launcher lock.');
+        }
+      }
+      if (failure) throw failure;
     })());
+  const exitAfterClose = (code: number, error?: unknown) => {
+    void close().then(
+      () => process.exit(code),
+      (closeError: unknown) => {
+        const detail =
+          closeError instanceof Error
+            ? closeError.message
+            : error instanceof Error
+              ? error.message
+              : 'The desktop gateway could not complete shutdown.';
+        process.stderr.write(detail + '\n');
+        process.exit(1);
+      },
+    );
+  };
   process.stdin.on('end', () => {
     parentGone = true;
-    if (server) void close().then(() => process.exit(0));
+    if (server) exitAfterClose(0);
   });
   process.stdin.resume();
   try {
@@ -151,7 +180,13 @@ async function main() {
     }
     process.chdir(workspace);
     const operatorToken = randomBytes(32).toString('hex');
-    server = await startServer({ dataDir, port: 0, startupLog: false, operatorToken });
+    server = await startServer({
+      dataDir,
+      port: 0,
+      startupLog: false,
+      operatorToken,
+      desktopConnection: tutorial ? false : { workspace },
+    });
     if (parentGone) {
       await close();
       return;
@@ -201,7 +236,7 @@ async function main() {
     saveProfile(profileFile, { format: 1, author: 'Ethan', workspace, lastVersion: version });
     lease.assertHeld();
     lease.onLost(() => {
-      void close().then(() => process.exit(1));
+      exitAfterClose(1, new Error('The desktop gateway lost its state lock.'));
     });
     // This process-lifetime capability is sent only through the inherited stdout pipe.
     process.stdout.write(
@@ -218,7 +253,11 @@ async function main() {
       }) + '\n',
     );
   } catch (error) {
-    await close();
+    try {
+      await close();
+    } catch (closeError) {
+      throw closeError;
+    }
     throw error;
   }
 }

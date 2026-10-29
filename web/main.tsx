@@ -1,6 +1,7 @@
 import React, { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Policy, RequestRecord, State } from '../src/contracts.js';
+import { AgentConnection, PolicyControls } from './workspace-controls.js';
 import './style.css';
 
 type Budget = {
@@ -601,16 +602,18 @@ function App() {
   );
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${desktopBootstrap ? ' desktop-shell' : ''}`}>
       <header className="topbar">
-        <a className="brand" href="#top">
-          <span className="brand-mark" aria-hidden="true">
-            A
-          </span>
-          <span>
-            <strong>Agent Approval Gate</strong>
-          </span>
-        </a>
+        {!desktopBootstrap && (
+          <a className="brand" href="#top">
+            <span className="brand-mark" aria-hidden="true">
+              A
+            </span>
+            <span>
+              <strong>Agent Approval Gate</strong>
+            </span>
+          </a>
+        )}
         <div className="top-actions">
           <span
             className={`connection ${connected ? 'is-connected' : ''}`}
@@ -686,7 +689,7 @@ function App() {
               </button>
               <p className="desktop-reconnect-help">
                 If the gateway stays disconnected, use the desktop toolbar to reconnect or choose
-                the workspace again. The browser view does not read or request the token file.
+                the workspace again.
               </p>
             </section>
           ) : (
@@ -770,7 +773,7 @@ function App() {
               aria-describedby="setup-description"
             >
               <div className="setup-guide-heading">
-                <h2>You’re connected</h2>
+                <h2>Request review</h2>
                 <button
                   className="text-button"
                   type="button"
@@ -780,8 +783,7 @@ function App() {
                 </button>
               </div>
               <p id="setup-description">
-                This overview is reading the live gateway. Requests appear here as agents submit
-                actions for policy checks and human review.
+                Agents submit requests here for policy checks and human review.
               </p>
             </section>
           )}
@@ -792,10 +794,10 @@ function App() {
                 <p className="workspace-location">Workspace: {desktopBootstrap.workspace}</p>
               )}
             </div>
-            <span className="updated" role="status" aria-live="polite">
-              Refreshes every second
-            </span>
           </div>
+          {desktopBootstrap?.mode === 'workspace' && (
+            <AgentConnection api={api} requests={snapshot.requests} />
+          )}
           {error && (
             <div role="alert" className="alert alert-error inline-alert">
               {error}
@@ -812,10 +814,7 @@ function App() {
           {desktopBootstrap?.mode === 'tutorial' && (
             <section className="tutorial-guide" aria-labelledby="tutorial-title">
               <h2 id="tutorial-title">Safe approval walkthrough</h2>
-              <p>
-                Review one real filesystem request in this isolated tutorial workspace. The same
-                approval checks and write path apply as in a selected workspace.
-              </p>
+              <p>Review this file change in an isolated workspace.</p>
               {tutorialRequest ? (
                 <div className="tutorial-request-summary">
                   <p>
@@ -846,9 +845,28 @@ function App() {
                             : 'Loading the exact tutorial request…'}
                         </p>
                       )}
-                      <a className="button button-quiet tutorial-link" href="#tutorial-request">
-                        Review and decide
-                      </a>
+                      <div className="tutorial-decisions">
+                        <button
+                          className="button button-primary"
+                          type="button"
+                          disabled={busyId === tutorialRequest.action.id}
+                          onClick={(event) =>
+                            void openConfirmation(tutorialRequest, 'approve', event.currentTarget)
+                          }
+                        >
+                          Review approval
+                        </button>
+                        <button
+                          className="button button-danger-outline"
+                          type="button"
+                          disabled={busyId === tutorialRequest.action.id}
+                          onClick={(event) =>
+                            void openConfirmation(tutorialRequest, 'deny', event.currentTarget)
+                          }
+                        >
+                          Review rejection
+                        </button>
+                      </div>
                     </>
                   )}
                   {tutorialRequest.state === 'COMPLETED' && (
@@ -863,8 +881,8 @@ function App() {
                         </>
                       )}
                       <p>
-                        To run this walkthrough again, choose “Try approval safely” in the desktop
-                        toolbar. It starts a fresh isolated tutorial.
+                        Choose Workspace to connect Codex, or Try Tutorial to repeat this
+                        walkthrough.
                       </p>
                     </div>
                   )}
@@ -881,14 +899,13 @@ function App() {
                   )}
                   {tutorialRequest.state === 'EXPIRED' && (
                     <p role="status" className="tutorial-outcome">
-                      The approval expired before execution. Use the desktop toolbar’s “Try approval
-                      safely” control to start a fresh isolated tutorial.
+                      The approval expired before execution. Choose Try Tutorial to start again.
                     </p>
                   )}
                   {tutorialRequest.state === 'CANCELLED' && (
                     <p role="status" className="tutorial-outcome">
-                      The request was cancelled before completion. Use the desktop toolbar’s “Try
-                      approval safely” control to start a fresh isolated tutorial.
+                      The request was cancelled before completion. Choose Try Tutorial to start
+                      again.
                     </p>
                   )}
                   {['SUBMITTED', 'ALLOWED', 'APPROVED', 'EXECUTING'].includes(
@@ -909,31 +926,33 @@ function App() {
               )}
             </section>
           )}
-          <section className="metrics" aria-label="Gateway summary">
-            <article className="metric">
-              <span>Awaiting approval</span>
-              <strong>{pending.length}</strong>
-              <small>Actions blocked until reviewed</small>
-            </article>
-            <article className="metric">
-              <span>Active sessions</span>
-              <strong>{activeSessions.size}</strong>
-            </article>
-            <article className="metric">
-              <span>Policy revision</span>
-              <strong>{snapshot.policy.revision || '—'}</strong>
-              <small>
-                {snapshot.policy.policy?.default
-                  ? `Default ${snapshot.policy.policy.default}`
-                  : 'No policy loaded'}
-              </small>
-            </article>
-            <article className="metric">
-              <span>Recent records</span>
-              <strong>{snapshot.requests.length}</strong>
-              <small>Persisted gateway actions</small>
-            </article>
-          </section>
+          {!desktopBootstrap && (
+            <section className="metrics" aria-label="Gateway summary">
+              <article className="metric">
+                <span>Awaiting approval</span>
+                <strong>{pending.length}</strong>
+                <small>Actions blocked until reviewed</small>
+              </article>
+              <article className="metric">
+                <span>Active sessions</span>
+                <strong>{activeSessions.size}</strong>
+              </article>
+              <article className="metric">
+                <span>Policy revision</span>
+                <strong>{snapshot.policy.revision || '—'}</strong>
+                <small>
+                  {snapshot.policy.policy?.default
+                    ? `Default ${snapshot.policy.policy.default}`
+                    : 'No policy loaded'}
+                </small>
+              </article>
+              <article className="metric">
+                <span>Recent records</span>
+                <strong>{snapshot.requests.length}</strong>
+                <small>Persisted gateway actions</small>
+              </article>
+            </section>
+          )}
 
           <section
             className="panel request-panel"
@@ -971,7 +990,7 @@ function App() {
             <div className="request-list">
               {visibleRequests.length === 0 && (
                 <div className="empty-state">
-                  <span aria-hidden="true">✓</span>
+                  {!desktopBootstrap && <span aria-hidden="true">✓</span>}
                   <strong>
                     {snapshot.requests.length ? 'No matching actions' : 'No actions yet'}
                   </strong>
@@ -993,7 +1012,7 @@ function App() {
                     id={
                       request.action.id === desktopBootstrap?.tutorialRequestId
                         ? 'tutorial-request'
-                        : undefined
+                        : `request-${request.action.id}`
                     }
                   >
                     <div className="request-main">
@@ -1161,10 +1180,6 @@ function App() {
                 );
               })}
             </div>
-            <p className="muted history-note">
-              Active and pending actions stay visible above the latest saved history. Load older
-              actions to review earlier records.
-            </p>
             {requestCursor && (
               <button
                 className="button button-quiet load-more"
@@ -1177,90 +1192,92 @@ function App() {
             )}
           </section>
 
-          <div className="lower-grid">
-            <section className="panel" aria-labelledby="sessions-title">
-              <div className="panel-heading">
-                <div>
-                  <h2 id="sessions-title">Active agent sessions</h2>
+          {(!desktopBootstrap || activeSessions.size > 0 || snapshot.budgets.length > 0) && (
+            <div className="lower-grid">
+              <section className="panel" aria-labelledby="sessions-title">
+                <div className="panel-heading">
+                  <div>
+                    <h2 id="sessions-title">Active agent sessions</h2>
+                  </div>
+                  <span className="count-pill">{activeSessions.size}</span>
                 </div>
-                <span className="count-pill">{activeSessions.size}</span>
-              </div>
-              {activeSessions.size === 0 ? (
-                <p className="muted empty-inline">No active sessions.</p>
-              ) : (
-                <div className="session-list">
-                  {[...activeSessions.entries()].map(([sessionId, requests]) => (
-                    <div className="session-row" key={sessionId}>
-                      <span className="session-icon" aria-hidden="true">
-                        ◉
-                      </span>
-                      <div>
-                        <strong>{sessionId}</strong>
-                        <small>
-                          {[...new Set(requests.map((r) => r.action.agentId))].join(', ')} ·{' '}
-                          {requests.length} active {requests.length === 1 ? 'action' : 'actions'}
-                        </small>
-                      </div>
-                      <span
-                        className={statusClass(
-                          requests.some((r) => r.state === 'EXECUTING')
+                {activeSessions.size === 0 ? (
+                  <p className="muted empty-inline">No active sessions.</p>
+                ) : (
+                  <div className="session-list">
+                    {[...activeSessions.entries()].map(([sessionId, requests]) => (
+                      <div className="session-row" key={sessionId}>
+                        <span className="session-icon" aria-hidden="true">
+                          ◉
+                        </span>
+                        <div>
+                          <strong>{sessionId}</strong>
+                          <small>
+                            {[...new Set(requests.map((r) => r.action.agentId))].join(', ')} ·{' '}
+                            {requests.length} active {requests.length === 1 ? 'action' : 'actions'}
+                          </small>
+                        </div>
+                        <span
+                          className={statusClass(
+                            requests.some((r) => r.state === 'EXECUTING')
+                              ? 'EXECUTING'
+                              : (requests[0]?.state ?? 'SUBMITTED'),
+                          )}
+                        >
+                          {requests.some((r) => r.state === 'EXECUTING')
                             ? 'EXECUTING'
-                            : (requests[0]?.state ?? 'SUBMITTED'),
-                        )}
-                      >
-                        {requests.some((r) => r.state === 'EXECUTING')
-                          ? 'EXECUTING'
-                          : requests[0]?.state}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="panel" aria-labelledby="budgets-title">
-              <div className="panel-heading">
-                <div>
-                  <h2 id="budgets-title">Session budgets</h2>
-                </div>
-                <span className="count-pill">{snapshot.budgets.length}</span>
-              </div>
-              {snapshot.budgets.length === 0 ? (
-                <p className="muted empty-inline">No session budgets configured.</p>
-              ) : (
-                <div className="budget-list">
-                  {snapshot.budgets.map((budget) => {
-                    const spent = budget.reserved + budget.settled;
-                    return (
-                      <div className="budget-row" key={`${budget.sessionId}-${budget.currency}`}>
-                        <div className="budget-top">
-                          <strong>{budget.sessionId}</strong>
-                          <span>{money(budget.remaining, budget.currency)} remaining</span>
-                        </div>
-                        <progress
-                          className="progress"
-                          aria-label={`Budget used for ${budget.sessionId}`}
-                          value={Math.max(0, Math.min(budget.maximum, spent))}
-                          max={Math.max(1, budget.maximum)}
-                        />
-                        <div className="budget-breakdown">
-                          <span>
-                            Maximum <b>{money(budget.maximum, budget.currency)}</b>
-                          </span>
-                          <span>
-                            Reserved <b>{money(budget.reserved, budget.currency)}</b>
-                          </span>
-                          <span>
-                            Settled <b>{money(budget.settled, budget.currency)}</b>
-                          </span>
-                        </div>
+                            : requests[0]?.state}
+                        </span>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="panel" aria-labelledby="budgets-title">
+                <div className="panel-heading">
+                  <div>
+                    <h2 id="budgets-title">Session budgets</h2>
+                  </div>
+                  <span className="count-pill">{snapshot.budgets.length}</span>
                 </div>
-              )}
-            </section>
-          </div>
+                {snapshot.budgets.length === 0 ? (
+                  <p className="muted empty-inline">No session budgets configured.</p>
+                ) : (
+                  <div className="budget-list">
+                    {snapshot.budgets.map((budget) => {
+                      const spent = budget.reserved + budget.settled;
+                      return (
+                        <div className="budget-row" key={`${budget.sessionId}-${budget.currency}`}>
+                          <div className="budget-top">
+                            <strong>{budget.sessionId}</strong>
+                            <span>{money(budget.remaining, budget.currency)} remaining</span>
+                          </div>
+                          <progress
+                            className="progress"
+                            aria-label={`Budget used for ${budget.sessionId}`}
+                            value={Math.max(0, Math.min(budget.maximum, spent))}
+                            max={Math.max(1, budget.maximum)}
+                          />
+                          <div className="budget-breakdown">
+                            <span>
+                              Maximum <b>{money(budget.maximum, budget.currency)}</b>
+                            </span>
+                            <span>
+                              Reserved <b>{money(budget.reserved, budget.currency)}</b>
+                            </span>
+                            <span>
+                              Settled <b>{money(budget.settled, budget.currency)}</b>
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
 
           <section className="panel" aria-labelledby="policy-title">
             <div className="panel-heading">
@@ -1278,6 +1295,14 @@ function App() {
               </span>
               <span>{snapshot.policy.policy.rules?.length ?? 0} explicit rules</span>
             </div>
+            {snapshot.policy.revision > 0 && desktopBootstrap?.mode !== 'tutorial' && (
+              <PolicyControls
+                api={api}
+                value={snapshot.policy}
+                onSaved={refresh}
+                requestIds={snapshot.requests.map((r) => r.action.id)}
+              />
+            )}
             <details className="details policy-json">
               <summary>View complete policy</summary>
               <pre>{JSON.stringify(snapshot.policy.policy, null, 2)}</pre>
@@ -1425,9 +1450,6 @@ function App() {
         </main>
       )}
 
-      <footer className="footer">
-        <span>Agent Approval Gate</span>
-      </footer>
       {confirm && (
         <dialog
           ref={confirmDialogRef}

@@ -1,0 +1,16 @@
+{
+  "author": "Ethan",
+  "model": "gpt-6-luna",
+  "reasoning": "high",
+  "provider": "ChatGPT existing login",
+  "scope": "real Terminal and CLI; production server and dashboard; test adapter fixes model and isolates Codex home; browser injects desktop bootstrap, not WKWebView",
+  "status": "failed",
+  "handshake": true,
+  "blockedBeforeApproval": true,
+  "completed": true,
+  "bytesWritten": 22,
+  "disconnected": true,
+  "launchArtifactsRemoved": false,
+  "error": "The expression evaluated to a falsy value:\n\n  assert.ok(result.launchArtifactsRemoved)\n",
+  "elapsedSeconds": 23.634
+}

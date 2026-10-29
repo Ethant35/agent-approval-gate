@@ -59,6 +59,13 @@ input,
 select {
   font: inherit;
 }
+textarea {
+  font: inherit;
+}
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
 button {
   cursor: pointer;
 }
@@ -87,6 +94,128 @@ code {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+.desktop-shell .topbar {
+  height: 48px;
+  justify-content: flex-end;
+}
+.desktop-shell .page-heading {
+  margin-bottom: 16px;
+}
+.desktop-shell .empty-state {
+  padding: 20px;
+  min-height: 0;
+}
+.desktop-shell .tutorial-request-summary {
+  gap: 6px;
+}
+.desktop-shell .tutorial-request-summary pre {
+  margin: 4px 0;
+}
+.agent-connection {
+  margin-bottom: 20px;
+}
+.agent-connection .panel-heading {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.agent-connection .panel-heading h2 {
+  margin-right: auto;
+}
+.agent-connection > p {
+  margin: 10px 20px;
+  color: var(--muted);
+}
+.agent-connection a {
+  color: var(--accent);
+}
+.policy-controls {
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+}
+.policy-controls > .button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.policy-controls p {
+  color: var(--muted);
+}
+.policy-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+.policy-draft {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+@media (max-width: 600px) {
+  .policy-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.policy-rehearsal {
+  min-width: 0;
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+}
+.policy-rehearsal > label {
+  display: grid;
+  gap: 6px;
+}
+.policy-rehearsal select {
+  max-width: 100%;
+  padding: 8px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+}
+.policy-rehearsal > button {
+  margin-top: 12px;
+  max-width: 100%;
+  white-space: normal;
+}
+.policy-preview {
+  overflow-wrap: anywhere;
+}
+.policy-preview ul {
+  padding-left: 20px;
+}
+.policy-fields label {
+  display: grid;
+  gap: 6px;
+}
+.policy-fields input,
+.policy-fields select,
+.policy-fields textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  color: var(--text);
+  background: var(--surface);
+}
+.policy-fields textarea {
+  resize: vertical;
+}
+.policy-paths {
+  grid-column: 1 / -1;
+}
+.policy-actions,
+.tutorial-decisions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.field-error {
+  color: var(--danger) !important;
 }
 .skip-link {
   position: fixed;

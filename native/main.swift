@@ -20,6 +20,11 @@ struct ReadyMessage: Decodable {
   let version: String
 }
 
+enum SelfTestTermination: String {
+  case commandQ = "command-q"
+  case windowClose = "window-close"
+}
+
 enum LauncherFailure: LocalizedError {
   case missingBundledRuntime
   case invalidReadyMessage
@@ -89,8 +94,12 @@ final class GatewayProcess {
   private var output: Pipe?
   private var diagnostics: BoundedDiagnostics?
   private var isStopping = false
+  private var stopTask: Task<Void, Never>?
+  private var hasStopped = false
+  private var cachedShutdownFailure: String?
   var onUnexpectedTermination: (() -> Void)?
   private(set) var ready: ReadyMessage?
+  var childProcessIdentifier: Int32? { process?.processIdentifier }
   var isReadyAndRunning: Bool { ready != nil && process?.isRunning == true && !isStopping }
 
   init(applicationSupportRoot: URL, requiresFreshRoot: Bool = false) throws {
@@ -164,7 +173,7 @@ final class GatewayProcess {
       Self.discardSubsequentOutput(childOutput.fileHandleForReading)
       return message
     } catch {
-      await stop()
+      _ = await stop()
       if let message = errorCapture.safeMessage {
         throw LauncherFailure.gatewayReportedFailure(message)
       }
@@ -173,22 +182,57 @@ final class GatewayProcess {
   }
 
   /// Close stdin first so the backend can stop its children and release its native lease.
-  func stop() async {
+  func stop() async -> String? {
+    if hasStopped { return cachedShutdownFailure }
+    if let stopTask {
+      await stopTask.value
+      return cachedShutdownFailure
+    }
+    let task = Task { @MainActor [self] in await stopOnce() }
+    stopTask = task
+    await task.value
+    hasStopped = true
+    stopTask = nil
+    return cachedShutdownFailure
+  }
+
+  private func stopOnce() async {
     isStopping = true
     ready = nil
     onUnexpectedTermination = nil
+    let requestedGracefulShutdown = process?.isRunning == true
     input?.fileHandleForWriting.closeFile()
     input = nil
     if let child = process, child.isRunning {
-      try? await Task.sleep(for: .seconds(2))
+      // Give the backend time to stop mediated descendants and release its
+      // lease before escalating. A bounded wait keeps app shutdown responsive.
+      for _ in 0..<120 where child.isRunning {
+        try? await Task.sleep(for: .milliseconds(100))
+      }
       if child.isRunning {
         child.terminate()
         for _ in 0..<20 where child.isRunning {
           try? await Task.sleep(for: .milliseconds(100))
         }
-        if child.isRunning { _ = Darwin.kill(child.processIdentifier, SIGKILL) }
+        if child.isRunning {
+          _ = Darwin.kill(child.processIdentifier, SIGKILL)
+          cachedShutdownFailure = "The managed gateway did not stop cleanly. It was force-stopped; check for a Codex process left open in Terminal."
+        } else {
+          cachedShutdownFailure = "The managed gateway needed a termination signal to stop. Check for a Codex process left open in Terminal."
+        }
       }
       await Task.detached { child.waitUntilExit() }.value
+    }
+    if requestedGracefulShutdown, let child = process, child.terminationStatus != 0 {
+      let status = child.terminationStatus
+      let detail = diagnostics?.safeMessage.flatMap { message -> String? in
+        let marker = "Agent Approval Gate shutdown incomplete:"
+        guard let range = message.range(of: marker) else { return nil }
+        let value = message[range.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.isEmpty ? marker : value
+      }
+      cachedShutdownFailure = detail.map { "Managed gateway shutdown failed (status \(status)): \($0)" }
+        ?? "Managed gateway shutdown failed (status \(status)). Check for a Codex process left open in Terminal."
     }
     process?.terminationHandler = nil
     output?.fileHandleForReading.closeFile()
@@ -647,29 +691,51 @@ struct SecuredDashboard {
 private struct LauncherArguments {
   let selfTest: Bool
   let testRoot: URL?
+  var isIsolated: Bool { testRoot != nil }
+  let selfTestTermination: SelfTestTermination
 
   init(_ arguments: [String]) throws {
     var selfTest = false
     var testRoot: URL?
+    var selfTestTermination = SelfTestTermination.commandQ
+    var terminationWasSpecified = false
+    var selfTestWasSpecified = false
+    var testRootWasSpecified = false
     var index = 0
     while index < arguments.count {
       switch arguments[index] {
       case "--self-test":
+        guard !selfTestWasSpecified else { throw LauncherFailure.invalidReadyPaths }
         selfTest = true
+        selfTestWasSpecified = true
         index += 1
       case "--test-root":
-        guard index + 1 < arguments.count else { throw LauncherFailure.invalidReadyPaths }
-        testRoot = URL(fileURLWithPath: arguments[index + 1])
+        guard !testRootWasSpecified, index + 1 < arguments.count,
+              arguments[index + 1].hasPrefix("/"), !arguments[index + 1].isEmpty
+        else { throw LauncherFailure.invalidReadyPaths }
+        testRoot = URL(fileURLWithPath: arguments[index + 1], isDirectory: true)
+        testRootWasSpecified = true
+        index += 2
+      case "--self-test-exit":
+        guard !terminationWasSpecified, index + 1 < arguments.count,
+              let parsed = SelfTestTermination(rawValue: arguments[index + 1])
+        else { throw LauncherFailure.invalidReadyPaths }
+        selfTestTermination = parsed
+        terminationWasSpecified = true
         index += 2
       default:
         throw LauncherFailure.invalidReadyPaths
       }
     }
-    guard selfTest == (testRoot != nil), testRoot?.path.hasPrefix("/") ?? true else {
+    guard (!selfTest || testRoot != nil),
+          selfTest || !terminationWasSpecified,
+          testRoot?.path.hasPrefix("/") ?? true
+    else {
       throw LauncherFailure.invalidReadyPaths
     }
     self.selfTest = selfTest
     self.testRoot = testRoot
+    self.selfTestTermination = selfTestTermination
   }
 }
 
@@ -680,7 +746,6 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
   private let testPreferencesDomain: String?
   private var window: NSWindow!
   private let dashboardSlot = NSView()
-  private let titleLabel = NSTextField(labelWithString: "Agent Approval Gate")
   private let statusLabel = NSTextField(labelWithString: "Choose a workspace or try the isolated tutorial.")
   private let scopeLabel = NSTextField(labelWithString: "File actions need your approval. Commands and network requests start disabled. Only actions sent through this gateway are checked.")
   private let workspaceLabel = NSTextField(labelWithString: "No workspace selected")
@@ -696,6 +761,10 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
   private var activeMode: DesktopMode?
   private var activeWorkspace: URL?
   private var busy = false
+  private var terminationRequested = false
+  private var lastShutdownFailure: String?
+  private var stopSessionTask: Task<Void, Never>?
+  private var stopSessionID: UUID?
   private var selfTestPageStarted = false
   private var selfTestRootInitialized = false
   private var selfTestWorkspaceReopened = false
@@ -705,10 +774,17 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
   private var selfTestRetiredDashboard: SecuredDashboard?
   private var selfTestWorkspace: URL?
   private var selfTestApplicationDataRoot: URL?
+  private var selfTestManualStopArmed = false
+  private var selfTestManualStopCompleted = false
+  private var selfTestManualStopPID: Int32?
+  private var selfTestManualStopDataDir: String?
+  private var selfTestTerminationArmed = false
+  private var quitMenuItem: NSMenuItem?
+  private var editMenuItems: [NSMenuItem] = []
 
   fileprivate init(arguments: LauncherArguments) {
     self.arguments = arguments
-    if arguments.selfTest {
+    if arguments.isIsolated {
       let domain = "AgentApprovalGate.NativeSelfTest.\(UUID().uuidString)"
       preferences = UserDefaults(suiteName: domain)!
       testPreferencesDomain = domain
@@ -719,14 +795,20 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
   }
 
   func applicationDidFinishLaunching(_ notification: Notification) {
-    NSApp.setActivationPolicy(arguments.selfTest ? .accessory : .regular)
+    // A regular app policy enables the same last-window-close behavior in
+    // production and in the lifecycle self-test.
+    NSApp.setActivationPolicy(.regular)
+    installApplicationMenu()
     buildWindow()
-    if arguments.selfTest {
-      window.orderOut(nil)
+    if arguments.isIsolated {
       guard let root = arguments.testRoot else { finishSelfTest("FAIL:test-root"); return }
       do {
         guard !FileManager.default.fileExists(atPath: root.path) else {
-          finishSelfTest("FAIL:test-root-not-fresh")
+          if arguments.selfTest {
+            finishSelfTest("FAIL:test-root-not-fresh")
+          } else {
+            showError("Choose a new empty folder for the isolated test root, then relaunch.")
+          }
           return
         }
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false)
@@ -736,22 +818,44 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
         try FileManager.default.createDirectory(at: workspacePath, withIntermediateDirectories: false)
         try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: workspacePath.path)
         guard let workspace = try GatewayProcess.canonicalDirectoryForUI(workspacePath) else {
-          finishSelfTest("FAIL:test-workspace")
+          if arguments.selfTest {
+            finishSelfTest("FAIL:test-workspace")
+          } else {
+            showError("Could not create the isolated workspace. Choose a new empty test root.")
+          }
           return
         }
         selfTestWorkspace = workspace
-        guard titleLabel.stringValue == "Agent Approval Gate",
+        if !arguments.selfTest {
+          preferences.set(workspace.path, forKey: "lastWorkspacePath")
+          selfTestApplicationDataRoot = appData
+          workspaceLabel.stringValue = "Last workspace: \(workspace.path)"
+          statusLabel.stringValue = "Reopen the last workspace, or choose another."
+          reopenButton.isEnabled = true
+          window.makeKeyAndOrderFront(nil)
+          NSApp.activate(ignoringOtherApps: true)
+          return
+        }
+        guard window.title == "Agent Approval Gate",
               scopeLabel.stringValue.contains("Only actions sent through this gateway are checked."),
               chooseButton.title == "Choose Workspace",
-              tutorialButton.title == "Try Tutorial"
+              tutorialButton.title == "Try Tutorial",
+              hasAccessibleApplicationMenus()
         else {
           finishSelfTest("FAIL:native-start-screen")
           return
         }
         selfTestApplicationDataRoot = appData
+        // The last-window-close test must close a visible window. Closing an
+        // ordered-out window does not exercise AppKit's last-window behavior.
+        window.makeKeyAndOrderFront(nil)
         tutorialButton.performClick(nil)
       } catch {
-        finishSelfTest("FAIL:test-root-setup")
+        if arguments.selfTest {
+          finishSelfTest("FAIL:test-root-setup")
+        } else {
+          showError("Could not prepare the isolated test workspace. Choose a new empty folder and relaunch.")
+        }
       }
     } else {
       window.makeKeyAndOrderFront(nil)
@@ -764,10 +868,41 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
     true
   }
 
+  func applicationWillTerminate(_ notification: Notification) {
+    if let domain = testPreferencesDomain { preferences.removePersistentDomain(forName: domain) }
+  }
+
   func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-    guard gateway != nil else { return .terminateNow }
+    terminationRequested = true
+    guard gateway != nil || lastShutdownFailure != nil else { return .terminateNow }
+    let selfTestTermination = arguments.selfTest && selfTestTerminationArmed
+    let stoppingGateway = gateway
+    let childPID = stoppingGateway?.childProcessIdentifier
+    let gatewayPort = stoppingGateway?.ready.flatMap { URL(string: $0.url)?.port }
     Task { @MainActor in
-      await stopSession()
+      if stoppingGateway != nil { await stopSession() }
+      if selfTestTermination {
+        let stoppedExactly = childPID.map { !Self.processIsRunning($0) } ?? false
+        let listenerClosed = gatewayPort.map(Self.loopbackPortIsClosed) ?? false
+        let selectionRetained = activeMode == .workspace && activeWorkspace == selfTestWorkspace
+        guard stoppedExactly, listenerClosed, selectionRetained, gateway == nil, dashboard == nil,
+              restartButton.isEnabled, !stopButton.isEnabled, lastShutdownFailure == nil
+        else {
+          reportSelfTestTermination(passed: false)
+          return
+        }
+        reportSelfTestTermination(passed: true)
+      }
+      if let failure = await self.takeShutdownFailure() {
+        let shouldQuit = self.presentShutdownFailure(failure)
+        if !shouldQuit {
+          terminationRequested = false
+          window.makeKeyAndOrderFront(nil)
+          updateControls()
+        }
+        sender.reply(toApplicationShouldTerminate: shouldQuit)
+        return
+      }
       sender.reply(toApplicationShouldTerminate: true)
     }
     return .terminateLater
@@ -798,7 +933,7 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
     start(
       mode: .tutorial,
       workspace: nil,
-      supportRoot: arguments.selfTest ? selfTestApplicationDataRoot : nil,
+      supportRoot: arguments.isIsolated ? selfTestApplicationDataRoot : nil,
       isTest: arguments.selfTest
     )
   }
@@ -813,7 +948,7 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
       start(
         mode: .workspace,
         workspace: workspace,
-        supportRoot: arguments.selfTest ? selfTestApplicationDataRoot : nil,
+        supportRoot: arguments.isIsolated ? selfTestApplicationDataRoot : nil,
         isTest: arguments.selfTest
       )
     } catch {
@@ -826,15 +961,45 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
     start(
       mode: mode,
       workspace: activeWorkspace,
-      supportRoot: arguments.selfTest ? selfTestApplicationDataRoot : nil,
+      supportRoot: arguments.isIsolated ? selfTestApplicationDataRoot : nil,
       isTest: arguments.selfTest
     )
   }
 
   @objc private func stopGateway(_ sender: Any?) {
+    guard !busy else { return }
+    busy = true
+    updateControls()
     Task { @MainActor in
+      let childPID = gateway?.childProcessIdentifier
+      let gatewayPort = gateway?.ready.flatMap { URL(string: $0.url)?.port }
       await stopSession()
-      statusLabel.stringValue = "Gateway stopped."
+      if let failure = await takeShutdownFailure() {
+        statusLabel.stringValue = "The managed gateway needs attention."
+        showError("\(failure) Reopen the workspace or select Restart Gateway after checking Terminal.")
+      } else {
+        statusLabel.stringValue = "Gateway stopped."
+      }
+      busy = false
+      updateControls()
+      if arguments.selfTest && selfTestManualStopArmed {
+        let selectionRetained = activeMode == .workspace && activeWorkspace == selfTestWorkspace
+        let childExited = childPID == selfTestManualStopPID &&
+          childPID.map { !Self.processIsRunning($0) } == true
+        let listenerClosed = gatewayPort.map(Self.loopbackPortIsClosed) ?? false
+        guard selectionRetained, childExited, listenerClosed, gateway == nil, dashboard == nil,
+              !stopButton.isEnabled, restartButton.isEnabled,
+              workspaceLabel.stringValue == "Workspace: \(selfTestWorkspace?.path ?? "")",
+              lastShutdownFailure == nil
+        else {
+          finishSelfTest("FAIL:manual-stop-state")
+          return
+        }
+        selfTestManualStopArmed = false
+        selfTestManualStopCompleted = true
+        selfTestPageStarted = false
+        if !terminationRequested { restartButton.performClick(nil) }
+      }
     }
   }
 
@@ -846,10 +1011,10 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
       defer: false
     )
     window.title = "Agent Approval Gate"
+    window.identifier = NSUserInterfaceItemIdentifier("aag.launcher-window")
     window.minSize = NSSize(width: 720, height: 480)
     window.center()
 
-    titleLabel.font = .systemFont(ofSize: 18, weight: .semibold)
     scopeLabel.lineBreakMode = .byWordWrapping
     scopeLabel.maximumNumberOfLines = 2
     workspaceLabel.lineBreakMode = .byTruncatingMiddle
@@ -876,7 +1041,7 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
     dashboardSlot.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
     dashboardSlot.heightAnchor.constraint(greaterThanOrEqualToConstant: 300).isActive = true
 
-    let content = NSStackView(views: [titleLabel, scopeLabel, controls, workspaceLabel, statusLabel, errorLabel, dashboardSlot])
+    let content = NSStackView(views: [scopeLabel, controls, workspaceLabel, statusLabel, errorLabel, dashboardSlot])
     content.orientation = .vertical
     content.alignment = .leading
     content.distribution = .fill
@@ -895,6 +1060,147 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
     window.contentView = root
   }
 
+  private func installApplicationMenu() {
+    let mainMenu = NSMenu()
+
+    let appMenuItem = NSMenuItem()
+    let appMenu = NSMenu(title: "Agent Approval Gate")
+    let about = NSMenuItem(
+      title: "About Agent Approval Gate",
+      action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+      keyEquivalent: ""
+    )
+    about.target = NSApp
+    identify(about, as: "application.about", label: "About Agent Approval Gate")
+    appMenu.addItem(about)
+    appMenu.addItem(.separator())
+
+    let hide = NSMenuItem(title: "Hide Agent Approval Gate", action: NSSelectorFromString("hide:"), keyEquivalent: "h")
+    hide.target = NSApp
+    hide.keyEquivalentModifierMask = [.command]
+    identify(hide, as: "application.hide", label: "Hide Agent Approval Gate")
+    appMenu.addItem(hide)
+    let hideOthers = NSMenuItem(
+      title: "Hide Others",
+      action: #selector(NSApplication.hideOtherApplications(_:)),
+      keyEquivalent: "h"
+    )
+    hideOthers.target = NSApp
+    hideOthers.keyEquivalentModifierMask = [.command, .option]
+    identify(hideOthers, as: "application.hide-others", label: "Hide Others")
+    appMenu.addItem(hideOthers)
+    let showAll = NSMenuItem(
+      title: "Show All",
+      action: #selector(NSApplication.unhideAllApplications(_:)),
+      keyEquivalent: ""
+    )
+    showAll.target = NSApp
+    identify(showAll, as: "application.show-all", label: "Show All")
+    appMenu.addItem(showAll)
+    appMenu.addItem(.separator())
+
+    let quit = NSMenuItem(
+      title: "Quit Agent Approval Gate",
+      action: #selector(NSApplication.terminate(_:)),
+      keyEquivalent: "q"
+    )
+    quit.target = NSApp
+    quit.keyEquivalentModifierMask = [.command]
+    identify(quit, as: "application.quit", label: "Quit Agent Approval Gate")
+    appMenu.addItem(quit)
+    quitMenuItem = quit
+    appMenuItem.identifier = NSUserInterfaceItemIdentifier("application.menu")
+    appMenuItem.submenu = appMenu
+    mainMenu.addItem(appMenuItem)
+
+    let editMenuItem = NSMenuItem()
+    let editMenu = NSMenu(title: "Edit")
+    let editItems: [(String, String, String, NSEvent.ModifierFlags)] = [
+      ("Undo", "undo:", "z", [.command]),
+      ("Redo", "redo:", "z", [.command, .shift]),
+      ("Cut", "cut:", "x", [.command]),
+      ("Copy", "copy:", "c", [.command]),
+      ("Paste", "paste:", "v", [.command]),
+      ("Select All", "selectAll:", "a", [.command]),
+    ]
+    for (title, selector, key, modifiers) in editItems {
+      let item = NSMenuItem(title: title, action: NSSelectorFromString(selector), keyEquivalent: key)
+      item.target = nil
+      item.keyEquivalentModifierMask = modifiers
+      identify(item, as: "edit.\(selector.dropLast())", label: title)
+      editMenu.addItem(item)
+      editMenuItems.append(item)
+    }
+    editMenuItem.identifier = NSUserInterfaceItemIdentifier("edit.menu")
+    editMenuItem.submenu = editMenu
+    mainMenu.addItem(editMenuItem)
+    NSApp.mainMenu = mainMenu
+  }
+
+  private func identify(_ item: NSMenuItem, as identifier: String, label: String) {
+    item.identifier = NSUserInterfaceItemIdentifier(identifier)
+    item.title = label
+  }
+
+  private func hasAccessibleApplicationMenus() -> Bool {
+    guard let quitMenuItem,
+          quitMenuItem.identifier?.rawValue == "application.quit",
+          quitMenuItem.title == "Quit Agent Approval Gate",
+          quitMenuItem.action == #selector(NSApplication.terminate(_:)),
+          quitMenuItem.target === NSApp,
+          quitMenuItem.keyEquivalent.lowercased() == "q",
+          quitMenuItem.keyEquivalentModifierMask.contains(.command),
+          NSApp.mainMenu?.items.count == 2,
+          NSApp.mainMenu?.item(at: 0)?.submenu?.title == "Agent Approval Gate",
+          NSApp.mainMenu?.item(at: 1)?.submenu?.title == "Edit",
+          NSApp.mainMenu?.item(at: 0)?.identifier?.rawValue == "application.menu",
+          NSApp.mainMenu?.item(at: 1)?.identifier?.rawValue == "edit.menu",
+          editMenuItems.count == 6
+    else { return false }
+    let expected: [(String, String, NSEvent.ModifierFlags)] = [
+      ("undo:", "z", [.command]),
+      ("redo:", "z", [.command, .shift]),
+      ("cut:", "x", [.command]),
+      ("copy:", "c", [.command]),
+      ("paste:", "v", [.command]),
+      ("selectAll:", "a", [.command]),
+    ]
+    guard editMenuItems.count == expected.count else { return false }
+    for index in expected.indices {
+      let item = editMenuItems[index]
+      let values = expected[index]
+      guard item.action == NSSelectorFromString(values.0),
+            item.keyEquivalent == values.1,
+            item.keyEquivalentModifierMask == values.2,
+            item.identifier?.rawValue.hasPrefix("edit.") == true
+      else { return false }
+    }
+    return true
+  }
+
+  private static func processIsRunning(_ pid: Int32) -> Bool {
+    if Darwin.kill(pid, 0) == 0 { return true }
+    return errno != ESRCH
+  }
+
+  private static func loopbackPortIsClosed(_ port: Int) -> Bool {
+    guard (1...65535).contains(port) else { return false }
+    let descriptor = Darwin.socket(AF_INET, SOCK_STREAM, 0)
+    guard descriptor >= 0 else { return false }
+    defer { _ = Darwin.close(descriptor) }
+    var address = sockaddr_in()
+    address.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+    address.sin_family = sa_family_t(AF_INET)
+    address.sin_port = in_port_t(port).bigEndian
+    address.sin_addr = in_addr(s_addr: inet_addr("127.0.0.1"))
+    let connected = withUnsafePointer(to: &address) {
+      $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+        Darwin.connect(descriptor, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
+      }
+    }
+    return connected != 0 && errno == ECONNREFUSED
+  }
+
   private func button(_ title: String, _ action: Selector) -> NSButton {
     let control = NSButton(title: title, target: self, action: action)
     control.bezelStyle = .rounded
@@ -908,13 +1214,20 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
     supportRoot: URL? = nil,
     isTest: Bool = false
   ) {
-    guard !busy else { return }
+    guard !busy, !terminationRequested else { return }
+    activeMode = mode
+    activeWorkspace = workspace
     busy = true
     errorLabel.isHidden = true
     statusLabel.stringValue = "Starting the local gateway…"
     updateControls()
     Task { @MainActor in
       await stopSession()
+      guard !terminationRequested else {
+        busy = false
+        updateControls()
+        return
+      }
       do {
         let root: URL
         if let supportRoot {
@@ -940,7 +1253,13 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
         // Keep the process reachable during the handshake so app termination can close stdin.
         gateway = host
         let ready = try await host.start(mode: mode, workspace: workspace)
+        guard !terminationRequested else {
+          await stopSession()
+          busy = false
+          return
+        }
         guard host.isReadyAndRunning else { throw LauncherFailure.gatewayClosedBeforeReady }
+        lastShutdownFailure = nil
         activeMode = mode
         activeWorkspace = workspace
 
@@ -992,6 +1311,10 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
         drainPendingUnexpectedTermination()
       } catch {
         await stopSession()
+        if terminationRequested {
+          busy = false
+          return
+        }
         pendingUnexpectedGateway = nil
         busy = false
         statusLabel.stringValue = "Gateway stopped."
@@ -1010,14 +1333,44 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
   }
 
   private func stopSession() async {
-    if let dashboard { await dashboard.clearSession() }
-    dashboard = nil
-    for view in dashboardSlot.subviews { view.removeFromSuperview() }
-    if let gateway { await gateway.stop() }
-    gateway = nil
-    activeMode = nil
-    activeWorkspace = nil
-    updateControls()
+    if let stopSessionTask {
+      await stopSessionTask.value
+      return
+    }
+    let operationID = UUID()
+    let task = Task { @MainActor [self] in
+      if let dashboard { await dashboard.clearSession() }
+      dashboard = nil
+      for view in dashboardSlot.subviews { view.removeFromSuperview() }
+      if let gateway, let failure = await gateway.stop() {
+        lastShutdownFailure = failure
+      }
+      gateway = nil
+      updateControls()
+    }
+    stopSessionID = operationID
+    stopSessionTask = task
+    await task.value
+    if stopSessionID == operationID {
+      stopSessionTask = nil
+      stopSessionID = nil
+    }
+  }
+
+  private func takeShutdownFailure() async -> String? {
+    if let stopSessionTask { await stopSessionTask.value }
+    return lastShutdownFailure
+  }
+
+  private func presentShutdownFailure(_ message: String) -> Bool {
+    let alert = NSAlert()
+    alert.alertStyle = .warning
+    alert.messageText = "The managed gateway did not shut down cleanly"
+    alert.informativeText = "\(message)\n\nChoose Keep Open to return to the app and restart the gateway. Choose Quit Anyway only if you accept that a managed Codex process may remain; close its Terminal session manually."
+    alert.addButton(withTitle: "Keep Open")
+    alert.addButton(withTitle: "Quit Anyway")
+    alert.buttons.first?.keyEquivalent = "\r"
+    return alert.runModal() == .alertSecondButtonReturn
   }
 
   private func handleUnexpectedTermination(of host: GatewayProcess) {
@@ -1035,7 +1388,7 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
     for view in dashboardSlot.subviews { view.removeFromSuperview() }
     Task { @MainActor in
       if let retired { await retired.clearSession() }
-      await host.stop()
+      _ = await host.stop()
       gateway = nil
       if arguments.selfTest { selfTestRetiredDashboard = retired }
       statusLabel.stringValue = "Gateway stopped unexpectedly."
@@ -1096,7 +1449,7 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
 
   private func updateControls() {
     reopenButton?.isEnabled = !busy && preferences.string(forKey: "lastWorkspacePath") != nil
-    restartButton?.isEnabled = !busy && activeMode != nil
+    restartButton?.isEnabled = !busy && activeMode != nil && gateway == nil
     stopButton?.isEnabled = !busy && gateway != nil
   }
 
@@ -1117,20 +1470,32 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
     guard arguments.selfTest else { return }
     Task { @MainActor in
       await stopSession()
-      let passed = result == "PASS"
-      if !passed {
-        try? FileHandle.standardError.write(contentsOf: Data(("Self-test tutorial failed: \(result)\n").utf8))
-      }
-      let message = passed ? "AAG_SELF_TEST_OK\n" : "AAG_SELF_TEST_FAILED\n"
-      if let domain = testPreferencesDomain { preferences.removePersistentDomain(forName: domain) }
-      let handle = passed ? FileHandle.standardOutput : FileHandle.standardError
-      if let data = message.data(using: .utf8) { try? handle.write(contentsOf: data) }
+      let finalResult = lastShutdownFailure == nil ? result : "FAIL:shutdown"
+      let passed = finalResult == "PASS"
+      emitSelfTestResult(passed: passed, failure: finalResult)
       if passed {
         NSApp.terminate(nil)
       } else {
         Darwin.exit(1)
       }
     }
+  }
+
+  private func emitSelfTestResult(passed: Bool, failure: String? = nil) {
+    if !passed, let failure {
+      try? FileHandle.standardError.write(
+        contentsOf: Data(("Native lifecycle self-test failed: \(failure)\n").utf8)
+      )
+    }
+    let message = passed ? "AAG_SELF_TEST_OK\n" : "AAG_SELF_TEST_FAILED\n"
+    if let domain = testPreferencesDomain { preferences.removePersistentDomain(forName: domain) }
+    let handle = passed ? FileHandle.standardOutput : FileHandle.standardError
+    if let data = message.data(using: .utf8) { try? handle.write(contentsOf: data) }
+  }
+
+  private func reportSelfTestTermination(passed: Bool) {
+    emitSelfTestResult(passed: passed, failure: passed ? nil : "termination-shutdown")
+    if !passed { Darwin.exit(1) }
   }
 
   private func completeTutorialSelfTest(_ result: String) {
@@ -1174,9 +1539,82 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
       gateway.terminateForSelfTest()
       return
     }
+    if !selfTestManualStopCompleted {
+      guard let host = gateway, host.isReadyAndRunning,
+            host.ready?.mode == .workspace,
+            host.ready?.workspace == selfTestWorkspace?.path,
+            activeMode == .workspace,
+            activeWorkspace == selfTestWorkspace,
+            let childPID = host.childProcessIdentifier,
+            let dataDir = host.ready?.dataDir
+      else {
+        finishSelfTest("FAIL:manual-stop-precondition")
+        return
+      }
+      selfTestManualStopPID = childPID
+      selfTestManualStopDataDir = dataDir
+      selfTestManualStopArmed = true
+      stopButton.performClick(nil)
+      return
+    }
+    guard let host = gateway, host.isReadyAndRunning,
+          host.ready?.mode == .workspace,
+          host.ready?.workspace == selfTestWorkspace?.path,
+          host.ready?.dataDir == selfTestManualStopDataDir,
+          activeMode == .workspace,
+          activeWorkspace == selfTestWorkspace
+    else {
+      finishSelfTest("FAIL:restart-selection")
+      return
+    }
     let snapshot = root.appendingPathComponent("self-test-dashboard.png")
     dashboard?.saveSelfTestSnapshot(to: snapshot) { [weak owner = self] saved in
-      owner?.finishSelfTest(saved ? "PASS" : "FAIL:screenshot")
+      guard let owner else { return }
+      guard saved else { owner.finishSelfTest("FAIL:screenshot"); return }
+      owner.requestSelfTestTermination()
+    }
+  }
+
+  private func requestSelfTestTermination() {
+    guard arguments.selfTest, !selfTestTerminationArmed,
+          gateway?.isReadyAndRunning == true,
+          activeMode == .workspace,
+          activeWorkspace == selfTestWorkspace
+    else {
+      finishSelfTest("FAIL:termination-precondition")
+      return
+    }
+    selfTestTerminationArmed = true
+    switch arguments.selfTestTermination {
+    case .commandQ:
+      guard let event = NSEvent.keyEvent(
+        with: .keyDown,
+        location: .zero,
+        modifierFlags: [.command],
+        timestamp: ProcessInfo.processInfo.systemUptime,
+        windowNumber: window.windowNumber,
+        context: nil,
+        characters: "q",
+        charactersIgnoringModifiers: "q",
+        isARepeat: false,
+        keyCode: 12
+      ), NSApp.mainMenu?.performKeyEquivalent(with: event) == true
+      else {
+        selfTestTerminationArmed = false
+        finishSelfTest("FAIL:command-q-menu-action")
+        return
+      }
+    case .windowClose:
+      // Route through the real close-button action on a visible window. AppKit
+      // must call applicationShouldTerminateAfterLastWindowClosed and then
+      // applicationShouldTerminate; explicitly calling terminate here would
+      // hide a regression in last-window handling.
+      guard window.isVisible else {
+        selfTestTerminationArmed = false
+        finishSelfTest("FAIL:window-not-visible")
+        return
+      }
+      window.performClose(nil)
     }
   }
 }

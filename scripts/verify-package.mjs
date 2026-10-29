@@ -98,6 +98,16 @@ try {
     return r.state === 'COMPLETED' && r;
   });
   assert.equal(read.result.content, 'package control');
+  const savedPolicy = await api('/policy');
+  const rehearsal = await api('/policy/preview', {
+    yaml: JSON.stringify({ ...savedPolicy.policy, default: 'deny', rules: [] }),
+    expectedRevision: savedPolicy.revision,
+    requestIds: ['allowed'],
+  });
+  assert.equal(rehearsal.results[0].current.effect, 'allow');
+  assert.equal(rehearsal.results[0].draft.effect, 'deny');
+  assert.deepEqual(await api('/policy'), savedPolicy);
+  assert.equal(fs.readFileSync(path.join(workspace, 'allowed.txt'), 'utf8'), 'package control');
   const command = {
     ...action('process', 'allowed.txt'),
     category: 'shell',
@@ -122,7 +132,7 @@ try {
   const manifest = JSON.parse(
     fs.readFileSync(path.join(prefix, 'node_modules/agent-approval-gate/package.json')),
   );
-  assert.equal(manifest.version, '2.1.0');
+  assert.equal(manifest.version, '2.2.0');
   assert.equal(manifest.author, 'Ethan');
   const result = {
     author: 'Ethan',
@@ -139,7 +149,7 @@ try {
     protectedFileUnchanged: 'PASS',
   };
   fs.writeFileSync(
-    'evidence/usability/package-install.json',
+    'evidence/connection/package-install.json',
     JSON.stringify(result, null, 2) + '\n',
   );
   console.log(JSON.stringify(result));

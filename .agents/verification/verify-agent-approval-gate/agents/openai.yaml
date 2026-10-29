@@ -1,0 +1,5 @@
+interface:
+  display_name: Verify Agent Approval Gate
+  short_description: Verify local desktop and mediated action paths
+policy:
+  allow_implicit_invocation: false

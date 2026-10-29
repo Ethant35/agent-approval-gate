@@ -193,7 +193,12 @@ test('desktop tutorial approval executes its isolated real write and shows the r
     expect(result.violations.map(({ id, impact }) => ({ id, impact }))).toEqual([]);
   };
   await checkA11y();
-  await page.getByRole('button', { name: 'Approve', exact: true }).click();
+  const reviewButton = page.getByRole('button', { name: 'Review approval', exact: true });
+  const bounds = await reviewButton.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+  await page.screenshot({ path: test.info().outputPath('tutorial-review.png') });
+  await page.getByRole('button', { name: 'Review approval', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Confirm approval' });
   await expect(dialog).toContainText(target);
   await expect(dialog).toContainText(tutorialContent);
@@ -203,7 +208,7 @@ test('desktop tutorial approval executes its isolated real write and shows the r
   await expect(walkthrough).toContainText('The gateway reports that the write completed.');
   await expect(walkthrough).toContainText('bytesWritten');
   expect(readFileSync(target, 'utf8')).toBe(tutorialContent);
-  await expect(walkthrough).toContainText('Try approval safely');
+  await expect(walkthrough).toContainText('Try Tutorial');
   await expect.poll(() => apiRequests.some((request) => request.method === 'POST')).toBe(true);
   expect(apiRequests.filter((request) => request.method === 'POST')).toEqual(
     expect.arrayContaining([
@@ -307,4 +312,189 @@ test('desktop disconnect gives launcher recovery steps without exposing manual t
   await page.getByRole('button', { name: 'Reconnect', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText(/fetch|connect|network/i);
   await expect(page.getByLabel('Human token', { exact: true })).toHaveCount(0);
+});
+
+test('basic policy editing preserves advanced fields and detects concurrent edits', async ({
+  page,
+}) => {
+  await startDesktop('workspace');
+  const policyApi = async (body?: unknown) => {
+    const response = await fetch(desktop.url + '/v1/policy', {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: {
+        authorization: `Bearer ${desktop.operatorToken}`,
+        'content-type': 'application/json',
+        'x-aag-intent': 'human',
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    expect(response.ok).toBe(true);
+    return response.json();
+  };
+  const original = await policyApi();
+  original.policy.rules = [{ id: 'blocked-agent', agentId: 'blocked', effect: 'deny' }];
+  await policyApi({ yaml: JSON.stringify(original.policy) });
+  await connectDesktop(page);
+  await page.getByRole('button', { name: 'Edit basic policy' }).click();
+  await expect(page.getByLabel('Default decision', { exact: true })).toBeFocused();
+  await page.getByLabel('Approval expires after (seconds)').fill('120');
+  await page.getByLabel('Execution timeout (seconds)').fill('16.1');
+  await page.getByLabel('Blocked paths').fill(path.join(workspace, 'private'));
+  const axe = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(axe.violations).toEqual([]);
+  await page.getByRole('button', { name: 'Save policy' }).click();
+  await expect(
+    page.getByText('Policy saved. Previous approvals require resubmission.'),
+  ).toBeVisible();
+  const saved = await policyApi();
+  expect(saved.policy.rules).toEqual(original.policy.rules);
+  expect(saved.policy.commands).toEqual([]);
+  expect(saved.policy.network).toEqual(original.policy.network);
+  expect(saved.policy.budgets).toEqual(original.policy.budgets);
+  expect(saved.policy.filesystem.allow).toEqual([workspace]);
+  expect(saved.policy.filesystem.deny).toEqual([path.join(workspace, 'private')]);
+  expect(saved.policy.limits.approvalTtlMs).toBe(120000);
+  expect(saved.policy.limits.maxDurationMs).toBe(16100);
+
+  await page.getByRole('button', { name: 'Edit basic policy' }).click();
+  await page.getByLabel('Execution timeout (seconds)').fill('5');
+  await policyApi({ yaml: JSON.stringify({ ...saved.policy, default: 'deny' }) });
+  await expect(
+    page.getByText('Policy changed elsewhere. Reload the current policy before saving.'),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save policy' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Reload current policy' }).click();
+  await expect(page.getByLabel('Default decision', { exact: true })).toHaveValue('deny');
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  expect((await policyApi()).policy.limits.maxDurationMs).toBe(16100);
+});
+
+test('connection UI distinguishes launch from handshake and offers retry and disconnect', async ({
+  page,
+}) => {
+  // UI contract fixture only. The core suite drives the real MCP transport separately.
+  await startDesktop('workspace');
+  let status = 'idle';
+  let starts = 0;
+  let rejectStart = false;
+  let pollsAfterFailure = 0;
+  await page.route('**/v1/desktop/connection**', async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname.endsWith('/start')) {
+      if (rejectStart) {
+        await route.fulfill({ status: 503, json: { error: 'Terminal launch failed. Try again.' } });
+        return;
+      }
+      starts++;
+      status = 'starting';
+    }
+    if (rejectStart && route.request().method() === 'GET') pollsAfterFailure++;
+    if (url.pathname.endsWith('/disconnect')) status = 'disconnected';
+    await route.fulfill({ json: { status, agentId: 'guided-codex', sessionId: 'guided-session' } });
+  });
+  await connectDesktop(page);
+  const region = page.getByRole('region', { name: 'Codex', exact: true });
+  await expect(region).toContainText('Not connected');
+  await region.getByRole('button', { name: 'Start Codex' }).click();
+  await expect(region).toContainText('Waiting for Codex');
+  expect(starts).toBe(1);
+  status = 'connected';
+  await expect(region.getByRole('status')).toHaveText('Connected');
+  await expect(region).toContainText('Other Codex tools are outside this boundary.');
+  status = 'disconnecting';
+  await expect(region.getByRole('status')).toHaveText('Disconnecting');
+  await expect(region.getByRole('button', { name: 'Please wait…' })).toBeDisabled();
+  status = 'connected';
+  await expect(region.getByRole('status')).toHaveText('Connected');
+  await region.getByRole('button', { name: 'Disconnect Codex' }).click();
+  await expect(region).toContainText('Disconnected');
+  await expect(region.getByRole('button', { name: 'Start Codex' })).toBeEnabled();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  const axe = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(axe.violations).toEqual([]);
+  await page.screenshot({
+    path: test.info().outputPath('workspace-connection-narrow.png'),
+    fullPage: true,
+  });
+  rejectStart = true;
+  await region.getByRole('button', { name: 'Start Codex' }).click();
+  await expect(region.getByRole('alert')).toContainText('Terminal launch failed');
+  await expect.poll(() => pollsAfterFailure).toBeGreaterThanOrEqual(2);
+  await expect(region.getByRole('alert')).toContainText('Terminal launch failed');
+  rejectStart = false;
+  await region.getByRole('button', { name: 'Start Codex' }).click();
+  await expect(region.getByRole('alert')).toHaveCount(0);
+});
+
+test('policy rehearsal previews saved requests and samples without saving or executing', async ({
+  page,
+}) => {
+  await startDesktop('workspace');
+  const target = path.join(workspace, 'rehearsal.txt');
+  const response = await submitAction({
+    ...baseAction('rehearse-existing'),
+    category: 'filesystem',
+    operation: 'write',
+    parameters: { path: target, content: 'must wait for approval' },
+    resourceScope: target,
+  });
+  expect(response.status).toBe(201);
+  const headers = {
+    authorization: `Bearer ${desktop.operatorToken}`,
+    'content-type': 'application/json',
+    'x-aag-intent': 'human',
+  };
+  const policyBefore = await (await fetch(desktop.url + '/v1/policy', { headers })).json();
+  await connectDesktop(page);
+  await page.getByRole('button', { name: 'Edit basic policy' }).click();
+  await page.getByLabel('Default decision', { exact: true }).selectOption('deny');
+  await page.getByLabel('Requests to preview').selectOption('recent');
+  await page.getByRole('button', { name: 'Preview decisions' }).click();
+  const preview = page.getByRole('region', { name: 'Policy rehearsal results' });
+  await expect(preview).toContainText('rehearse-existing');
+  await expect(preview).toContainText(
+    'Current: approval (Default policy). Draft: deny (Default policy).',
+  );
+  expect(existsSync(target)).toBe(false);
+  expect(await (await fetch(desktop.url + '/v1/policy', { headers })).json()).toEqual(policyBefore);
+  const pending = await (
+    await fetch(desktop.url + '/v1/requests/rehearse-existing', { headers })
+  ).json();
+  expect(pending.state).toBe('PENDING_APPROVAL');
+  expect(pending.approvalToken).toMatch(/^[a-f0-9]{64}$/);
+  await page.getByLabel('Default decision', { exact: true }).selectOption('approval');
+  await expect(preview).toHaveCount(0);
+  await page.getByLabel('Requests to preview').selectOption('sample');
+  await page.getByLabel('Sample absolute path').fill(target);
+  await page.getByLabel('Blocked paths').fill(target);
+  await page.getByRole('button', { name: 'Preview decisions' }).click();
+  await expect(preview).toContainText('Draft: deny (Filesystem scope denied)');
+  const axe = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(axe.violations).toEqual([]);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  await preview.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: test.info().outputPath('policy-rehearsal-narrow.png') });
+  // An external policy save invalidates the displayed preview and requires an explicit reload.
+  await fetch(desktop.url + '/v1/policy', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ yaml: JSON.stringify({ ...policyBefore.policy, default: 'deny' }) }),
+  });
+  await expect(preview).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Preview decisions' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Edit basic policy' })).toBeFocused();
+  expect(existsSync(target)).toBe(false);
 });

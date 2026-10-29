@@ -1,0 +1,9 @@
+{
+  "author": "Ethan",
+  "keyboard": "CUA native super+q input",
+  "appExited": true,
+  "ownedPidsRemaining": [],
+  "port": 58406,
+  "portClosed": true,
+  "scope": "isolated development app, not sealed release"
+}

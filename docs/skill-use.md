@@ -1,3 +1,19 @@
+# October 28 continuation
+
+Author: Ethan. Continued the explicit app-local verification checklist and workspace feature map. Rechecked the final connection cleanup fault and the previously signed native candidate before policy rehearsal. No assistants or live providers were used. Later package changes require fresh qualification.
+
+# October 27 verification application
+
+Author: Ethan. Executed the explicit app-local verification entry and reconciled its five maps with source and actual core/browser/native results. Completed the pstack-informed source/live map and reviewer repair cycle; independent review found lifecycle failures, then targeted regressions verified repairs. Applied differential-review, verification-before-completion, shipping-and-launch and the unchanged approved Semgrep plan. The earlier grill-me interview and confirmed scope were reused. Live-session limits were obeyed; details and remaining distribution gates are in READINESS.md. No global skill/config installation, hooks, Actions or fabricated upstream slash command.
+
+---
+
+# October 25 follow-up — paused and unfinished
+
+Author: Ethan. The usage reset-to-100% stop fired during the approved implementation. Current changes are uncommitted and unreleased; the historical qualification below does not qualify them. See HANDOFF.md for exact current checks, unfinished backend/native review, the unexecuted app-local verification entry, remaining production gates and the unused two-session live Codex authorization. No new readiness or release claim is made.
+
+---
+
 # Actual skill application
 
 Author: Ethan. All 26 explicitly invoked skills were read from the project-local `.agents/skills` installation. Application is bounded by this local gateway's stated support and privacy constraints; generic hosted-service examples do not authorize cloud infrastructure or Actions.

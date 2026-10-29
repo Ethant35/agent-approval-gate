@@ -1,0 +1,26 @@
+{
+  "author": "Ethan",
+  "version": "2.2.0",
+  "sourceFiles": {
+    "src/desktop.ts": "56f226ca2b4692eacc0b4c43a7c3e948c7386ca256cd7035f2795ad09e95b0c4",
+    "src/executor.ts": "b7413e259865580db36c1b7ae26486919eb7ae5b18ee3035f8ae64bef3bbdba7",
+    "src/lease.ts": "e6298ce20422edb1bb6610d82cb180c4c995752dca5f53ea0e869e3f788b471b",
+    "src/codex-session-launcher.ts": "9baf1b99e0e5abca5ae1a2af7c9eb664aa00004502cb1705dda605be32015858",
+    "src/contracts.ts": "8acc3439a4e90479ffdf3f27f81eafed83cd654485c247ca1bfb8916c07632db",
+    "src/codex-session.ts": "99ece4d0ead1cf37a1a28fe2b572f0afed47e568225083b0a5e90f040edae695",
+    "src/mcp.ts": "9cbabbdbd1f0c11d7a85da81d905330d4c6a891db5082a9f97b2410e8f103a4b",
+    "src/cli.ts": "f260dd59bb609c4373d9092c40eb0ea22a20bcf046c54b187fe36503e7a9b9e7",
+    "src/runtime.ts": "89d25b3821b65bb75f735a28fd9e88c0fd6079ad5b464ded8b060644801de4a8",
+    "src/policy.ts": "d532777ce77c98e705e2f1c80e82aa5a81eddcc251a0730d3d610d64de2a6d9a",
+    "src/maintenance.ts": "7b658f7584f89684b9865ad07e8b95ddf2187ab0a75e88579ba38cffabe8b49b",
+    "src/server.ts": "32e9f1be9550bad682455acc2971354fe312dcda8b403eb5b6bb20f1e206dd87",
+    "src/store.ts": "3e40ec461d91a039b56fa6f2c9803955a37d10116a1a1a4926f7e72229dd8b1b",
+    "web/main.tsx": "d02fa5c3bf5a9306717d53a7237adf3cd71dea81754666d000954f4dd1c632f7",
+    "web/index.html": "d3acb9a77a09f46c9f1bac2a5450d78295d62c3bdac51474bbf8c56e6933ea16",
+    "web/workspace-controls.tsx": "d60f992109da05cf6b619b12ce926a4987905e1b9454cec26555d1d301ee952d",
+    "web/style.css": "fbf4eacfb2e0c50dd1a3a3ef425d673676a4fabb59420660800a84c102110afd",
+    "native/safe-fs.c": "fab8704b817c6619b685f672a74069263caad74e80423437e088a2f9eae0af47",
+    "native/node-entitlements.plist": "00e4ab4673cf03682f1c25aa00b301fe6b9f722f3819c2a6b0b322c5f7f9a578",
+    "native/main.swift": "55f0b9c594a5915a09c3d100a83e32ee46b2d35e5f5c804c63f3e5bd98a80de6"
+  }
+}

@@ -111,18 +111,37 @@ function errorResult(error: unknown): { content: [{ type: 'text'; text: string }
 }
 
 export async function runMcpServer(): Promise<void> {
-  const server = new McpServer({ name: 'agent-approval-gate', version: '2.1.0' });
+  const server = new McpServer({ name: 'agent-approval-gate', version: '2.2.0' });
+  const managed =
+    process.env.AAG_CONNECTION_ID && process.env.AAG_AGENT_ID && process.env.AAG_SESSION_ID
+      ? {
+          agentId: process.env.AAG_AGENT_ID,
+          sessionId: process.env.AAG_SESSION_ID,
+        }
+      : undefined;
+  const managedActionSchema = actionSchema.extend({
+    agentId: actionSchema.shape.agentId.optional(),
+    sessionId: actionSchema.shape.sessionId.optional(),
+  });
+  const actionInputSchema = managed ? managedActionSchema : actionSchema;
   server.registerTool(
     'aag_submit',
     {
       title: 'Submit action for policy evaluation',
       description:
         'Submit an action to Agent Approval Gate. The gateway evaluates policy and returns its persisted request record. This tool cannot approve actions.',
-      inputSchema: z.object({ action: actionSchema }).strict(),
+      inputSchema: z.object({ action: actionInputSchema }).strict(),
     },
     async ({ action }) => {
       try {
-        return result(await callGateway('/v1/requests', { method: 'POST', body: action }));
+        const normalized = managed
+          ? actionSchema.parse({
+              ...action,
+              agentId: managed.agentId,
+              sessionId: managed.sessionId,
+            })
+          : action;
+        return result(await callGateway('/v1/requests', { method: 'POST', body: normalized }));
       } catch (error) {
         return errorResult(error);
       }
@@ -198,5 +217,39 @@ export async function runMcpServer(): Promise<void> {
     },
   );
   const transport = new StdioServerTransport();
+  let heartbeat: ReturnType<typeof setInterval> | undefined;
+  let ended = false;
+  if (managed) {
+    server.server.oninitialized = () => {
+      if (ended) return;
+      void callGateway('/v1/desktop/connection/initialized', { method: 'POST', body: {} })
+        .then(() => {
+          if (ended) return;
+          heartbeat = setInterval(() => {
+            void callGateway('/v1/desktop/connection/heartbeat', {
+              method: 'POST',
+              body: {},
+            }).catch(() => undefined);
+          }, 10_000);
+          heartbeat.unref();
+        })
+        .catch(() => undefined);
+    };
+  }
   await server.connect(transport);
+  if (managed) {
+    const sdkClose = transport.onclose;
+    transport.onclose = () => {
+      try {
+        sdkClose?.();
+      } finally {
+        if (ended) return;
+        ended = true;
+        if (heartbeat) clearInterval(heartbeat);
+        void callGateway('/v1/desktop/connection/ended', { method: 'POST', body: {} }).catch(
+          () => undefined,
+        );
+      }
+    };
+  }
 }

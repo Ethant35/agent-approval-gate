@@ -451,6 +451,18 @@ test('AG-19 native Codex MCP proposal approval execution result', async ({ page 
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   children.push(child);
+  // The explicitly authorized live check has a hard three-minute process budget.
+  const deadline = setTimeout(() => {
+    if (child.pid) {
+      try {
+        process.kill(-child.pid, 'SIGKILL');
+      } catch {
+        child.kill('SIGKILL');
+      }
+    }
+  }, 175000);
+  deadline.unref();
+  child.once('close', () => clearTimeout(deadline));
   let output = '';
   const log = (b: Buffer) => {
     output += b;

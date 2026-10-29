@@ -1,0 +1,32 @@
+{
+  "author": "Ethan",
+  "authorizedSessions": 2,
+  "used": 2,
+  "provider": "ChatGPT existing login",
+  "model": "gpt-6-luna",
+  "reasoning": "high",
+  "maxSecondsEach": 180,
+  "sessions": [
+    {
+      "number": 1,
+      "check": "AG-19 generic MCP proposal approval write result",
+      "startedAt": "2026-10-28T03:33:13.376878+00:00",
+      "hardKillAfterSeconds": 175,
+      "status": "passed",
+      "testDurationSeconds": 11.7,
+      "completedAt": "2026-10-28T03:34:02.168892+00:00"
+    },
+    {
+      "number": 2,
+      "check": "guided Start Codex real Terminal/CLI handshake approval result disconnect",
+      "startedAt": "2026-10-28T03:36:40.752517+00:00",
+      "driveDeadlineSeconds": 170,
+      "status": "partial: handshake, approval and exact write passed; early cleanup assertion failed",
+      "isolation": "temporary Codex home with existing ChatGPT login; test launcher adapter pins Luna High; production UI/backend",
+      "completedAt": "2026-10-28T03:38:16.028012+00:00",
+      "elapsedSeconds": 23.634,
+      "ownedProcessesRemaining": false,
+      "remainingSessions": 0
+    }
+  ]
+}

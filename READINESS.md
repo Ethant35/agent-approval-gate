@@ -1,3 +1,54 @@
+# Final layout qualification — October 28, 2026
+
+Author: Ethan. The native WKWebView policy rehearsal was driven with CUA after foreground activation and scrolling: blocked sample path, current approval versus draft denial, unchanged saved revision/requests/file, then successful Command-Q. The simplified fieldset layout passes all 14 UI scenarios plus strict/format checks. The prior 38-core, 58-browser, native-helper and live connection evidence remains applicable to unchanged behavior; the live pass predates this form-layout-only revision. Final package/signature/download checks will qualify the exact sealed bytes.
+
+Earlier background AX captures were incomplete; an off-screen value-setting attempt stalled accessibility inspection. Normal typing in the foreground completed the flow. No precise root cause or exhaustive native accessibility claim is made. Evidence: `evidence/rehearsal/native-policy-ui.json`.
+
+---
+
+# Version 2.2.0 final candidate — October 28, 2026
+
+Author: Ethan. The clean source passes build, strict checks, formatting, 38 core tests, 58 offline browser tests, 1,243 native helper checks (1,200 structured mutations), and dependency audit with zero vulnerabilities. The app assembles with Swift warnings treated as errors and passes both native lifecycle scenarios. All 11 approved Semgrep packs ran; two third-party packs have partial parse failures. There are 652 candidates, including 594 lexical matches and 58 previously reviewed audit flags; no new confirmed exploit. No cross-file taint or Swift semantic-analysis claim.
+
+Policy rehearsal compares a draft with the saved policy for recent requests or a sample file action without execution, approval, saved-policy changes, request insertion or budget reservation. Tests check all four action categories and unchanged file/network/process state. A reproduced private-launch-file removal failure now preserves the retryable cleanup handle.
+
+A newly authorized GPT-6 Luna High session through the signed app's bundled runtime passed in 18.253 seconds: actual Terminal/CLI, MCP handshake, unchanged file before human approval, exact 22-byte write, completed result, disconnect and private launch-artifact removal. The temporary adapter pins the model and isolates existing ChatGPT authentication. Browser bootstrap supplies the desktop context; native WKWebView and lifecycle have separate checks. This is not one integrated native chooser-to-Terminal UI test. All three authorized sessions are consumed.
+
+Apple accepted app submission `07975fa1-d79b-4d9c-bfa9-db7a1fc08c6d`. Final distribution and public-download gates remain in progress. Qualified host remains macOS 27.2 (26B123), arm64, Node 24.22.1 and Codex CLI 0.164.0. Evidence: `evidence/rehearsal`; earlier sections are historical.
+
+---
+
+# October 28 continuation — qualification in progress
+
+Author: Ethan. Existing connection regression passed 4/4, including partial-start cleanup-handle retention and disconnect status. The October 27 signed app now has a validated staple, Gatekeeper acceptance and both signed native lifecycle scenarios passing. These checks qualify that saved candidate, not later changed bytes.
+
+Policy rehearsal is implemented after those checks. Its first two core tests and seven desktop UI tests pass, including no-execution invariants and unchanged saved policy/request/budget/audit state. Final clean regression, fresh signed packaging and public-download gates remain open. Both previously approved live sessions are consumed. No new model call has been made. Evidence: `.acceptance/alignment-2026-10-28`.
+
+---
+
+# Version 2.2.0 verification — October 27, 2026
+
+Author: Ethan. Local source gates pass; release signing, notarization and public-download verification remain in progress. Historical releases below do not qualify changed bytes.
+
+Qualified host: macOS 27.2 (26B123), arm64; Node24.22.1; Codex CLI0.164.0. Deployment target14.0 is not older-host qualification.
+
+- Clean locked install/build, strict TypeScript and formatting passed. All35 core tests and57 offline browser tests passed. Core tests run serially because the actual1.0.1 helper includes parent-directory link counts that concurrent fixture creation changes; no assertions were removed.
+- Native helper:1243 boundary checks including1200 deterministic structured mutations; no confirmed sanitizer defect. Fresh app lifecycle tests pass manual Stop/Restart, programmatic Command-Q and visible last-window close. Native CUA keyboard Quit also stopped the owned gateway and closed its port. An isolated exit1 fault verified warning, Keep Open and Quit Anyway.
+- Real upgrade evidence uses actual1.0.1,2.0.0 and2.1.0 archives. The2.1 desktop profile retains policy and pending history and completes a useful approved write. Backup/restore, incompatible newer profiles, locked/corrupt/full storage and interrupted execution remain covered.
+- Zod4.6.7 resolves GHSA-mrhx-c7xc-m3w5. Fresh audit reports zero vulnerabilities. All11 approved Community Semgrep scans ran,625 candidates contextually reviewed, no confirmed exploit; Elttam and Apiiro contain unsupported/parse-failing rules. Raw output stays local. No cross-file or Swift semantic-analysis claim.
+- Live authorization is exhausted: two Luna High sessions through existing ChatGPT login, synthetic isolated workspaces. AG-19 passed in11.7s including returned result. The real Terminal-launched guided session completed handshake, human approval and exact22-byte write. Its early cleanup assertion failed because status became disconnected before cleanup finished; shutdown then completed and no test process remained. The final source adds Disconnecting until cleanup succeeds; four offline connection tests and UI checks verify that repair. No third live session was run. Guided evidence uses the production dashboard/backend in a browser with a desktop bootstrap and a temporary launcher adapter to fix the authorized model/auth context; WKWebView/native lifecycle are tested separately. Terminal UI inspection was unavailable through computer-use controls. Do not call this a single live test of every final packaged-app step.
+- The30-second load check completed2276 polls at p95=4.3ms and rejected42 of50 burst submissions without unapproved writes. It is not a multiday soak.
+
+Evidence is under evidence/connection. Same-user arbitrary process control, other Codex tools, and hostile-code containment remain outside the mediated gateway boundary. No Actions or global configuration changes. Ethan remains personal package/provenance author; Apple/upstream metadata is retained. Finder/Explorer author display is not independently verified.
+
+---
+
+# October 25 follow-up — paused and unfinished
+
+Author: Ethan. The usage reset-to-100% stop fired during the approved implementation. Current changes are uncommitted and unreleased; the historical qualification below does not qualify them. See HANDOFF.md for exact current checks, unfinished backend/native review, the unexecuted app-local verification entry, remaining production gates and the unused two-session live Codex authorization. No new readiness or release claim is made.
+
+---
+
 # Version 2.1 desktop qualification
 
 Author: Ethan. Local and downloaded-release qualification is complete. Version 2.1.0 is published; final evidence is in evidence/usability/release.json. Earlier version 2.0 evidence below remains historical.

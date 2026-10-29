@@ -1,3 +1,14 @@
+# 2.2.0
+
+- Add Start Codex, scoped session credentials, MCP handshake status, disconnect and revocation. Keep all configuration local to the invocation.
+- Add basic workspace policy editing with concurrent-change protection and preserve advanced rules.
+- Rehearse draft policies against recent requests or a sample file action without saving, approving or executing.
+- Retain cleanup handles when private launch artifacts cannot be removed; allow cleanup to be retried.
+- Add standard application/edit menus, keep workspace selection after Stop, and verify visible window-close shutdown.
+- Simplify tutorial and workspace controls; retain launch errors across status polls.
+- Update Zod to4.6.7 for GHSA-mrhx-c7xc-m3w5 and qualify existing schema/MCP behavior.
+- Add explicit local verification journeys and real 2.1 desktop update coverage. See READINESS.md for exact qualification and distribution status.
+
 # 2.1.0
 
 - Add a macOS arm64 launcher with a bundled runtime, workspace selection and separate saved policies/history.
