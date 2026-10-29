@@ -1,0 +1,67 @@
+{
+  "author": "Ethan",
+  "checks": [
+    {
+      "name": "check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exit_code": 0,
+      "seconds": 1.46
+    },
+    {
+      "name": "format",
+      "command": [
+        "npm",
+        "run",
+        "format:check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.74
+    },
+    {
+      "name": "core",
+      "command": [
+        "npm",
+        "run",
+        "test:core"
+      ],
+      "exit_code": 0,
+      "seconds": 22.63
+    },
+    {
+      "name": "native-helper",
+      "command": [
+        "npm",
+        "run",
+        "test:native"
+      ],
+      "exit_code": 0,
+      "seconds": 15.41
+    },
+    {
+      "name": "offline-e2e",
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--grep-invert",
+        "AG-19"
+      ],
+      "exit_code": 0,
+      "seconds": 56.18
+    },
+    {
+      "name": "audit",
+      "command": [
+        "npm",
+        "audit",
+        "--json"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4
+    }
+  ]
+}
