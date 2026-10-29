@@ -1,5 +1,6 @@
 {
   "author": "Ethan",
+  "candidate": "layout",
   "runtimeFiles": {
     "dist/maintenance.js": "e0ddce667295f2a59433da5c6c92e55e4f9701f3f51abca3fa24a4c441f0934e",
     "dist/runtime.js": "2da0d4ef952e62f719ee122bbad580924d73ab64f1e4b37f87c58e38c3bfa144",
@@ -14,9 +15,9 @@
     "dist/cli.js": "8e07399f974306e9846a9637b0bc800f53d0221279993816c741c2292445d379",
     "dist/contracts.js": "ad45e1cbe4760460fb45babaff83540baeca567d370e4c292b5afe4d26ed4397",
     "dist/codex-session.js": "86143add08fac732bc0e8b3fbdecfab0907e8ca27bcd98e5e9c2219df1b09e0d",
-    "dist/web/index.html": "2289ad9d5e0a658f26142c1a61c9589b62c55587e34a86c9c4112b7631f150e7",
-    "dist/web/assets/index-B8KuS8fi.css": "d04ce42a6093a838d1dfbe5ae7b287324ee50b107515dc6feb9d8fcc2e9a3b80",
-    "dist/web/assets/index-Dw2-1RNJ.js": "f7d99e1865a381cfd986af788750beae19d34c2c45c4f2b768010254fdff381b"
+    "dist/web/index.html": "25cad8340a2b74e6b5b5c9a86be33007d57ede2271b2eb9cfcda42f80e77f9d8",
+    "dist/web/assets/index-PP7Os_9X.css": "1bd7db42f05b3effb0c159d24622152544087de3cb941be146f94ecebcf954c8",
+    "dist/web/assets/index-oIp77d8C.js": "904d624a94cba890b4a4bcb48e7fabc73da9b83a79b9de42e3dd0dcf22d1a478"
   },
   "match": true
 }

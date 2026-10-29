@@ -1,7 +1,9 @@
 {
   "author": "Ethan",
+  "candidate": "layout",
   "filename": "agent-approval-gate-2.2.0.tgz",
-  "fileCount": 157,
-  "size": 477267,
-  "duplicatesAndPrivateStateAbsent": true
+  "fileCount": 171,
+  "size": 478797,
+  "duplicatesAndPrivateStateAbsent": true,
+  "sha256": "3cf8dcfd418825d5204905b0960dbe1be8b43311da9e50ae4e52b3e794aa63c1"
 }

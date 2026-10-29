@@ -1,3 +1,11 @@
+# Version 2.2.0 distribution checkpoint
+
+Author: Ethan. Final source PR #9. App notarization `33622455-bddf-4fc2-bfe6-abfa32e0a0dc`; DMG notarization `3af25eb7-fbbd-478c-bd24-e39d63e51791`. Both Accepted; both tickets stapled and validated. Quarantined copied-app Gatekeeper/syspolicy and native lifecycle checks pass. Exact hashes are in `evidence/rehearsal/asset-hashes.json`. Download verification and release publication remain pending.
+
+The supported qualification host is macOS 27.2 (26B123), arm64, with bundled Node 24.22.1. Preserve the sealed final candidate. Earlier IDs in the historical procedure below belong to 2.1.0.
+
+---
+
 # Desktop distribution procedure
 
 Author: Ethan. The release target is macOS arm64. This release was tested on macOS 27.2 (26B118); the launcher deployment target is14.0, not a claim that older hosts passed qualification.

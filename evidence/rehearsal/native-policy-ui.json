@@ -8,5 +8,7 @@
   "requests": 0,
   "sampleFileCreated": false,
   "layout": "grid inside fieldset; explicit responsive columns",
-  "limitation": "Earlier background-window AX captures were incomplete and a setValue attempt stalled WebKit accessibility. Title-bar activation and normal typing completed the native flow; no precise root-cause claim."
+  "limitation": "Earlier background-window AX captures were incomplete and a setValue attempt stalled WebKit accessibility. Title-bar activation and normal typing completed the native flow; no precise root-cause claim.",
+  "commandQ": "app quit",
+  "gatewayPortClosed": true
 }

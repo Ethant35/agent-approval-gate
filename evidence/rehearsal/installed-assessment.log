@@ -1,0 +1,6 @@
+/private/tmp/aag-layout-installed-20261028/Agent Approval Gate.app: accepted
+source=Notarized Developer ID
+Processing: /private/tmp/aag-layout-installed-20261028/Agent Approval Gate.app
+The validate action worked!
+Only one signature found in file:///private/tmp/aag-layout-installed-20261028/Agent%20Approval%20Gate.app, skipping dual signature check
+App passed all pre-distribution checks and is ready for distribution.

@@ -1,3 +1,11 @@
+# Version 2.2.0 local distribution qualified — October 28, 2026
+
+Author: Ethan. The final layout candidate is signed, notarized and stapled. App submission `33622455-bddf-4fc2-bfe6-abfa32e0a0dc` and DMG submission `3af25eb7-fbbd-478c-bd24-e39d63e51791` were Accepted. The final DMG was mounted read-only; its copied app retained an explicit test quarantine and passed strict signature, Gatekeeper, staple, syspolicy and both native lifecycle checks. Installed npm archive checks passed, including no-effect rehearsal. Native helper file-backed sections and all JS/web runtime files match the independent clean build.
+
+PR #9 contains the source and evidence. Release upload, downloaded-byte verification and publication are next. Earlier candidates and statuses below are historical. The final form-layout revision passed 14 UI scenarios and an actual native policy rehearsal; backend/MCP code is unchanged from the 18.253-second live pass. The fresh one-session authorization is exhausted.
+
+---
+
 # Final layout qualification — October 28, 2026
 
 Author: Ethan. The native WKWebView policy rehearsal was driven with CUA after foreground activation and scrolling: blocked sample path, current approval versus draft denial, unchanged saved revision/requests/file, then successful Command-Q. The simplified fieldset layout passes all 14 UI scenarios plus strict/format checks. The prior 38-core, 58-browser, native-helper and live connection evidence remains applicable to unchanged behavior; the live pass predates this form-layout-only revision. Final package/signature/download checks will qualify the exact sealed bytes.
