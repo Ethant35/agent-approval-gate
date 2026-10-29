@@ -1,3 +1,10 @@
+# 2.2.1
+
+- Keep approval headings, close controls and long paths readable in short windows.
+- Distinguish the dashboard connection from the Codex connection and clarify saved-policy behavior.
+- Preserve isolated test state when choosing a workspace; correct the singular audit count and operation guide.
+- Package the merged repairs without changing the connection runtime or API. Qualification status: docs/release-2.2.1.md.
+
 # 2.2.0
 
 - Add Start Codex, scoped session credentials, MCP handshake status, disconnect and revocation. Keep all configuration local to the invocation.

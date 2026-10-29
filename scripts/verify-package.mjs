@@ -132,7 +132,7 @@ try {
   const manifest = JSON.parse(
     fs.readFileSync(path.join(prefix, 'node_modules/agent-approval-gate/package.json')),
   );
-  assert.equal(manifest.version, '2.2.0');
+  assert.equal(manifest.version, '2.2.1');
   assert.equal(manifest.author, 'Ethan');
   const result = {
     author: 'Ethan',
@@ -149,7 +149,7 @@ try {
     protectedFileUnchanged: 'PASS',
   };
   fs.writeFileSync(
-    'evidence/connection/package-install.json',
+    'evidence/release-2.2.1/package-install.json',
     JSON.stringify(result, null, 2) + '\n',
   );
   console.log(JSON.stringify(result));
