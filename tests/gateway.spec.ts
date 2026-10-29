@@ -222,7 +222,7 @@ test('AG-06 real browser approval executes exactly once', async ({ page }) => {
   await connect(page);
   await page.screenshot({ path: test.info().outputPath('dashboard.png'), fullPage: true });
   await page.getByRole('button', { name: 'Approve', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Go back' })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Close confirmation' })).toBeFocused();
   await expect(page.getByRole('dialog')).toContainText('approved content');
   expect(readFileSync(path.join(workspace, 'target.txt'), 'utf8')).toBe('before');
   await page.getByRole('button', { name: 'Confirm approval', exact: true }).click();

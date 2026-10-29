@@ -1,3 +1,21 @@
+# October 29 independent recheck and repairs
+
+Author: Ethan. One explicitly requested GPT-6.1 Terra XHIGH reviewer received only app/setup/disposable-data context and public documentation access, with no earlier findings. Reviewer stopped after reporting. Parent repaired the discovered test-root selection defect, audit count and API guide heading, then verified the actual native chooser and local regressions. No new skill or live-agent session was invoked.
+
+---
+
+# October 29 bounded UX repair
+
+Author: Ethan. Fixed the four Terra findings and checked the rebuilt native app with disposable data. No additional skill, scan, assistant or live-model session was invoked. Manual native checks, browser regressions and native lifecycle checks are recorded in evidence/ux-fixes-2026-10-29/VERIFICATION.md. Both usage guards were disabled on Ethan's instruction.
+
+---
+
+# October 28 handoff-only pause
+
+Author: Ethan. Saved the release checkpoint and open public-download gate. No skill procedure, scan, model session or product verification was started during this pause. Earlier October 28 text describing no live providers applies to its initial continuation step; later authorized live verification is recorded in READINESS.md and HANDOFF.md. All three authorized live sessions are consumed.
+
+---
+
 # October 28 continuation
 
 Author: Ethan. Continued the explicit app-local verification checklist and workspace feature map. Rechecked the final connection cleanup fault and the previously signed native candidate before policy rehearsal. No assistants or live providers were used. Later package changes require fresh qualification.

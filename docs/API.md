@@ -66,9 +66,9 @@ Start `node /absolute/package/dist/cli.js mcp` with `AAG_URL` and an agent `AAG_
 
 The bootstrap `agent.token` represents agent ID `agent` and may select any configured session. For independent agents, issue a distinct `/agents` credential with an explicit agent ID and session list. Scoped tokens cannot inspect or cancel other principals' requests, spoof another agent/session, create credentials, or approve themselves. Revoke issued credentials through `/agents/:id/revoke`; create a new credential to rotate. Bootstrap token rotation still requires stopping the gateway, backing up state and replacing the bootstrap token files. Revocation does not undo completed effects.
 
-## Guided desktop connection (development checkout)
+## Guided desktop connection (version 2.2.0)
 
-Normal workspace desktop sessions expose human-only `GET /desktop/connection`, `POST /desktop/connection/start` and `POST /desktop/connection/disconnect`; both POST bodies are `{}`. Generic servers and tutorial sessions do not enable this interface. Status is `idle`, `starting`, `connected`, `disconnected` or `error`, with optional agent/session IDs, timestamps and a safe error. No credential is returned. The managed MCP transport sends its initialized/heartbeat/ended events with its scoped credential. Human and bootstrap credentials cannot impersonate this managed connection.
+Normal workspace desktop sessions expose human-only `GET /desktop/connection`, `POST /desktop/connection/start` and `POST /desktop/connection/disconnect`; both POST bodies are `{}`. Generic servers and tutorial sessions do not enable this interface. Status is `idle`, `starting`, `connected`, `disconnecting`, `disconnected` or `error`, with optional agent/session IDs, timestamps and a safe error. No credential is returned. The managed MCP transport sends its initialized/heartbeat/ended events with its scoped credential. Human and bootstrap credentials cannot impersonate this managed connection.
 
 The managed MCP submit tool fills the connection's agent/session identity. The generic MCP action schema remains unchanged. Terminal launch alone does not report connected. A missed handshake or heartbeat revokes the connection; reconnect with a new session. See [desktop operation](desktop-operation.md) for the mediated-actions-only boundary.
 

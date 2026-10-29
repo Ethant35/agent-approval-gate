@@ -1,0 +1,12 @@
+{
+  "author": "Ethan",
+  "selection": "native NSOpenPanel Choose Workspace \u2192 same directory",
+  "gatewayRestarted": true,
+  "isolatedRootRetained": true,
+  "policyRevision": 2,
+  "expiryRetained": 120000,
+  "requestRetained": "retained-selection",
+  "requestState": "PENDING_APPROVAL",
+  "normalProfileCreated": false,
+  "port": 58522
+}

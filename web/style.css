@@ -1146,14 +1146,15 @@ td code {
   font-size: 18px;
 }
 .confirm-modal {
-  position: relative;
-  width: min(480px, 100%);
+  position: fixed;
+  inset: 16px;
+  width: min(480px, calc(100% - 32px));
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 13px;
   padding: 25px;
-  max-height: min(90vh, 800px);
+  max-height: min(calc(100dvh - 32px), 800px);
   overflow: auto;
   margin: auto;
   box-shadow: 0 20px 70px rgba(0, 0, 0, 0.25);
@@ -1213,6 +1214,10 @@ td code {
   border: 1px solid var(--line);
   border-radius: 5px;
   overflow-wrap: anywhere;
+}
+.confirm-summary .action-preview code {
+  display: block;
+  line-height: 1.5;
 }
 .confirm-summary span {
   color: var(--muted);

@@ -213,7 +213,7 @@ function App() {
   } | null>(null);
   const [busyId, setBusyId] = useState('');
   const confirmDialogRef = useRef<HTMLDialogElement>(null);
-  const confirmBackRef = useRef<HTMLButtonElement>(null);
+  const confirmCloseRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -232,7 +232,8 @@ function App() {
       return;
     }
     if (dialog && !dialog.open) dialog.showModal();
-    confirmBackRef.current?.focus();
+    confirmCloseRef.current?.focus({ preventScroll: true });
+    if (dialog) dialog.scrollTop = 0;
     const trapTab = (event: KeyboardEvent) => {
       if (event.key !== 'Tab' || !dialog) return;
       const controls = [
@@ -622,10 +623,10 @@ function App() {
           >
             <i aria-hidden="true" />
             {connected
-              ? 'Gateway connected'
+              ? 'Dashboard connected to gateway'
               : desktopBootstrap && token
-                ? 'Connecting to local gateway'
-                : 'Gateway disconnected'}
+                ? 'Dashboard connecting to gateway'
+                : 'Dashboard disconnected from gateway'}
           </span>
           {!desktopBootstrap && (
             <button
@@ -1314,7 +1315,9 @@ function App() {
               <div>
                 <h2 id="history-title">Audit history</h2>
               </div>
-              <span className="count-pill">{snapshot.audit.length} entries</span>
+              <span className="count-pill">
+                {snapshot.audit.length} {snapshot.audit.length === 1 ? 'entry' : 'entries'}
+              </span>
             </div>
             <label className="search-field audit-search">
               <span className="sr-only">Search audit history</span>
@@ -1465,6 +1468,7 @@ function App() {
           }}
         >
           <button
+            ref={confirmCloseRef}
             className="modal-close"
             type="button"
             aria-label="Close confirmation"
@@ -1510,12 +1514,7 @@ function App() {
             </details>
           </div>
           <div className="modal-actions">
-            <button
-              ref={confirmBackRef}
-              className="button button-quiet"
-              type="button"
-              onClick={() => setConfirm(null)}
-            >
+            <button className="button button-quiet" type="button" onClick={() => setConfirm(null)}>
               Go back
             </button>
             <button

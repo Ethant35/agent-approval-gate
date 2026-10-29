@@ -747,7 +747,7 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
   private var window: NSWindow!
   private let dashboardSlot = NSView()
   private let statusLabel = NSTextField(labelWithString: "Choose a workspace or try the isolated tutorial.")
-  private let scopeLabel = NSTextField(labelWithString: "File actions need your approval. Commands and network requests start disabled. Only actions sent through this gateway are checked.")
+  private let scopeLabel = NSTextField(labelWithString: "New workspaces require file approval; saved rules may allow or deny actions. Only actions sent through this gateway are checked.")
   private let workspaceLabel = NSTextField(labelWithString: "No workspace selected")
   private let errorLabel = NSTextField(wrappingLabelWithString: "")
   private var reopenButton: NSButton!
@@ -1230,7 +1230,12 @@ final class LauncherApplication: NSObject, NSApplicationDelegate {
       }
       do {
         let root: URL
-        if let supportRoot {
+        if arguments.isIsolated {
+          guard let isolatedRoot = selfTestApplicationDataRoot else {
+            throw LauncherFailure.invalidReadyPaths
+          }
+          root = isolatedRoot
+        } else if let supportRoot {
           root = supportRoot
         } else {
           let appSupport = try FileManager.default.url(

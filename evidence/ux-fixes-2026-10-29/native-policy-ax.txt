@@ -1,0 +1,208 @@
+Window: "Agent Approval Gate", App: Agent Approval Gate.
+0 standard window Agent Approval Gate, ID: aag.launcher-window, Secondary Actions: Raise
+	1 text New workspaces require file approval; saved rules may allow or deny actions. Only actions sent through this gateway are checked.
+	2 button Choose Workspace, ID: choose-workspace
+	3 button Try Tutorial, ID: try-tutorial
+	4 button Reopen Last Workspace, ID: reopen-last-workspace
+	5 button (disabled) Restart Gateway, ID: restart-gateway
+	6 button Stop Gateway, ID: stop-gateway
+	7 text Workspace: /private/tmp/aag-ux-fixes-20261029-final-02/workspace Gateway is running on this Mac.
+	8 scroll area
+		9 HTML content Description: Agent Approval Gate, URL: 127.0.0.1:54029/
+			10 container
+				11 text Dashboard connected to gateway
+				12 button Switch to dark mode
+			13 link Skip to main content, Value: 127.0.0.1:54029/#top
+			14 container
+				15 heading Action overview, Value: 1
+					16 text Action overview
+				17 text Workspace: /private/tmp/aag-ux-fixes-20261029-final-02/workspace
+				18 container Codex
+					19 heading Codex, Value: 2
+						20 text Codex
+					21 text Codex not connected
+					22 button Start Codex
+					23 text The dashboard connection does not connect Codex. Only actions sent through Approval Gate are mediated. Other Codex tools are outside this boundary.
+				24 container Action queue
+					25 heading Action queue, Value: 2
+						26 text Action queue
+					27 text 0 pending
+					28 container
+						29 text Search actions
+						30 text field (settable) Search actions, Placeholder: Search actions, agents, sessions…
+					31 container
+						32 text Filter by status
+						33 pop up button (collapsed) Filter by status, Value: All statuses, Secondary Actions: Expand
+					34 container Write file
+						35 heading Write file, Value: 3
+							36 text Write file
+						37 text COMPLETED
+						38 text File path
+						39 text /private/tmp/aag-ux-fixes-20261029-final-02/workspace/long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-.txt
+						40 text Proposed file content
+						41 text Native layout verification.
+
+						42 text Execution completed successfully
+						43 text Agent agent Session offline-ux-fix Request
+						44 text native-dialog-layout
+						45 text Submitted 10/29/2026, 10:24:11 AM
+						46 summary Full parameters and scope, Value: off
+							47 text Full parameters and scope
+				48 container Policy
+					49 heading Policy, Value: 2
+						50 text Policy
+					51 text Revision 2 Default decision
+					52 text APPROVAL
+					53 text Workspace /private/tmp/aag-ux-fixes-20261029-final-02/workspace
+					54 text 0 explicit rules
+					55 button (expanded) Reload current policy, Secondary Actions: Collapse
+					56 container
+						57 container Draft policy
+							58 text Draft policy
+							59 container
+								60 text Default decision
+								61 pop up button (collapsed) Default decision, Value: Require approval, Secondary Actions: Expand
+							62 container
+								63 text Approval expires after (seconds)
+								64 number field (settable) Approval expires after (seconds), Value: 300
+									65 stepper 0
+										66 unknown
+										67 unknown
+							68 container
+								69 text Execution timeout (seconds)
+								70 number field (settable) Execution timeout (seconds), Value: 10
+									71 stepper 0
+										72 unknown
+										73 unknown
+							74 container
+								75 text Blocked paths (one absolute path per line)
+								76 text entry area (settable) Blocked paths (one absolute path per line), Value: /private/tmp/aag-ux-fixes-20261029-final-02/workspace/example.txt
+									77 text (settable) /private/tmp/aag-ux-fixes-20261029-final-02/workspace/example.txt
+						78 text Explicit rules override the default. Use the API or CLI to edit advanced rules. Saving changes invalidates previous approvals.
+						79 container Rehearse policy
+							80 text Rehearse policy
+							81 text Preview decisions before saving. Nothing runs or receives approval.
+							82 container
+								83 text Requests to preview
+								84 pop up button (collapsed) Requests to preview, Value: Sample file action, Secondary Actions: Expand
+							85 container
+								86 text Sample operation
+								87 pop up button (collapsed) Sample operation, Value: Write file, Secondary Actions: Expand
+							88 container
+								89 text Sample absolute path
+								90 text field (settable) Sample absolute path, Value: /private/tmp/aag-ux-fixes-20261029-final-02/workspace/example.txt
+							91 text Identity: sample-agent / sample-session. Use recent requests to check real agent and session rules.
+							92 button Preview decisions
+						93 container Policy rehearsal results
+							94 text Policy decisions only. No actions executed, approvals granted, or changes saved. File state, DNS, credentials, available budgets and runtime limits are checked when a real request runs.
+							95 content list
+								96 container sample-file /private/tmp/aag-ux-fixes-20261029-final-02/workspace/example.txt Current: deny (Filesystem scope denied). Draft: deny (Filesystem scope denied).
+									97 list marker •
+									98 text sample-file
+									99 text /private/tmp/aag-ux-fixes-20261029-final-02/workspace/example.txt
+									100 text Current: deny (Filesystem scope denied). Draft: deny (Filesystem scope denied).
+							101 text Approval expiry: 300s → 300s. Execution timeout: 10s → 10s. Subagent concurrency: 1 → 1.
+						102 button Save policy
+						103 button Cancel
+					104 summary View complete policy, Value: off
+						105 text View complete policy
+				106 container Audit history
+					107 heading Audit history, Value: 2
+						108 text Audit history
+					109 text 7 entries
+					110 container
+						111 text Search audit history
+						112 text field (settable) Search audit history, Placeholder: Search request, state, or reason…
+					113 table
+						114 row (selectable) Seq.
+Request
+State
+Reason
+Time
+						115 row (selectable)
+							116 cell (selectable) 1
+							117 cell (selectable)
+							118 cell (selectable) POLICY APPLIED
+							119 cell (selectable) Human installed policy
+							120 cell (selectable) 10/29/2026, 10:23:46 AM
+						121 row (selectable)
+							122 cell (selectable) View full audit record, Columns: 0-4
+								123 summary View full audit record, Value: off
+									124 text View full audit record
+						125 row (selectable)
+							126 cell (selectable) 2
+							127 cell (selectable) native-dialog-layout
+							128 cell (selectable) SUBMITTED
+							129 cell (selectable) Submitted
+							130 cell (selectable) 10/29/2026, 10:24:11 AM
+						131 row (selectable)
+							132 cell (selectable) View full audit record, Columns: 0-4
+								133 summary View full audit record, Value: off
+									134 text View full audit record
+						135 row (selectable)
+							136 cell (selectable) 3
+							137 cell (selectable) native-dialog-layout
+							138 cell (selectable) PENDING APPROVAL
+							139 cell (selectable) Default policy
+							140 cell (selectable) 10/29/2026, 10:24:11 AM
+						141 row (selectable)
+							142 cell (selectable) View full audit record, Columns: 0-4
+								143 summary View full audit record, Value: off
+									144 text View full audit record
+						145 row (selectable)
+							146 cell (selectable) 4
+							147 cell (selectable) native-dialog-layout
+							148 cell (selectable) APPROVED
+							149 cell (selectable) Human approved exact immutable request
+							150 cell (selectable) 10/29/2026, 10:25:32 AM
+						151 row (selectable)
+							152 cell (selectable) View full audit record, Columns: 0-4
+								153 summary View full audit record, Value: off
+									154 text View full audit record
+						155 row (selectable)
+							156 cell (selectable) 5
+							157 cell (selectable) native-dialog-layout
+							158 cell (selectable) EXECUTING
+							159 cell (selectable) Execution started
+							160 cell (selectable) 10/29/2026, 10:25:32 AM
+						161 row (selectable)
+							162 cell (selectable) View full audit record, Columns: 0-4
+								163 summary View full audit record, Value: off
+									164 text View full audit record
+						165 row (selectable)
+							166 cell (selectable) 6
+							167 cell (selectable) native-dialog-layout
+							168 cell (selectable) COMPLETED
+							169 cell (selectable) Execution completed successfully
+							170 cell (selectable) 10/29/2026, 10:25:32 AM
+						171 row (selectable)
+							172 cell (selectable) View full audit record, Columns: 0-4
+								173 summary View full audit record, Value: off
+									174 text View full audit record
+						175 row (selectable)
+							176 cell (selectable) 7
+							177 cell (selectable)
+							178 cell (selectable) POLICY APPLIED
+							179 cell (selectable) Human installed policy
+							180 cell (selectable) 10/29/2026, 10:26:09 AM
+						181 row (selectable)
+							182 cell (selectable) View full audit record, Columns: 0-4
+								183 summary View full audit record, Value: off
+									184 text View full audit record
+				185 container Recent actions
+					186 heading Recent actions, Value: 2
+						187 text Recent actions
+					188 text 1
+					189 text Write file · agent
+					190 text WRITE · /private/tmp/aag-ux-fixes-20261029-final-02/workspace/long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-long-path-segment-.txt · 10/29/2026, 10:24:11 AM COMPLETED
+		191 scroll bar (settable, float) 0
+		192 scroll bar (settable, float) 0.5326087
+	193 close button
+	194 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	195 minimize button
+	196 text Agent Approval Gate
+197 menu bar
+	198 Agent Approval Gate, ID: application.menu
+	199 Edit, ID: edit.menu
+
+The focused UI element is 14 container

@@ -1,3 +1,59 @@
+# Independent recheck and final UX repairs — October 29, 2026
+
+Author: Ethan. Ethan authorized another independent Terra review, further repairs, and a PR/merge. Review completed and reviewer stopped. The four original findings remain fixed. Also repaired isolated-mode Choose Workspace escaping into normal app data, the singular audit count and API guide version heading. Native folder-picker regression retains revision 2/history within the test root; final native lifecycle and 15 UI checks pass. Details: evidence/ux-fixes-2026-10-29/recheck-repair/VERIFICATION.md. Final local build is native-reviewed-final; prior candidates below are historical. No live sessions or replacement binary release.
+
+PR work uses .acceptance/ux-fixes-2026-10-29/pr-checkout on codex/ux-review-fixes, based on merged main f13bcbd. The original checkout has an unrelated malformed main 2 ref and duplicate files; both are preserved. Both usage stops remain disabled. The broader production goal stays paused.
+
+---
+
+# Four Terra UX fixes complete locally — October 29, 2026
+
+Author: Ethan. The four authorized fixes and actual-app checks are complete. See evidence/ux-fixes-2026-10-29/VERIFICATION.md. Source/evidence remain uncommitted; published 2.2.0 assets are unchanged. Final local app: .acceptance/ux-fixes-2026-10-29/native-final/Agent Approval Gate.app. Preserve unrelated duplicate files and prior work.
+
+Ethan disabled BOTH usage-based stops on October 29, including allowance thresholds and resets. Checker cell 9 was terminated. This supersedes all older guard instructions below. No paid/live calls are authorized. The broad production goal stays paused; the bounded fix request is complete. Later release work remains separate.
+
+---
+
+# PAUSED — handoff at Ethan's request — October 28, 2026
+
+Author: Ethan. This checkpoint supersedes the active/resume instructions and outdated release states below. Work is stopped. The actual production goal is paused, not complete. Resume only on a fresh explicit instruction. The user's confirmation that the Mac is unlocked is recorded; it does not require more checks during this pause.
+
+## Release and source state
+
+Saved release evidence confirms v2.2.0 was published at 2026-10-29T00:21:17Z (October 28 local time). Release: https://github.com/Ethant35/agent-approval-gate/releases/tag/v2.2.0 . PR #9 was merged; release tag points to merge commit `f13bcbddbbd22f66976c0b8aa0bd2365d3869f44`. This handoff read saved release/tag records; it did not repeat publication or perform a fresh remote check.
+
+Local checkout remains `codex/guided-codex-release` at `8509d3e37635a2c40cf2599debcb1a0103522806`. New draft-download and release evidence remains untracked. This handoff and matching readiness/skill-use notes are uncommitted. Preserve unrelated untracked “ 2” files and malformed duplicate refs. Do not stage them or alter the shared `.agents/skills` symlink.
+
+Final sealed assets: `/private/tmp/aag-2.2.0-20261028-layout/`. Preserve these exact bytes and the published tag.
+
+- `Agent-Approval-Gate-2.2.0-arm64.dmg`: SHA256 `10fcabc9be76ccf05c15625de927e3966beee4e291f59729a4a97f1715f7b9c2`.
+- `agent-approval-gate-2.2.0.tgz`: SHA256 `3cf8dcfd418825d5204905b0960dbe1be8b43311da9e50ae4e52b3e794aa63c1`.
+- App notarization `33622455-bddf-4fc2-bfe6-abfa32e0a0dc`; DMG notarization `3af25eb7-fbbd-478c-bd24-e39d63e51791`: Accepted in prior saved qualification. Both were stapled. An earlier DMG status JSON may still show InProgress; reconcile it with the accepted log on resume.
+
+## Completed evidence and limits
+
+Prior qualification recorded 38 core tests, 58 offline E2E tests, 14 final layout UI tests, 1,243 native helper checks, clean strict/build/format checks and zero dependency vulnerabilities. Native policy rehearsal and Command-Q passed. Policy rehearsal has no execution, approval, saved-policy or budget effects. Signed installation and installed npm package checks passed.
+
+The authenticated draft download matched both asset hashes and passed quarantine-preserving signature, Gatekeeper, staple, syspolicy and native self-test checks. See `evidence/rehearsal/draft-download.json`. Final unauthenticated public-download verification is NOT complete; `public-download.json` does not exist. The release is published, but the full production goal remains unfinished.
+
+All THREE authorized live Codex sessions are consumed. The final 18.253-second session passed Terminal/CLI handshake, pending-before-approval, exact file write, result, disconnect and launch-file cleanup. It used the signed app's bundled runtime with browser desktop bootstrap; separate native checks do not establish one integrated native chooser-to-Terminal live test. The later layout-only revision was checked separately. Ask before any additional live model session.
+
+## Shutdown and limits
+
+Usage checker exec cell 43 was terminated during handoff. Agent inventory contains only the parent; no child was resumed or dispatched. Shutdown-only process inspection found no matching owned test, gateway, guided session, notarization or release process. A Codex app GitHub PR-status query was left alone. Temporary state and final assets remain preserved. No tests, downloads, signing, release changes or implementation were started during handoff.
+
+Latest carried-forward usage reading was 40% used; it was not refreshed during the pause. On explicit resume establish a fresh baseline. The latest guard is stop at 50% used (50% remaining) in any applicable window, or an active-work reset to 100% remaining. This overrides older goal text. No automatic resume, paid credits, global config changes or GitHub Actions.
+
+## Next steps — only after explicit resume
+
+1. Inspect saved release/tag evidence and confirm remote release state without recreating the release or moving the tag.
+2. Download all three published assets without authentication into `/private/tmp/aag-2.2.0-public-download-20261028`; wait for full transfers before checking. Run `.acceptance/alignment-2026-10-28/verify-downloaded.py <download-directory> public`. This offline verifier checks hashes, quarantine, signature, Gatekeeper, staple and native execution; it makes no model calls.
+3. Reconcile the completion audit and documentation with final public evidence, including the stale intermediate notarization status. Preserve accurate platform, accessibility and live-path limits.
+4. Commit only intended final evidence/documentation via an evidence-only PR based on merged main. Attach the PR. Keep published source tag and sealed assets unchanged; exclude duplicate files.
+5. Clean only confirmed owned temporary processes/state, stop any resumed guard, then mark the production goal complete only when every remaining requirement is met.
+
+---
+
 # Native policy path verified — October 28, 2026
 
 Author: Ethan. The release hold below is resolved for the layout candidate. After title-bar activation and coordinate scrolling, CUA typed the blocked sample path and clicked Preview decisions in actual WKWebView. Visible result was current approval / draft deny. Direct authenticated read-back confirmed revision 1, no saved deny path, no requests and no sample file. Native Command-Q closed the app. Earlier off-screen/background AX errors do not establish a precise product root cause; retain their evidence and do not claim an OS defect was fixed.
