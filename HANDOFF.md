@@ -1,3 +1,9 @@
+# 2.2.1 candidate — native acceptance pending
+
+Author: Ethan. October 29, 2026. The bounded release pass is authorized. Source, offline regression, installed archive and exact bundled backend/browser checks pass. Exact native UI and the authorized three-minute live check remain blocked by the background-operation constraint. No live session was used; no signing or release publication occurred. See evidence/release-2.2.1/VERIFICATION.md and docs/release-2.2.1.md. The production goal remains incomplete. Older status below is historical.
+
+---
+
 # Independent recheck and final UX repairs — October 29, 2026
 
 Author: Ethan. Ethan authorized another independent Terra review, further repairs, and a PR/merge. Review completed and reviewer stopped. The four original findings remain fixed. Also repaired isolated-mode Choose Workspace escaping into normal app data, the singular audit count and API guide version heading. Native folder-picker regression retains revision 2/history within the test root; final native lifecycle and 15 UI checks pass. Details: evidence/ux-fixes-2026-10-29/recheck-repair/VERIFICATION.md. Final local build is native-reviewed-final; prior candidates below are historical. No live sessions or replacement binary release.

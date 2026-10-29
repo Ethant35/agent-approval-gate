@@ -1,0 +1,33 @@
+{
+  "author": "Ethan",
+  "version": "2.2.1",
+  "source_commit": "27b7e22b984a45d1e220af26281affb38f076a0a",
+  "host": {
+    "macOS": "27.2",
+    "build": "26B123",
+    "architecture": "arm64",
+    "node": "24.22.1"
+  },
+  "passed": {
+    "core": 38,
+    "offline_browser": 59,
+    "native_helper": 1243,
+    "bundle_browser": 15,
+    "strict_types": true,
+    "format": true,
+    "app_assembly": true,
+    "installed_archive": true,
+    "exact_bundle_runtime": true,
+    "runtime_hashes_unchanged_after_checks": true,
+    "dependency_vulnerabilities": 0
+  },
+  "blocked": [
+    "Exact native approval layout, long paths and focus",
+    "Exact native workspace chooser and isolated state continuity",
+    "Exact native policy and shutdown",
+    "Native Start Codex live session; one three-minute authorization remains unused"
+  ],
+  "block_reason": "Current native app launch explicitly activates its window; Start Codex opens foreground Terminal. User requires background work and asks to mark focus-dependent checks blocked rather than interrupt. Existing native harness also orders a visible key window. No foreground UI check or live session was started.",
+  "publication": "Not signed, notarized or published; acceptance is incomplete. Existing v2.2.0 release is unchanged.",
+  "actions_enabled": false
+}

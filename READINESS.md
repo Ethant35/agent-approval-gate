@@ -1,3 +1,9 @@
+# 2.2.1 candidate — native acceptance pending
+
+Author: Ethan. October 29, 2026. The bounded release pass is authorized. Source, offline regression, installed archive and exact bundled backend/browser checks pass. Exact native UI and the authorized three-minute live check remain blocked by the background-operation constraint. No live session was used; no signing or release publication occurred. See evidence/release-2.2.1/VERIFICATION.md and docs/release-2.2.1.md. The production goal remains incomplete. Older status below is historical.
+
+---
+
 # Independent recheck and native isolation repair — October 29, 2026
 
 Author: Ethan. Fresh Terra review confirmed the original UI repairs within its coverage and found an isolated test-root escape through Choose Workspace. Central native startup now preserves that root. Actual folder-picker selection retained policy revision 2 and a pending request, with no normal profile created. Fixed singular audit count and API guide heading too. Final build/type/format, 15 browser UI tests and both native lifecycle scenarios pass. Broader offline results and exact limits: evidence/ux-fixes-2026-10-29/recheck-repair/VERIFICATION.md. Source PR only; published binaries unchanged.
